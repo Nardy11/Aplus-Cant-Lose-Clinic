@@ -1,34 +1,33 @@
-@import '~bootstrap/dist/css/bootstrap.min.css';
- *{
-  margin: 0;
-  padding: 0;
+* {
   box-sizing: border-box;
 }
 
 body {
-  letter-spacing: 1px;
-  padding: 10px;
+  letter-spacing: 0;
+  padding: 0;
 }
 
 h1 {
-  text-align: center;
-  font-size: 30px;
+  margin-bottom: 20px;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.1;
 }
 
-h1,
 .main-content {
   margin-bottom: 20px;
 }
 
 .active {
   font-weight: 600;
-  color: #0e7bf1;
+  color: var(--aplus-primary);
 }
 
 .errorMsg {
-  color: #f21e08;
-  background: #fff0f0;
-  padding: 1rem;
+  color: #b42318;
+  background: #fff4f2;
+  border: 1px solid #f7d3cf;
+  border-radius: 12px;
+  padding: 14px 16px;
 }
 
 .header {
@@ -36,18 +35,21 @@ h1,
 
   nav {
     display: flex;
-    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
 
     a {
-      margin: 10px;
+      margin: 0;
     }
   }
 }
 
 .upload-section {
   display: flex;
-  height: 200px;
-  margin-bottom: 10px;
+  min-height: 220px;
+  height: auto;
+  margin-bottom: 16px;
+  gap: 20px;
 
   & > div {
     width: 50%;
@@ -55,10 +57,11 @@ h1,
 }
 
 .drop-zone {
-  margin-bottom: 10px;
-  padding: 40px 10px;
-  height: inherit;
-  border: 2px dashed #e9ebeb;
+  padding: 40px 16px;
+  min-height: 220px;
+  border: 2px dashed #cdd8e6;
+  border-radius: 16px;
+  background: #fbfdff;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -68,50 +71,54 @@ h1,
   &:focus {
     outline: none;
   }
+
+  &:hover {
+    border-color: var(--aplus-primary);
+    background: #f7faff;
+  }
 }
 
 .image-preview {
-  height: inherit;
-  margin-left: 5%;
+  margin-left: 0;
+  height: auto;
 }
 
 .preview-image {
   width: 100%;
-  height: inherit;
+  min-height: 220px;
+  object-fit: contain;
   display: block;
-  margin-bottom: 10px;
+  border-radius: 14px;
+  background: #f8fafc;
 }
 
 .preview-message {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-left: 5%;
+  margin-left: 0;
+  padding: 24px;
+  border: 1px solid var(--aplus-border);
+  border-radius: 14px;
+  background: #fff;
 }
 
 .files-container {
-  width: 98%;
+  width: 100%;
   overflow-x: auto;
 }
 
 .files-table {
   width: 100%;
-  border: 1px solid #ccc;
-  border-collapse: collapse;
+  border: 1px solid var(--aplus-border);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
 
   tr,
   td,
   th {
-    border: 1px solid #ccc;
-    padding: 10px;
-  }
-
-  .file-title {
-    width: 20%;
-  }
-
-  .file-description {
-    width: 70%;
+    border-color: var(--aplus-border);
+    padding: 13px 14px;
   }
 }
 
@@ -123,19 +130,17 @@ h1,
       width: 100%;
     }
   }
+
   .image-preview {
-    margin-left: 0;
     height: 300px;
-  }
-  .upload-section {
-    height: unset;
   }
 }
 
 @media screen and (max-width: 600px) {
   h1 {
-    font-size: 25px;
+    font-size: 28px;
   }
+
   .drop-zone {
     width: 100%;
   }
