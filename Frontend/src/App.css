@@ -1,72 +1,125 @@
-@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@300&display=swap");
-
 .App {
   min-height: 100vh;
-  display: flex;
-  background-image: url("./background.png");
-  background-position: center;
-  background-size: cover;
+  background: transparent;
 }
 
-::-webkit-scrollbar {
-  width: 0px;
+.app-shell {
+  min-height: 100vh;
+  background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(136, 136, 136, 0.281);
+.page-shell {
+  min-height: calc(100vh - 72px);
+  width: min(1400px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
 }
 
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
+.aplus-surface {
+  background: var(--aplus-surface);
+  border: 1px solid var(--aplus-border);
+  border-radius: var(--aplus-radius);
+  box-shadow: var(--aplus-shadow);
 }
+
+.aplus-muted {
+  color: var(--aplus-muted);
+}
+
+.aplus-gradient-text {
+  background: linear-gradient(135deg, var(--aplus-primary), var(--aplus-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.aplus-action {
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.aplus-action:hover {
+  transform: translateY(-1px);
+}
+
 .container {
-	display: grid;
-	grid-template-columns: 7fr 3fr;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
 }
 
 .myId {
-	margin-right: 5rem;
-	border-radius: 5px;
-	background: #c9d6ff; /* fallback for old browsers */
-	background: -webkit-linear-gradient(to right, #e2e2e2, #c9d6ff); /* Chrome 10-25, Safari 5.1-6 */
-	background: linear-gradient(
-		to right,
-		#e2e2e2,
-		#c9d6ff
-	); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-
-	padding: 2rem;
-	display: grid;
-	justify-content: center;
-	align-content: center;
+  margin-right: 0;
+  border-radius: var(--aplus-radius);
+  background: var(--aplus-surface);
+  border: 1px solid var(--aplus-border);
+  box-shadow: var(--aplus-shadow);
+  padding: 24px;
 }
 
 .call-button {
-	text-align: center;
-	margin-top: 2rem;
+  text-align: center;
+  margin-top: 24px;
 }
 
 .video-container {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	justify-content: center;
-	align-content: center;
-	margin-top: 10rem;
-	margin-left: 10rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  justify-content: center;
+  align-content: center;
+  margin: 32px 0;
 }
 
 .caller {
-	text-align: center;
-	color: #fff;
+  text-align: center;
+  color: var(--aplus-text);
 }
 
-body {
-	background: #4776e6; /* fallback for old browsers */
-	background: -webkit-linear-gradient(to right, #8e54e9, #4776e6); /* Chrome 10-25, Safari 5.1-6 */
-	background: linear-gradient(
-		to right,
-		#8e54e9,
-		#4776e6
-	); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+.upload-section {
+  gap: 20px;
+}
+
+.drop-zone {
+  border-color: #cdd8e6;
+  background: #fbfdff;
+  border-radius: 16px;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.drop-zone:hover {
+  border-color: var(--aplus-primary);
+  background: #f7faff;
+}
+
+.files-container {
+  width: 100%;
+}
+
+.files-table {
+  overflow: hidden;
+  border: 1px solid var(--aplus-border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.files-table tr,
+.files-table td,
+.files-table th {
+  border-color: var(--aplus-border);
+  padding: 13px 14px;
+}
+
+@media (max-width: 900px) {
+  .page-shell {
+    width: min(100% - 28px, 1400px);
+    padding-top: 20px;
+  }
+
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .video-container {
+    grid-template-columns: 1fr;
+  }
 }
