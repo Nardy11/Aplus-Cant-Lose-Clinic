@@ -953,6 +953,13 @@ const payWithWallet = async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     patient.wallet -= amount;
+    patient.walletTransactions.push({
+      amount: -Number(amount),
+      balanceAfter: patient.wallet,
+      direction: "debit",
+      type: "health_package",
+      description: "Health package payment",
+    });
     patient.hPackage = healthPackageId;
     patient.hPStatus = "Subscribed";
     patient.SubDate = today;
@@ -1023,11 +1030,15 @@ const viewWallet = async (req, res) => {
     }
 
     const walletAmount = patient.wallet;
+    const transactions = [...(patient.walletTransactions || [])].sort(
+      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+    );
 
     res.status(200).json({
       message: " wallet amount is fetched successfully",
       patient: patient,
       wallet: walletAmount,
+      transactions,
     });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
@@ -1443,6 +1454,13 @@ const cancelAppointment = async (req, res) => {
       console.log(timeDifference);
       console.log(patient.wallet);
       patient.wallet += doctor.rate;
+      patient.walletTransactions.push({
+        amount: Number(doctor.rate),
+        balanceAfter: patient.wallet,
+        direction: "credit",
+        type: "appointment_refund",
+        description: `Appointment cancellation refund from Dr. ${doctor.name}`,
+      });
       await patient.save();
       await doctor.save();
     }
@@ -1660,6 +1678,13 @@ const payWithWalletF = async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     familyMem.wallet -= amount;
+    familyMem.walletTransactions.push({
+      amount: -Number(amount),
+      balanceAfter: familyMem.wallet,
+      direction: "debit",
+      type: "health_package",
+      description: "Health package payment for family member",
+    });
     patient.hPackage = healthPackageId;
     patient.hPStatus = "Subscribed";
     patient.SubDate = today;
