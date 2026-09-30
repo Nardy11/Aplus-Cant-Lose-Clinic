@@ -215,7 +215,7 @@ handleCloseDialog();      }
           <h4>Connect an existing member</h4>
           <form
             onSubmit={handleSubmit2}
-            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+            className="family-link-form"
           >
             <label>
               Select Contact Type:
@@ -308,16 +308,6 @@ handleCloseDialog();      }
             </button>
           </form>
 
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="home"
-            sx={{ mr: 2 }}
-            onClick={() => {
-              window.location.href = "/Home";
-            }}
-          ></IconButton>
         </div>
       </Dialog>
       <Dialog
@@ -330,31 +320,8 @@ handleCloseDialog();      }
           <div><span>HOUSEHOLD</span><h2>Add family member</h2></div>
           <IconButton className="clinic-dialog-close" onClick={handleCloseDialog} aria-label="Close"><CloseIcon /></IconButton>
         </DialogTitle>
-        <DialogTitle className="family-dialog-title-spacer">
-          <IconButton
-            edge="end"
-            color="inherit"
-            onClick={handleCloseDialog}
-            aria-label="close"
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
         <form className="family-add-form family-dialog-form" onSubmit={handleSubmit} method="post">
-          <h3
-            style={{
-              textAlign: "center",
-              fontSize: "20px",
-              marginBottom: "10px",
-            }}
-          >
-            Add a Family Member
-          </h3>
+          <h3>Enter their details to add them to your household.</h3>
           <div>
             <label htmlFor="fullName" style={labelStyle}>
               Full Name:
