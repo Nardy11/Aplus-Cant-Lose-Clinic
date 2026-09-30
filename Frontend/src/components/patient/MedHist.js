@@ -186,15 +186,13 @@ const MedHist = ({ open, onClose }) => {
                   <strong>{file.name}</strong>
                   <span>{Math.max(1, Math.round(file.size / 1024))} KB</span>
                 </div>
-                {isPreviewAvailable && (
-                  <Button
-                    type="button"
-                    className="medical-history-review-button"
-                    onClick={() => setReviewOpen(true)}
-                  >
-                    Review file
-                  </Button>
-                )}
+                <Button
+                  type="button"
+                  className="medical-history-review-button"
+                  onClick={() => setReviewOpen(true)}
+                >
+                  Review file
+                </Button>
               </div>
             )}
           </div>
