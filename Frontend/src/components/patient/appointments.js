@@ -209,7 +209,6 @@ export default function SearchAppBar() {
   const role = useSelector((state) => state.user.role);
 
   const rows = useSelector((state) => state.patient.appoints);
-  var noappoints = false;
 
   const getAppointments = async () => {
     try {
@@ -397,7 +396,7 @@ const navigate = useNavigate();
           </IconButton>
         </DialogTitle>
         {Appointments.length === 0 ? (
-          (noappoints = true && (
+          (
             <div className="empty-appointments-dialog">
               <p>There are no available appointment slots for this doctor right now. Please try again later.</p>
             </div>
