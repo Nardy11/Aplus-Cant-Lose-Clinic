@@ -99,119 +99,55 @@ const handleClose=() => {setOpen(false);}
   };
 
   return role === "patient" ? (
-    <div style={{width:"700px"}}>
+    <div className="medical-history-list">
       {errorMsg && <p className="errorMsg">{errorMsg}</p>}
-      <List sx={{ width: "80%", backgroundColor: "white" }}>
-        {filesList.length > 0 ? (
-          filesList.map(
-            ({ _id, title, description, file_path, file_mimetype }) => (
-              <ListItem key={_id} style={{ borderBottom: "1px solid #004E98" }}>
-                <div style={{display:"flex", flexDirection:"column"}}>
-                <Typography
-                  variant="body1"
-                  sx={{ color: "#6247aa", fontSize: "30px" }}
-                >
-                  {title}
-                </Typography>
-                <div>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "#6247aa", fontSize: "14px" }}
-                  >
-                    {description}
-                  </Typography>
-                </div>
-                </div>
-                <ListItemSecondaryAction>
-                  <IconButton
-                    aria-label="download"
-                    color="primary"
-                    size="large"
-                    sx={{ fontSize: "28px", mr: "15px" }}
-                    onClick={() => downloadFile(_id, file_path, file_mimetype)}
-                  >
-                    <CloudDownloadIcon />
-                  </IconButton>
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    color="error"
-                    size="large"
-                    sx={{ fontSize: "28px" }}
-                    onClick={() => deleteFile(_id, file_path, file_mimetype)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            )
-          )
-        ) : (
-          <ListItem>
-            <ListItemText
-              primary="No files found. Please add some."
-              style={{ fontWeight: "300", color: "white", fontSize: "18px" }}
-            />
-          </ListItem>
-        )}
-      </List>
-      <Box
-        sx={{
-          "& > :not(style)": { m: 1 },
-          position: "fixed",
-          right: "0px",
-          bottom: "20px",
-        }}
-      >
-        <IconButton onClick={handleOpen}>
-          <Fab color="primary" aria-label="add">
-            <AddIcon  />
-          </Fab>
-          medical history
-        </IconButton>
-        <MedHist open={open} onClose={handleClose} />
-      </Box>
-      <Box
-        sx={{
-          "& > :not(style)": { m: 1 },
-          position: "fixed",
-          left: "0px",
-          bottom: "20px",
-        }}
-      >
-        <Link to="/Home">
-          <Fab color="primary" aria-label="add">
-            <HomeIcon />
-          </Fab>
-        </Link>
-      </Box>
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert onClose={handleCloseSnackbar} severity="success">
-          {snackbarMessage}
-        </Alert>
+      <div className="medical-history-toolbar">
+        <div>
+          <span>UPLOADED DOCUMENTS</span>
+          <strong>{filesList.length} {filesList.length === 1 ? "document" : "documents"}</strong>
+        </div>
+        <button type="button" className="medical-history-add-button" onClick={handleOpen}>
+          <AddIcon />
+          Add document
+        </button>
+      </div>
+
+      {filesList.length > 0 ? (
+        <div className="medical-history-file-list">
+          {filesList.map(({ _id, title, description, file_path, file_mimetype }) => (
+            <div className="medical-history-file" key={_id}>
+              <div className="medical-history-file-icon"><CloudDownloadIcon /></div>
+              <div className="medical-history-file-copy">
+                <strong>{title}</strong>
+                <span>{description || "Medical document"}</span>
+              </div>
+              <div className="medical-history-file-actions">
+                <IconButton aria-label="download" onClick={() => downloadFile(_id, file_path, file_mimetype)}>
+                  <CloudDownloadIcon />
+                </IconButton>
+                <IconButton aria-label="delete" onClick={() => deleteFile(_id, file_path, file_mimetype)}>
+                  <DeleteIcon />
+                </IconButton>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="medical-history-empty">
+          <CloudDownloadIcon />
+          <strong>No documents yet</strong>
+          <span>Add lab reports, scans or other supporting medical files.</span>
+        </div>
+      )}
+
+      <MedHist open={open} onClose={handleClose} />
+
+      <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity="success">{snackbarMessage}</Alert>
       </Snackbar>
     </div>
   ) : (
-    <Link to="/Login" sx={{ left: "100%" }}>
-      <Typography
-        variant="h6"
-        noWrap
-        component="div"
-        sx={{
-          flexGrow: 1,
-          display: { xs: "none", sm: "flex" },
-          fontSize: "20px",
-          margin: "auto",
-        }}
-      >
-        Login
-      </Typography>
-    </Link>
+    <Link to="/Login" className="login-fallback">Login</Link>
   );
 };
 
