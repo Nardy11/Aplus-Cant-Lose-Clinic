@@ -49,9 +49,9 @@ const AccountAvatar = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPasswordClose, setConfirmPasswordClose] = useState(false);
 
-  const notifications = role === "doctor"
-    ? useSelector((state) => state.doctor.notifications)
-    : useSelector((state) => state.patient.notifications);
+  const patientNotifications = useSelector((state) => state.patient.notifications);
+  const doctorNotifications = useSelector((state) => state.doctor.notifications);
+  const notifications = role === "doctor" ? doctorNotifications : patientNotifications;
 
   const handleLogout = () => {
     dispatch(logout()).then(() => navigate("/Login")).catch(console.error);
