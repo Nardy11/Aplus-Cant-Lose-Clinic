@@ -1259,3 +1259,88 @@ h1 {
   .appointments-filters .MuiFormControl-root { width: 100%; }
   .empty-appointments-dialog { min-width: 0; }
 }
+
+.family-page .MuiDialog-paper {
+  min-width: min(430px, calc(100vw - 28px));
+  max-width: 430px;
+}
+
+.family-page .MuiDialog-paper form.family-add-form {
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+.family-link-dialog {
+  width: 100% !important;
+  max-width: 390px;
+  padding: 26px !important;
+  box-sizing: border-box;
+}
+
+.family-link-dialog h4 {
+  margin: 0 0 20px !important;
+  color: #1a2538 !important;
+  font-size: 21px;
+}
+
+.family-link-dialog form {
+  gap: 14px !important;
+}
+
+.family-link-dialog label {
+  color: #445269;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.family-link-dialog input,
+.family-link-dialog select {
+  box-sizing: border-box;
+  min-height: 43px;
+  padding: 0 11px !important;
+  border: 1px solid #dce3eb !important;
+  border-radius: 9px !important;
+  outline: none;
+  background: #fff;
+  font-size: 12px;
+}
+
+.family-link-dialog button {
+  width: 100% !important;
+  margin: 4px 0 0 !important;
+  min-height: 43px;
+  border-radius: 9px !important;
+  background: #1769ff !important;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.appointments-filters .MuiInputBase-root:hover {
+  border-color: #c3cfde;
+}
+
+.appointments-filters .MuiInputBase-root.Mui-focused {
+  box-shadow: 0 0 0 3px rgba(23,105,255,.08);
+}
+
+.appointments-page .MuiDialogTitle-root {
+  color: #1a2538;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.appointments-page .MuiDialogContent-root {
+  padding: 8px 24px 18px;
+}
+
+.appointments-page .MuiDialogActions-root {
+  padding: 12px 20px 20px;
+}
+
+.appointments-page .MuiDialogActions-root button {
+  border-radius: 9px;
+  text-transform: none;
+  font-weight: 750;
+}
+
