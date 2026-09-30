@@ -24,6 +24,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MedicalServicesRoundedIcon from "@mui/icons-material/MedicalServicesRounded";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { WalletDialog } from "../WalletDialog.js";
 import { SnackbarContext } from "../../App";
 import { useNavigate } from "react-router-dom";
@@ -223,6 +224,10 @@ const AccountAvatar = () => {
           </div>
         </div>
         <Divider />
+        <MenuItem onClick={() => { setAccountAnchor(null); navigate("/Profile"); }}>
+          <ListItemIcon><PersonRoundedIcon fontSize="small" /></ListItemIcon>
+          View profile
+        </MenuItem>
         <MenuItem onClick={openPassword}>
           <ListItemIcon><LockResetIcon fontSize="small" /></ListItemIcon>
           Change password
