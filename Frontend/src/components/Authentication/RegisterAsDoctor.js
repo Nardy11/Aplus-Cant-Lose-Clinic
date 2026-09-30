@@ -111,7 +111,7 @@ function RegisterAsDoctor() {
                 </div>
                 <div className="auth-field">
                   <label htmlFor="gender">Gender</label>
-                  <select id="gender" name="Gender" defaultValue="male">
+                  <select id="gender" name="Gender" defaultValue="male" className="clinic-native-select">
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                     <option value="none">Prefer not to say</option>
