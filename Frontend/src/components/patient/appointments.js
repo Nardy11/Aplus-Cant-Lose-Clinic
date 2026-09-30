@@ -111,7 +111,7 @@ function BasicTable({ status, date, onPayButtonClick }) {
 
   return (
     <>
-      <TableContainer component={Paper} style={tableContainerStyle}>
+      <TableContainer component={Paper} className="modern-data-table appointments-table" style={tableContainerStyle}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
   <TableRow>
@@ -311,12 +311,10 @@ export default function SearchAppBar() {
 const navigate = useNavigate();
   return (
     role==="patient"?(
-    <Box sx={{ flexGrow: 1 }}>
-        <div>
-        <AccountAvatar />
-      </div>
-      <AppBar position="static" sx={{ backgroundColor: "inherit" ,borderColor:"blue"}}>
-        <Toolbar>
+    <Box className="appointments-page">
+        <div className="appointments-account"><AccountAvatar /></div>
+      <AppBar position="static" className="appointments-toolbar" elevation={0}>
+        <Toolbar className="appointments-toolbar-inner">
           <Link to="/Home" style={{ color: "white" }}>
             <IconButton
               size="large"
@@ -327,15 +325,8 @@ const navigate = useNavigate();
             >
             </IconButton>
           </Link>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ flexGrow: 1, display: { xs: "none", sm: "block" },color: "black" ,ml:"40%",fontSize:"30px"}}
-          >
-            Appointments
-          </Typography>
-          <Box>
+          <div className="appointments-title"><span>CARE SCHEDULE</span><h1>Appointments</h1><p>Review, filter and manage your upcoming visits.</p></div>
+          <Box className="appointments-filters">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["DateTimePicker"]}>
                 <DateTimePicker
@@ -382,6 +373,7 @@ const navigate = useNavigate();
         onPayButtonClick={handleOpenPaymentDialog}
       />
           <Fab
+        className="appointments-fab"
         color="primary"
         aria-label="add"
         sx={{
@@ -405,7 +397,7 @@ const navigate = useNavigate();
       >
         {Appointments.length === 0 ? (
           (noappoints = true && (
-            <div style={{ padding: "10px", color: "white", background: "#004e98" }}>
+            <div className="empty-appointments-dialog" style={{ padding: "10px", color: "white", background: "#004e98" }}>
               <h1>There is no Available Appointments</h1>
             </div>
           ))
