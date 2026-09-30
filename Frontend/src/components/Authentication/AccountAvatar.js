@@ -32,6 +32,7 @@ import { getNotifications } from "../../features/patientSlice.js";
 import { getNotificationsd } from "../../features/doctorSlice.js";
 import NavbarGen from "../NavbarGen";
 import { API_URL } from "../../Consts";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 const AccountAvatar = () => {
   const snackbarMessage = useContext(SnackbarContext);
@@ -50,6 +51,7 @@ const AccountAvatar = () => {
   const [passwordError, setPasswordError] = useState("");
   const [emptyFieldError, setEmptyFieldError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmPasswordClose, setConfirmPasswordClose] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -70,14 +72,33 @@ const AccountAvatar = () => {
     setAccountAnchor(null);
   };
 
-  const closePassword = () => {
-    setPasswordOpen(false);
+  const resetPasswordForm = () => {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmNewPassword("");
     setPasswordError("");
     setEmptyFieldError(false);
     setShowPassword(false);
+  };
+
+  const closePassword = () => {
+    setPasswordOpen(false);
+    resetPasswordForm();
+  };
+
+  const hasPasswordDraft = Boolean(currentPassword || newPassword || confirmNewPassword);
+
+  const requestPasswordClose = () => {
+    if (hasPasswordDraft) {
+      setConfirmPasswordClose(true);
+    } else {
+      closePassword();
+    }
+  };
+
+  const discardPasswordChanges = () => {
+    setConfirmPasswordClose(false);
+    closePassword();
   };
 
   const savePassword = async () => {
@@ -214,7 +235,7 @@ const AccountAvatar = () => {
 
       <Dialog
         open={passwordOpen}
-        onClose={closePassword}
+        onClose={requestPasswordClose}
         className="clinic-modern-dialog"
         maxWidth="sm"
         fullWidth
@@ -224,7 +245,7 @@ const AccountAvatar = () => {
             <span>SECURITY</span>
             <h2>Change password</h2>
           </div>
-          <IconButton className="clinic-dialog-close" onClick={closePassword} aria-label="Close"><CloseRoundedIcon /></IconButton>
+          <IconButton className="clinic-dialog-close" onClick={requestPasswordClose} aria-label="Close"><CloseRoundedIcon /></IconButton>
         </DialogTitle>
         <DialogContent className="clinic-dialog-content">
           <p className="clinic-dialog-copy">Update your password securely. You will be signed out after a successful change.</p>
@@ -262,10 +283,21 @@ const AccountAvatar = () => {
           />
         </DialogContent>
         <DialogActions className="clinic-dialog-actions">
-          <Button onClick={closePassword} className="clinic-dialog-cancel">Cancel</Button>
+          <Button onClick={requestPasswordClose} className="clinic-dialog-cancel">Cancel</Button>
           <Button onClick={savePassword} variant="contained" className="clinic-dialog-primary">Save password</Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmPasswordClose}
+        title="Discard password changes?"
+        message="You have entered password information. If you leave now, the unsaved changes will be lost."
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        destructive
+        onConfirm={discardPasswordChanges}
+        onCancel={() => setConfirmPasswordClose(false)}
+      />
 
       <Dialog
         open={notificationsOpen}
