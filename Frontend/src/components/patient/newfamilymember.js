@@ -86,6 +86,8 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
   useEffect(() => {
     if (!open) {
       setConfirmClose(false);
+      setGender("male");
+      setRelation("spouse");
     }
   }, [open]);
 
