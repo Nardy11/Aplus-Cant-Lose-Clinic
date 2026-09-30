@@ -86,7 +86,7 @@ function FollowUp() {
                     ))}
                 </DialogContent>
                 <DialogActions>
-                    <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button className="doctor-primary-button" onClick={save}>Create follow-up</Button>
+                    <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button disableRipple className="doctor-primary-button" onClick={save}>Create follow-up</Button>
                 </DialogActions>
             </Dialog>
             <ConfirmDialog open={confirmClose} title="Discard follow-up?" message="You have selected follow-up details. Closing now will discard the unsaved appointment." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }} onCancel={() => setConfirmClose(false)} />
