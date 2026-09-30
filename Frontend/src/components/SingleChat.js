@@ -250,10 +250,10 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         <Box className="chat-welcome-empty" d="flex" alignItems="center" justifyContent="center" h="100%">
           <img src="/virtualclinic.png" alt="El7a2ny Clinic messaging" className="chat-welcome-image" />
           <Typography className="chat-welcome-title" fontFamily="Work sans">
-            Select a conversation to get started
+            Your care conversations, in one place
           </Typography>
           <Typography className="chat-welcome-copy">
-            Choose a doctor or patient from your conversations, or use the search bar above to start a new chat.
+            Select a doctor or patient from your chats, or search above to start a private conversation.
           </Typography>
         </Box>
       )}
