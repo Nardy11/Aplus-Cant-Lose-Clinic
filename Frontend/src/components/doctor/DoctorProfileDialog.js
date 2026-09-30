@@ -13,7 +13,7 @@ import Button from "@mui/material/Button";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
 
-export default function DoctorProfileDialog({ open, handleClose }) {
+export default function DoctorProfileDialog({ open, handleClose, onContractAccepted }) {
   const dispatch = useDispatch();
   const notify = useContext(SnackbarContext);
   const id = useSelector((state) => state.user.id);
