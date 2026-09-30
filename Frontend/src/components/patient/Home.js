@@ -93,6 +93,66 @@ function Home() {
         </NavLink>
       </section>
 
+      <section className="patient-home-overview">
+        <article className="patient-home-panel">
+          <div className="patient-home-panel-heading">
+            <div>
+              <span>YOUR CARE HUB</span>
+              <h2>Everything you need, in one place</h2>
+              <p>Jump straight into the parts of your care you use most.</p>
+            </div>
+            <span className="patient-home-status-pill">Patient portal</span>
+          </div>
+
+          <div className="patient-home-action-list">
+            <NavLink to="/MedHistList" className="patient-home-action">
+              <MedicalInformationIcon />
+              <strong>Medical documents</strong>
+              <small>Upload, review and download your health files.</small>
+            </NavLink>
+            <NavLink to="/ListOfPrescriptions" className="patient-home-action">
+              <VaccinesIcon />
+              <strong>Prescriptions</strong>
+              <small>Review medicines and prescription details.</small>
+            </NavLink>
+            <NavLink to="/viewfamilymembers" className="patient-home-action">
+              <FamilyRestroomIcon />
+              <strong>Family members</strong>
+              <small>Manage the people connected to your care.</small>
+            </NavLink>
+          </div>
+        </article>
+
+        <article className="patient-home-panel patient-home-notification">
+          <div className="patient-home-panel-heading">
+            <div>
+              <span>RECENT ACTIVITY</span>
+              <h2>Clinic updates</h2>
+              <p>Your latest notifications.</p>
+            </div>
+            <NotificationsIcon sx={{ color: "#1769ff", fontSize: 20 }} />
+          </div>
+
+          {notifications?.length ? (
+            <div className="clinic-notification-item">
+              <span className="clinic-notification-icon"><NotificationsIcon /></span>
+              <div>
+                <strong>{notifications[0].type || "Clinic update"}</strong>
+                <p>{notifications[0].message}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="patient-home-notification-empty">
+              <NotificationsIcon />
+              <div>
+                <strong>You're all caught up</strong>
+                <span>No new clinic notifications right now.</span>
+              </div>
+            </div>
+          )}
+        </article>
+      </section>
+
       <Snackbar open={false} anchorOrigin={{ vertical: "top", horizontal: "left" }}>
         <MuiAlert elevation={3} variant="filled" severity="info">
           Appointment is rescheduled!!
