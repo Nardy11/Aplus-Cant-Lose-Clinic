@@ -178,7 +178,7 @@ const AccountAvatar = () => {
                       console.error("Unable to mark notifications as read:", error);
                     }
                     navigate("/Notifications");
-                  }
+                  }}
                   aria-label="Notifications"
                 >
                   <NotificationsNoneRoundedIcon />
