@@ -27,7 +27,7 @@ export default function ContractDetails({ embedded = false }) {
   useEffect(() => { if (role === "doctor") load(); }, [id, role]);
 
   const acceptContract = async () => {
-    try { await axios.put(`${API_URL}/doctor/acceptContract/${id}`); setAccepted(true); notify?.("Contract accepted successfully.", "success"); }
+    try { await axios.put(`${API_URL}/doctor/acceptContract/${id}`); setAccepted(true); notify?.("Contract accepted successfully.", "success"); onContractAccepted?.(); }
     catch { notify?.("Unable to accept the contract.", "error"); }
   };
 
