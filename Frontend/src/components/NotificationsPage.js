@@ -24,7 +24,14 @@ export default function NotificationsPage() {
       setLoading(true);
       try {
         const response = await axios.get(role === "doctor" ? `${API_URL}/doctor/${id}/notifications` : `${API_URL}/patient/${id}/notifications`);
-        if (active) setNotifications([...(response.data.notifications || [])].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)));
+        const items = [...(response.data.notifications || [])].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+        if (active) setNotifications(items);
+        if (items.length) {
+          const clearUrl = role === "doctor"
+            ? API_URL + "/doctor/" + id + "/notifications"
+            : API_URL + "/patient/" + id + "/notifications";
+          await axios.patch(clearUrl, { notifications: [] });
+        }
       } finally {
         if (active) setLoading(false);
       }
