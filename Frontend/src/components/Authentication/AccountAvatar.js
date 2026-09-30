@@ -1,107 +1,49 @@
-// Import necessary libraries and constants
 import React, { useState, useEffect, useContext } from "react";
 import Avatar from "@mui/material/Avatar";
-
 import Typography from "@mui/material/Typography";
-import Popover from "@mui/material/Popover";
-import LockResetIcon from "@mui/icons-material/LockReset";
-import List from "@mui/material/List";
-import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
-import PermPhoneMsgIcon from "@mui/icons-material/PermPhoneMsg";
-import ListItem from "@mui/material/ListItem";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
 import Dialog from "@mui/material/Dialog";
-import LogoutIcon from "@mui/icons-material/Logout";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { useDispatch, useSelector } from "react-redux";
-import { changePass } from "../../features/userSlice";
-import WalletIcon from "@mui/icons-material/Wallet";
-import { WalletDialog } from "../WalletDialog.js";
-import { Box } from "@mui/material";
-import { SnackbarContext } from "../../App";
-import { Link, useNavigate } from "react-router-dom";
-import { logout } from "../../features/userSlice";
 import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import Divider from "@mui/material/Divider";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../features/userSlice";
+import WalletIcon from "@mui/icons-material/Wallet";
+import LockResetIcon from "@mui/icons-material/LockReset";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import NavbarGen from "../NavbarGen";
+import MedicalServicesRoundedIcon from "@mui/icons-material/MedicalServicesRounded";
+import { WalletDialog } from "../WalletDialog.js";
+import { SnackbarContext } from "../../App";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getNotifications } from "../../features/patientSlice.js";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import {getNotificationsd} from "../../features/doctorSlice.js";
-
+import { getNotificationsd } from "../../features/doctorSlice.js";
+import NavbarGen from "../NavbarGen";
 import { API_URL } from "../../Consts";
-
-const myAccountStyles = {
-  cursor: "pointer",
-  fontSize: "1.3em",
-  textDecoration: "underline",
-  color: "#007bff",
-  transition: "font-size 0.2s, text-decoration 0.2s",
-
-  "&:hover": {
-    fontSize: "1.5em",
-    textDecoration: "none",
-  },
-  textAlign: "center",
-};
-
-const containerStyles = {
-  display: "flex",
-  alignItems: "center",
-  height: "fit-content",
-  width: "fit-content",
-  backgroundColor: "whitesmoke",
-  borderRadius: "7px",
-  padding: "10px",
-};
-
-const avatarStyles = { ml: "10px" };
-
-const logoutButtonStyles = {
-  marginRight: "10px",
-
-  textDecoration: "underline",
-  position: "absolute", // Corrected typo in 'position'
-  right: "0px",
-  fontSize: "20px",
-  padding: "0px",
-  width: "fit-content",
-  color: "#ff0000", // Red color
-};
 
 const AccountAvatar = () => {
   const snackbarMessage = useContext(SnackbarContext);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [openDialogg, setOpenDialogg] = useState(false);
-  const handleOpenDialogg = () => {
-    setOpenDialogg(true);
-  };
+  const { username, role, id } = useSelector((state) => state.user);
 
-  const handleCloseDialogg = () => {
-    setOpenDialogg(false);
-  };
-  const handleLogout = () => {
-    dispatch(logout())
-      .then(() => {
+  const [accountAnchor, setAccountAnchor] = useState(null);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [walletOpen, setWalletOpen] = useState(false);
 
-        navigate("/Login");
-
-      })
-      .catch((error) => {
-        console.error("Logout error:", error);
-      });
-  };
-  const [anchorel, setAnchorel] = useState(null);
-  const { username } = useSelector((state) => state.user);
-  const { role, id } = useSelector((state) => state.user);
-
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -110,57 +52,36 @@ const AccountAvatar = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (role === "doctor") {
-      dispatch(getNotificationsd(id));
-    }
-    if (role === "patient") {
-      dispatch(getNotifications(id));
-    }
-  }, [dispatch]);
+    if (!id) return;
+    if (role === "doctor") dispatch(getNotificationsd(id));
+    if (role === "patient") dispatch(getNotifications(id));
+  }, [dispatch, id, role]);
 
-  const notificationsp = useSelector((state) => state.patient.notifications);
+  const notifications = role === "doctor"
+    ? useSelector((state) => state.doctor.notifications)
+    : useSelector((state) => state.patient.notifications);
 
-  const notificationsd = useSelector((state) => state.doctor.notifications);
-  let notifications = null;
-  if (role === "doctor") {
-    notifications = notificationsd;
-  }
-  if (role === "patient") {
-    notifications = notificationsp;
-  }
-  const isPasswordValid = (password) => {
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$/;
-    return passwordRegex.test(password);
+  const handleLogout = () => {
+    dispatch(logout()).then(() => navigate("/Login")).catch(console.error);
   };
 
-  const handleAvatarClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  const openPassword = () => {
+    setPasswordOpen(true);
+    setAccountAnchor(null);
   };
 
-  const handleAvatarClose = () => {
-    setAnchorEl(null);
-  };
-
-  const openChangePasswordDialog = () => {
-    setOpenDialog(true);
-    handleAvatarClose();
-  };
-
-  const closeChangePasswordDialog = () => {
-    setOpenDialog(false);
+  const closePassword = () => {
+    setPasswordOpen(false);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmNewPassword("");
     setPasswordError("");
     setEmptyFieldError(false);
-  };
-  const handlewallet = (event) => {
-    setAnchorel(event.currentTarget);
+    setShowPassword(false);
   };
 
   const savePassword = async () => {
-    if (
-      currentPassword === "" ||
-      newPassword === "" ||
-      confirmNewPassword === ""
-    ) {
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
       setEmptyFieldError(true);
       setPasswordError("");
       return;
@@ -168,21 +89,19 @@ const AccountAvatar = () => {
 
     if (newPassword === currentPassword) {
       setEmptyFieldError(false);
-      setPasswordError("New password cannot be the same as the old password");
+      setPasswordError("Your new password must be different from the current password.");
       return;
     }
 
     if (newPassword !== confirmNewPassword) {
       setEmptyFieldError(false);
-      setPasswordError("New password and confirm password do not match");
+      setPasswordError("The two new passwords do not match.");
       return;
     }
 
-    if (!isPasswordValid(newPassword)) {
+    if (!/^(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$/.test(newPassword)) {
       setEmptyFieldError(false);
-      setPasswordError(
-        "Password must be at least 8 characters, contain an uppercase letter, and a special character (@#$%^&+=)"
-      );
+      setPasswordError("Use at least 8 characters, one uppercase letter and one special character.");
       return;
     }
 
@@ -193,222 +112,200 @@ const AccountAvatar = () => {
         username,
       });
 
-      console.log("Response:", response);
-
       if (response.data.message) {
-        snackbarMessage("Password has been changed", "success");
-        closeChangePasswordDialog();
-        dispatch(logout()).then(() => {
-          navigate("/Login");
-        });
+        snackbarMessage("Password changed successfully. Please sign in again.", "success");
+        closePassword();
+        dispatch(logout()).then(() => navigate("/Login"));
       } else {
-        snackbarMessage(
-          `An error occurred: ${response.data.error || "Unknown error"}`,
-          "error"
-        );
+        snackbarMessage(response.data.error || "Unable to change password.", "error");
       }
     } catch (error) {
-      console.error("Error:", error.response.data);
-      snackbarMessage(
-        `An error occurred: ${error.response.data.error || "Unknown error"}`,
-        "error"
-      );
+      snackbarMessage(error.response?.data?.error || "Unable to change password.", "error");
     }
   };
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const handleOpenDialog = () => {
-    setDialogOpen(true);
-  };
 
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
-
-  const styles = {
-    marginRight: "10px",
-    color: "white",
-  };
   return (
-    <div className="account-shell">
-      <>
-        <Avatar
-          src="/path-to-your-avatar-image.jpg"
-          className="account-avatar"
-          onClick={handleAvatarClick}
-        />
-        <Typography
-          component="span"
-          onClick={handleAvatarClick}
-          className="account-link"
-        >
-          Account
-        </Typography>
-      </>
-      <>
-        <Button
-          className="account-logout"
-          style={logoutButtonStyles}
-          onClick={handleLogout}
-          startIcon={<LogoutIcon />}
-        >
-          Logout
-        </Button>
-        <span className="account-actions">
-          {role === "doctor" || role === "patient" ? (
+    <header className="clinic-header">
+      <div className="clinic-header-inner">
+        <div className="clinic-identity">
+          <div className="clinic-brand-mark"><MedicalServicesRoundedIcon /></div>
+          <div className="clinic-brand-copy">
+            <strong>A+ Clinic</strong>
+            <span>{role === "doctor" ? "Doctor portal" : role === "patient" ? "Patient portal" : "Clinic portal"}</span>
+          </div>
+        </div>
+
+        <NavbarGen />
+
+        <div className="clinic-header-actions">
+          {(role === "doctor" || role === "patient") && (
             <>
-                <Button
-                variant="outlined"
-                size="large"
-                className="account-action-button"
-                onClick={handleOpenDialogg}
-              >
-                <NotificationsIcon fontSize="small" sx={{ color: "grey" }} />
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                className="account-action-button"
-                startIcon={
-                  <WalletIcon fontSize="large" sx={{ color: "grey" }} />
-                }
-                onClick={() => {
-                  handleOpenDialog();
-                }}
-              >
-                wallet
-              </Button>
-          
+              <Tooltip title="Notifications">
+                <IconButton
+                  className="clinic-utility-button"
+                  onClick={() => setNotificationsOpen(true)}
+                  aria-label="Notifications"
+                >
+                  <NotificationsNoneRoundedIcon />
+                  {notifications?.length > 0 && <span className="clinic-notification-dot" />}
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Wallet">
+                <IconButton
+                  className="clinic-utility-button"
+                  onClick={() => setWalletOpen(true)}
+                  aria-label="Wallet"
+                >
+                  <WalletIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Chats and video">
+                <IconButton
+                  className="clinic-utility-button"
+                  onClick={() => navigate("/chats")}
+                  aria-label="Chats and video"
+                >
+                  <ChatBubbleOutlineRoundedIcon />
+                </IconButton>
+              </Tooltip>
             </>
-          ) : null}
-        </span>
-        {(role === "doctor" || role === "patient") && (
-          <>
-            <Button
-              variant="outlined"
-              size="large"
-              sx={{ width: "10%", ml: "4%", mb: "17px", mt: "0px" }}
-              startIcon={
-                <QuestionAnswerIcon fontSize="large" sx={{ color: "grey" }} />
-              }
-              onClick={() => navigate("/chats")}
-            >
-              chats/video
-            </Button>
-            <div>
-              <NavbarGen />
-            </div>
-          </>
-        )}
-      </>
+          )}
 
-      <Popover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={handleAvatarClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "right",
-        }}
+          <Divider orientation="vertical" flexItem className="clinic-header-divider" />
+
+          <button className="clinic-profile-button" onClick={(e) => setAccountAnchor(e.currentTarget)}>
+            <Avatar className="clinic-profile-avatar" />
+            <span>
+              <strong>{username || "Account"}</strong>
+              <small>Profile</small>
+            </span>
+          </button>
+
+          <Tooltip title="Logout">
+            <IconButton className="clinic-logout-button" onClick={handleLogout} aria-label="Logout">
+              <LogoutRoundedIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
+      </div>
+
+      <Menu
+        anchorEl={accountAnchor}
+        open={Boolean(accountAnchor)}
+        onClose={() => setAccountAnchor(null)}
+        className="clinic-account-menu"
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <List>
-          <ListItem>
-            <Typography sx={{ fontSize: "15px" }}>username:</Typography>{" "}
-            <Typography sx={{ color: "blue", paddingLeft: "4px" }}>
-              {username}
-            </Typography>
-          </ListItem>
+        <div className="clinic-account-menu-head">
+          <Avatar className="clinic-menu-avatar" />
+          <div>
+            <strong>{username}</strong>
+            <span>{role}</span>
+          </div>
+        </div>
+        <Divider />
+        <MenuItem onClick={openPassword}>
+          <ListItemIcon><LockResetIcon fontSize="small" /></ListItemIcon>
+          Change password
+        </MenuItem>
+      </Menu>
 
-          <ListItem
-            button
-            onClick={openChangePasswordDialog}
-            startIcon={<LockResetIcon />}
-          >
-            Change Password
-            <LockResetIcon />
-          </ListItem>
-        </List>
-      </Popover>
-      <Dialog open={openDialog} onClose={closeChangePasswordDialog}>
-        <DialogTitle>Change Password</DialogTitle>
-        <DialogContent>
+      <Dialog
+        open={passwordOpen}
+        onClose={closePassword}
+        className="clinic-modern-dialog"
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle className="clinic-dialog-title">
+          <div>
+            <span>SECURITY</span>
+            <h2>Change password</h2>
+          </div>
+          <IconButton onClick={closePassword}><CloseRoundedIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent className="clinic-dialog-content">
+          <p className="clinic-dialog-copy">Update your password securely. You will be signed out after a successful change.</p>
+
           <TextField
-            label="Current Password"
+            label="Current password"
             type={showPassword ? "text" : "password"}
             fullWidth
             margin="normal"
+            value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
-            InputProps={{
-              endAdornment: (
-                <IconButton onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </IconButton>
-              ),
-            }}
+            error={emptyFieldError}
+            InputProps={{ endAdornment: <IconButton onClick={() => setShowPassword(!showPassword)}>{showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}</IconButton> }}
           />
           <TextField
-            label="New Password"
+            label="New password"
             type={showPassword ? "text" : "password"}
             fullWidth
             margin="normal"
+            value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            required
-            InputProps={{
-              endAdornment: (
-                <IconButton onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </IconButton>
-              ),
-            }}
+            error={Boolean(passwordError)}
+            InputProps={{ endAdornment: <IconButton onClick={() => setShowPassword(!showPassword)}>{showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}</IconButton> }}
           />
-
           <TextField
-            label="Confirm New Password"
+            label="Confirm new password"
             type={showPassword ? "text" : "password"}
             fullWidth
             margin="normal"
+            value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
-            required
-            error={emptyFieldError || passwordError !== ""}
-            helperText={emptyFieldError ? "Must enter a value" : passwordError}
-            InputProps={{
-              endAdornment: (
-                <IconButton onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </IconButton>
-              ),
-            }}
+            error={emptyFieldError || Boolean(passwordError)}
+            helperText={emptyFieldError ? "All password fields are required." : passwordError}
+            InputProps={{ endAdornment: <IconButton onClick={() => setShowPassword(!showPassword)}>{showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}</IconButton> }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={closeChangePasswordDialog} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={savePassword} color="primary">
-            Save
-          </Button>
+        <DialogActions className="clinic-dialog-actions">
+          <Button onClick={closePassword} className="clinic-dialog-cancel">Cancel</Button>
+          <Button onClick={savePassword} variant="contained" className="clinic-dialog-primary">Save password</Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={openDialogg} onClose={handleCloseDialog}>
-        <DialogTitle>Notifications</DialogTitle>
-        <DialogContent>
-          {notifications?.map((notification, index) => (
-            <div>{notification.message}</div>
-          ))}
-        </DialogContent>
 
-        <DialogActions>
-          <Button onClick={handleCloseDialogg}>Close</Button>
+      <Dialog
+        open={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        className="clinic-modern-dialog"
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle className="clinic-dialog-title">
+          <div>
+            <span>UPDATES</span>
+            <h2>Notifications</h2>
+          </div>
+          <IconButton onClick={() => setNotificationsOpen(false)}><CloseRoundedIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent className="clinic-dialog-content clinic-notifications-content">
+          {notifications?.length ? notifications.map((notification, index) => (
+            <div className="clinic-notification-item" key={notification._id || index}>
+              <span className="clinic-notification-icon"><NotificationsNoneRoundedIcon /></span>
+              <div>
+                <strong>{notification.type || "Clinic update"}</strong>
+                <p>{notification.message}</p>
+              </div>
+            </div>
+          )) : (
+            <div className="clinic-empty-state">
+              <NotificationsNoneRoundedIcon />
+              <strong>No new notifications</strong>
+              <span>You're all caught up.</span>
+            </div>
+          )}
+        </DialogContent>
+        <DialogActions className="clinic-dialog-actions">
+          <Button onClick={() => setNotificationsOpen(false)} className="clinic-dialog-primary">Done</Button>
         </DialogActions>
       </Dialog>
-      <WalletDialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-      />
-    </div>
+
+      <WalletDialog open={walletOpen} onClose={() => setWalletOpen(false)} />
+    </header>
   );
 };
 
