@@ -14,7 +14,8 @@ const userInitial = {
   error: false,
   token: "",
   logId: 0,
-  socket:[]
+  socket:[],
+  pic: ""
 
 };
 export const loginGuest = createAsyncThunk(
@@ -78,6 +79,18 @@ export const changePassword = createAsyncThunk(
     }
   }
 );
+export const updateProfile = createAsyncThunk(
+  "user/updateProfile",
+  async ({ id, ...profile }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(`${API_URL}/patient/profile/${id}`, profile);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.error || "Unable to update profile.");
+    }
+  }
+);
+
 export const changePass = createAsyncThunk("user/changePass", async (data) => {
   try {
     console.log(data);
@@ -142,13 +155,15 @@ const user = createSlice({
         console.log(action.payload.data.userData.fUser._id);
         state.token = action.payload.data.token;
         state.logId = action.payload.data.userData.logId;
+        state.pic = action.payload.data.userData.fUser.pic || "";
 
         localStorage.setItem("user", JSON.stringify({
           username: state.username,
           role: state.role,
           id: state.id,
           logId: state.logId,
-          token:state.token
+          token:state.token,
+          pic: state.pic
         }));
         console.log(state.token);
       })
@@ -167,9 +182,23 @@ const user = createSlice({
       state.password = "";
       state.role = "";
       state.id = "";
+      state.pic = "";
       localStorage.removeItem("user"); 
       console.log(action.payload);
       console.log(state);
+    });
+    builder.addCase(updateProfile.fulfilled, (state, action) => {
+      const profile = action.payload.profile;
+      state.username = profile.username || state.username;
+      state.pic = profile.pic || state.pic;
+      localStorage.setItem("user", JSON.stringify({
+        username: state.username,
+        role: state.role,
+        id: state.id,
+        logId: state.logId,
+        token: state.token,
+        pic: state.pic
+      }));
     });
     builder.addCase(changePass.fulfilled, (state, action) => {
       state.loading = false;
