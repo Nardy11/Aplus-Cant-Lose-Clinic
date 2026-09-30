@@ -73,8 +73,10 @@ const MyChats = ({ fetchAgain }) => {
           </Stack>
         ) : (
           <div className="chat-empty-list">
-            <strong>No conversations yet</strong>
-            <span>Use “Search doctors” or “Search patients” to start one.</span>
+            <img className="chat-empty-list-image" src="/doctors.jpg" alt="Doctors ready to help" />
+            <strong>Your conversations will appear here</strong>
+            <span>Search for a doctor or patient above to start a private conversation.</span>
+            <small>Choose someone from the search results and your chat will open here.</small>
           </div>
         )}
       </div>
