@@ -35,6 +35,7 @@ import List from "@mui/material/List";
 import { API_URL } from "../../Consts";
 import axios from "axios";
 import AccountAvatar from "../Authentication/AccountAvatar";
+import TextField from "@mui/material/TextField";
 import ConfirmDialog from "../common/ConfirmDialog";
 export default function ButtonAppBar() {
   const dispatch = useDispatch();
@@ -240,15 +241,18 @@ handleCloseDialog();      }
           >
             <label>
               Select Contact Type:
-              <select
+              <TextField
+                select
+                fullWidth
+                size="small"
                 value={emailOrPhone}
                 onChange={(e) => setEmailOrPhone(e.target.value)}
-                required
-                className="clinic-native-select"
+                className="family-link-select"
+                SelectProps={{ native: false }}
               >
-                <option value="email">Email</option>
-                <option value="phone">Phone Number</option>
-              </select>
+                <MenuItem value="email">Email</MenuItem>
+                <MenuItem value="phone">Phone Number</MenuItem>
+              </TextField>
             </label>
 
             {/* Conditionally render the input field based on the selected option */}
@@ -288,15 +292,18 @@ handleCloseDialog();      }
 
             <label>
               Relation:
-              <select
+              <TextField
+                select
+                fullWidth
+                size="small"
                 value={relation}
                 onChange={(e) => setRelation(e.target.value)}
-                required
-                className="clinic-native-select"
+                className="family-link-select"
+                SelectProps={{ native: false }}
               >
-                <option value="spouse">Spouse</option>
-                <option value="child">Child</option>
-              </select>
+                <MenuItem value="spouse">Spouse</MenuItem>
+                <MenuItem value="child">Child</MenuItem>
+              </TextField>
             </label>
 
             <button
