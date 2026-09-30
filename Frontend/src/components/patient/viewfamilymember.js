@@ -204,18 +204,15 @@ handleCloseDialog();      }
       <Dialog
         open={isDialogOpen2}
         onClose={handleCloseDialog2}
+        className="clinic-modern-dialog family-link-member-dialog"
         BackdropProps={{ onClick: handleCloseDialog2 }}
       >
-        <div className="family-link-dialog" style={{
-            width: "80%",
-            margin: "0 auto",
-            padding: "20px",
-            backgroundColor: "#f9f9f9",
-            borderRadius: "8px",
-            boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <h4 style={{ color: "#00008B", mb: "25px" }}>link Family Member</h4>
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>HOUSEHOLD</span><h2>Link family member</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={handleCloseDialog2} aria-label="Close"><CloseIcon /></IconButton>
+        </DialogTitle>
+        <div className="family-link-dialog">
+          <h4>Connect an existing member</h4>
           <form
             onSubmit={handleSubmit2}
             style={{ display: "flex", flexDirection: "column", gap: "10px" }}
@@ -326,9 +323,14 @@ handleCloseDialog();      }
       <Dialog
         open={isDialogOpen}
         onClose={handleCloseDialog}
+        className="clinic-modern-dialog family-add-member-dialog"
         BackdropProps={{ onClick: handleCloseDialog }}
       >
-        <DialogTitle>
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>HOUSEHOLD</span><h2>Add family member</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={handleCloseDialog} aria-label="Close"><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogTitle className="family-dialog-title-spacer">
           <IconButton
             edge="end"
             color="inherit"
@@ -343,7 +345,7 @@ handleCloseDialog();      }
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <form className="family-add-form" onSubmit={handleSubmit} method="post" style={formStyle}>
+        <form className="family-add-form family-dialog-form" onSubmit={handleSubmit} method="post">
           <h3
             style={{
               textAlign: "center",
