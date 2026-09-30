@@ -32,6 +32,7 @@ export function ClinicSearchField({ value, onChange, placeholder = "Search...", 
           <CloseRoundedIcon />
         </IconButton>
       ) : null}
+      </div>
     </div>
   );
 }
