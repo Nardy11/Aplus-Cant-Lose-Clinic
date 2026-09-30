@@ -380,29 +380,33 @@ const navigate = useNavigate();
               InputLabelProps={{ shrink: true }}
               size="small"
             />
-            <span
+            <Button
+              type="button"
+              className="appointments-reset-button"
               onClick={() => {
                 setDate(null);
+                setSearchTerm("");
+                setStatus("Any");
               }}
             >
-              <Typography sx={{color:"black"}}>Reset</Typography>
-            </span>
+              Reset
+            </Button>
           </Box>
 
-          <Select
+          <TextField
+            select
             className="appointments-status-filter"
+            label="Status"
             value={status}
-            label="Status Filter"
-            onChange={(event) => {
-              setStatus(event.target.value);
-            }}
+            onChange={(event) => setStatus(event.target.value)}
+            size="small"
           >
-            <MenuItem sx={{color:"black"}} value={"Any"}>Any</MenuItem>
-            <MenuItem value={"completed"}>completed</MenuItem>
-            <MenuItem value="upcoming">upcoming</MenuItem>
-            <MenuItem value="cancelled">cancelled</MenuItem>
-            <MenuItem value="rescheduled">rescheduled</MenuItem>
-          </Select>
+            <MenuItem value="Any">Any</MenuItem>
+            <MenuItem value="completed">Completed</MenuItem>
+            <MenuItem value="upcoming">Upcoming</MenuItem>
+            <MenuItem value="cancelled">Cancelled</MenuItem>
+            <MenuItem value="rescheduled">Rescheduled</MenuItem>
+          </TextField>
         </Toolbar>
       </AppBar>
       <BasicTable
