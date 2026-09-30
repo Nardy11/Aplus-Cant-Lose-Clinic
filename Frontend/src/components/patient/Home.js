@@ -153,6 +153,54 @@ function Home() {
         </article>
       </section>
 
+      <section className="patient-home-essentials">
+        <div className="patient-home-essentials-heading">
+          <div>
+            <span>CARE ESSENTIALS</span>
+            <h2>Keep your health journey organized</h2>
+            <p>Everything important is one tap away, with the same calm interface throughout the clinic.</p>
+          </div>
+        </div>
+
+        <div className="patient-home-essentials-grid">
+          <NavLink to="/Appointments" className="patient-home-essential-card">
+            <span className="patient-home-essential-icon"><CalendarMonthIcon /></span>
+            <div>
+              <strong>Plan your visits</strong>
+              <small>Book, review and reschedule appointments from one place.</small>
+            </div>
+            <span className="patient-home-essential-arrow">→</span>
+          </NavLink>
+
+          <NavLink to="/MedHistList" className="patient-home-essential-card">
+            <span className="patient-home-essential-icon"><MedicalInformationIcon /></span>
+            <div>
+              <strong>Keep records close</strong>
+              <small>Review your medical documents without leaving the portal.</small>
+            </div>
+            <span className="patient-home-essential-arrow">→</span>
+          </NavLink>
+
+          <NavLink to="/ListOfPrescriptions" className="patient-home-essential-card">
+            <span className="patient-home-essential-icon"><VaccinesIcon /></span>
+            <div>
+              <strong>Stay on top of medication</strong>
+              <small>Review prescriptions, medicines and their current status.</small>
+            </div>
+            <span className="patient-home-essential-arrow">→</span>
+          </NavLink>
+
+          <NavLink to="/viewfamilymembers" className="patient-home-essential-card">
+            <span className="patient-home-essential-icon"><FamilyRestroomIcon /></span>
+            <div>
+              <strong>Manage family care</strong>
+              <small>Keep family members connected to the right care information.</small>
+            </div>
+            <span className="patient-home-essential-arrow">→</span>
+          </NavLink>
+        </div>
+      </section>
+
       <Snackbar open={false} anchorOrigin={{ vertical: "top", horizontal: "left" }}>
         <MuiAlert elevation={3} variant="filled" severity="info">
           Appointment is rescheduled!!
