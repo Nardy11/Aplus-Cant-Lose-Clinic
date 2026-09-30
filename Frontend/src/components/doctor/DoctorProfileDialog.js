@@ -43,7 +43,7 @@ export default function DoctorProfileDialog({ open, handleClose, onContractAccep
           <div className="doctor-form-field"><label>Hourly rate</label><input type="number" min="0" value={form.rate} onChange={(e) => setForm({ ...form, rate:e.target.value })} /></div>
           <div className="doctor-form-field" style={{ gridColumn:"1 / -1" }}><label>Hospital affiliation</label><input value={form.affiliation} onChange={(e) => setForm({ ...form, affiliation:e.target.value })} /></div>
         </div>
-        <div className="doctor-action-row"><Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button className="doctor-primary-button" onClick={save} disabled={saving}>{saving ? "Saving..." : "Save changes"}</Button></div>
+        <div className="doctor-action-row"><Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button disableRipple className="doctor-primary-button" onClick={save} disabled={saving}>{saving ? "Saving..." : "Save changes"}</Button></div>
       </section>
       <div style={{ marginTop:12 }}><ContractDetails embedded onContractAccepted={onContractAccepted} /></div>
     </DialogContent>
