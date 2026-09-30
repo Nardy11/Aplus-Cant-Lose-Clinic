@@ -42,13 +42,14 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import AccountAvatar from "../Authentication/AccountAvatar.js";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 
 
 
 
 
-function BasicTable({ status, date, onPayButtonClick }) {
+function BasicTable({ status, date, searchTerm, onPayButtonClick }) {
   const tableContainerStyle = {
     maxWidth: "80%",
     margin: "0 auto",
@@ -131,6 +132,14 @@ function BasicTable({ status, date, onPayButtonClick }) {
   {rows
     .filter((row) => status === "Any" || status === row.status)
     .filter((row) => !date || new Date(row.startDate) >= new Date(date))
+    .filter((row) => {
+      if (!searchTerm.trim()) return true;
+      const query = searchTerm.toLowerCase();
+      return (
+        row.drID?.name?.toLowerCase().includes(query) ||
+        row.drID?.speciality?.toLowerCase().includes(query)
+      );
+    })
     .map((row, index) => (
       <TableRow key={index}>
         <TableCell component="th" scope="row">
@@ -199,7 +208,9 @@ export default function SearchAppBar() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [openCreditCardDialog, setOpenCreditCardDialog] = useState(false);
   const [openWalletDialog, setOpenWalletDialog] = useState(false);
-  const [walletBalance, setWalletBalance] = useState(1000); // Set an initial wallet balance
+  const [walletBalance, setWalletBalance] = useState(1000);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [confirmBookingClose, setConfirmBookingClose] = useState(false);
 
 
   const { doctorId } = useParams();
@@ -241,13 +252,39 @@ export default function SearchAppBar() {
     }
   }
 
+  const resetBookingForm = () => {
+    setPname("");
+    setDescription("");
+    setCurrentAppointment(null);
+    setConfirmBookingClose(false);
+  };
+
   const handleClickOpen = () => {
+    resetBookingForm();
     setOpen(true);
     getAppointments();
   };
 
-  const handleClose = () => {
-    reserveAnAppointment();
+  const hasBookingDraft = Boolean(currentAppointment || pname.trim() || description.trim());
+
+  const requestBookingClose = () => {
+    if (hasBookingDraft) {
+      setConfirmBookingClose(true);
+    } else {
+      resetBookingForm();
+      setOpen(false);
+    }
+  };
+
+  const discardBooking = () => {
+    resetBookingForm();
+    setOpen(false);
+  };
+
+  const handleBookAppointment = async () => {
+    if (!currentAppointment || !pname.trim()) return;
+    await reserveAnAppointment();
+    resetBookingForm();
     setOpen(false);
   };
 
@@ -327,6 +364,13 @@ const navigate = useNavigate();
           </Link>
           <div className="appointments-title"><span>CARE SCHEDULE</span><h1>Appointments</h1><p>Review, filter and manage your upcoming visits.</p></div>
           <Box className="appointments-filters">
+            <TextField
+              className="appointments-search"
+              label="Search doctor or specialty"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              size="small"
+            />
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["DateTimePicker"]}>
                 <DateTimePicker
@@ -347,7 +391,7 @@ const navigate = useNavigate();
                 setDate(null);
               }}
             >
-              <Typography sx={{color:"black"}}>Cancel</Typography>
+              <Typography sx={{color:"black"}}>Reset</Typography>
             </span>
           </Box>
 
@@ -370,6 +414,7 @@ const navigate = useNavigate();
       <BasicTable
         status={status}
         date={date}
+        searchTerm={searchTerm}
         onPayButtonClick={handleOpenPaymentDialog}
       />
           <Button
@@ -383,7 +428,7 @@ const navigate = useNavigate();
 
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={requestBookingClose}
         className="clinic-modern-dialog appointment-book-dialog"
       >
         <DialogTitle className="clinic-dialog-title">
@@ -391,7 +436,7 @@ const navigate = useNavigate();
             <span>CARE SCHEDULE</span>
             <h2>{Appointments.length === 0 ? "No appointments available" : "Book an appointment"}</h2>
           </div>
-          <IconButton className="clinic-dialog-close" onClick={() => setOpen(false)} aria-label="Close">
+          <IconButton className="clinic-dialog-close" onClick={requestBookingClose} aria-label="Close">
             <CloseRoundedIcon />
           </IconButton>
         </DialogTitle>
@@ -426,14 +471,25 @@ const navigate = useNavigate();
               </div>
             </DialogContent>
             <DialogActions className="clinic-dialog-actions">
-              <Button onClick={() => setOpen(false)} className="clinic-dialog-cancel">Cancel</Button>
-              <Button onClick={handleClose} className="clinic-dialog-primary">Book appointment</Button>
+              <Button onClick={requestBookingClose} className="clinic-dialog-cancel">Cancel</Button>
+              <Button onClick={handleBookAppointment} className="clinic-dialog-primary">Book appointment</Button>
             </DialogActions>
           </>
         )}
       </Dialog>
 
      
+      <ConfirmDialog
+        open={confirmBookingClose}
+        title="Discard this appointment?"
+        message="You have selected or entered appointment details. If you leave now, those unsaved details will be lost."
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        destructive
+        onConfirm={discardBooking}
+        onCancel={() => setConfirmBookingClose(false)}
+      />
+
       <Snackbar open={false} anchorOrigin={{ vertical: 'top', horizontal: 'left' }}>
       <MuiAlert elevation={6} variant="filled" severity="info">
         appointement is resuchudeled!!
