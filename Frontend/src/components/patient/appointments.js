@@ -13,7 +13,7 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
-import { MenuItem, TextField, InputAdornment } from "@mui/material";
+import { TextField } from "@mui/material";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useDispatch, useSelector } from "react-redux";
@@ -37,7 +37,7 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import AccountAvatar from "../Authentication/AccountAvatar.js";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import { ClinicSearchField, ClinicSelectField, ClinicDateField } from "../common/ClinicFields";
 import ConfirmDialog from "../common/ConfirmDialog";
 
 
@@ -360,43 +360,31 @@ const navigate = useNavigate();
           </Link>
           <div className="appointments-title"><span>CARE SCHEDULE</span><h1>Appointments</h1><p>Review, filter and manage your upcoming visits.</p></div>
           <Box className="appointments-filters">
-            <TextField
+            <ClinicSearchField
               className="appointments-search"
               placeholder="Search doctor or specialty"
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon />
-                  </InputAdornment>
-                ),
-              }}
+              onChange={setSearchTerm}
             />
-            <TextField
+            <ClinicDateField
               className="appointments-date-picker"
-              label="Start date"
-              type="date"
+              placeholder="Start date"
               value={date || ""}
-              onChange={(event) => setDate(event.target.value || null)}
-              InputLabelProps={{ shrink: true }}
-              size="small"
+              onChange={(value) => setDate(value || null)}
             />
-            <TextField
-              select
+            <ClinicSelectField
               className="appointments-status-filter"
-              label="Status"
+              placeholder="Status"
               value={status}
-              onChange={(event) => setStatus(event.target.value)}
-              size="small"
-            >
-              <MenuItem value="Any">Any</MenuItem>
-              <MenuItem value="completed">Completed</MenuItem>
-              <MenuItem value="upcoming">Upcoming</MenuItem>
-              <MenuItem value="cancelled">Cancelled</MenuItem>
-              <MenuItem value="rescheduled">Rescheduled</MenuItem>
-            </TextField>
+              onChange={setStatus}
+              options={[
+                { value: "Any", label: "Any" },
+                { value: "completed", label: "Completed" },
+                { value: "upcoming", label: "Upcoming" },
+                { value: "cancelled", label: "Cancelled" },
+                { value: "rescheduled", label: "Rescheduled" },
+              ]}
+            />
             <Button
               type="button"
               className="appointments-reset-button"
