@@ -247,9 +247,13 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           </Box>
         </ >
       ) : (
-        <Box d="flex" alignItems="center" justifyContent="center" h="100%">
-          <Typography fontSize="3xl" pb={3} fontFamily="Work sans">
-            Click on a user to start chatting
+        <Box className="chat-welcome-empty" d="flex" alignItems="center" justifyContent="center" h="100%">
+          <img src="/virtualclinic.png" alt="El7a2ny Clinic messaging" className="chat-welcome-image" />
+          <Typography className="chat-welcome-title" fontFamily="Work sans">
+            Select a conversation to get started
+          </Typography>
+          <Typography className="chat-welcome-copy">
+            Choose a doctor or patient from your conversations, or use the search bar above to start a new chat.
           </Typography>
         </Box>
       )}
