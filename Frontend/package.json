@@ -52,7 +52,8 @@
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
     "styled-components": "^5.3.11",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "@heroui/react": "2.6.11"
   },
   "scripts": {
     "start": "react-scripts start",
