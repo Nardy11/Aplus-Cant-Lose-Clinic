@@ -305,45 +305,4 @@ const AccountAvatar = () => {
         onCancel={() => setConfirmPasswordClose(false)}
       />
 
-      <Dialog
-        open={notificationsOpen}
-        onClose={() => setNotificationsOpen(false)}
-        className="clinic-modern-dialog"
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle className="clinic-dialog-title">
-          <div>
-            <span>UPDATES</span>
-            <h2>Notifications</h2>
-          </div>
-          <IconButton className="clinic-dialog-close" onClick={() => setNotificationsOpen(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
-        </DialogTitle>
-        <DialogContent className="clinic-dialog-content clinic-notifications-content">
-          {notifications?.length ? notifications.map((notification, index) => (
-            <div className="clinic-notification-item" key={notification._id || index}>
-              <span className="clinic-notification-icon"><NotificationsNoneRoundedIcon /></span>
-              <div>
-                <strong>{notification.type || "Clinic update"}</strong>
-                <p>{notification.message}</p>
-              </div>
-            </div>
-          )) : (
-            <div className="clinic-empty-state">
-              <NotificationsNoneRoundedIcon />
-              <strong>No new notifications</strong>
-              <span>You're all caught up.</span>
-            </div>
-          )}
-        </DialogContent>
-        <DialogActions className="clinic-dialog-actions">
-          <Button onClick={() => setNotificationsOpen(false)} className="clinic-dialog-primary">Done</Button>
-        </DialogActions>
-      </Dialog>
 
-      <WalletDialog open={walletOpen} onClose={() => setWalletOpen(false)} />
-    </header>
-  );
-};
-
-export default AccountAvatar;
