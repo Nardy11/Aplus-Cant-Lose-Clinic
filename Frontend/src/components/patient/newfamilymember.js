@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { SnackbarContext } from "../../App";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import { Icon } from "@mui/material";
+import ConfirmDialog from "../common/ConfirmDialog";
 const NewFamilyMemberForm = ({ open, onClose }) => {
   const snackbarMessage = useContext(SnackbarContext);
   const role = useSelector((state) => state.user.role);
@@ -53,6 +54,8 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
     cursor: "pointer",
   };
   const id = useSelector((state) => state.user.id);
+  const formRef = useRef(null);
+  const [confirmClose, setConfirmClose] = useState(false);
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -76,34 +79,53 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
       }
     });
   };
-  useEffect(() => {},[open])
+  useEffect(() => {
+    if (!open) {
+      setConfirmClose(false);
+    }
+  }, [open]);
+
+  const hasDraft = () => {
+    const form = formRef.current;
+    if (!form) return false;
+    return ["fullName", "NID", "age"].some((name) => form.elements[name]?.value) ||
+      form.elements.gender?.value !== "male" ||
+      form.elements.relation?.value !== "spouse";
+  };
+
+  const requestClose = () => {
+    if (hasDraft()) {
+      setConfirmClose(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const discardChanges = () => {
+    setConfirmClose(false);
+    onClose();
+  }
   return role === "patient" ? (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>
+    <Dialog open={open} onClose={requestClose} className="clinic-modern-dialog family-member-dialog">
+      <DialogTitle className="clinic-dialog-title">
+        <div>
+          <span>HOUSEHOLD</span>
+          <h2>Add family member</h2>
+        </div>
         <IconButton
           edge="end"
           color="inherit"
-          onClick={onClose}
+          onClick={requestClose}
           aria-label="close"
           sx={{
-            position: "absolute",
-            right: 8,
-            top: 8,
+            position: "static",
           }}
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <form onSubmit={handleSubmit} method="post" style={formStyle}>
-        <h3
-          style={{
-            textAlign: "center",
-            fontSize: "20px",
-            marginBottom: "10px",
-          }}
-        >
-          Add a Family Member
-        </h3>
+      <form ref={formRef} onSubmit={handleSubmit} method="post" className="family-member-dialog-form" style={formStyle}>
+        <p className="clinic-dialog-copy">Add the family member details below. You can cancel safely without losing them by accident.</p>
         <div>
           <label htmlFor="fullName" style={labelStyle}>
             Full Name:
@@ -160,7 +182,18 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
           </select>
         </div>
         <input type="submit" value="Add Family Member" style={buttonStyle} />
-      </form>{" "}
+      </form>
+
+      <ConfirmDialog
+        open={confirmClose}
+        title="Discard family member details?"
+        message="You have entered family member information. If you leave now, the unsaved details will be lost."
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        destructive
+        onConfirm={discardChanges}
+        onCancel={() => setConfirmClose(false)}
+      />
     </Dialog>
   ) : (
     <>
