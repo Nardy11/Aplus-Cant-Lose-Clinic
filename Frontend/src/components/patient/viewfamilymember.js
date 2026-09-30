@@ -199,7 +199,7 @@ handleCloseDialog();      }
   };
   return role === "patient" ? (
     <Box className="family-page">
-        <div className="family-page-spacer" />
+        <div className="family-page-account"><AccountAvatar /></div>
       <section className="page-heading family-heading"><span>YOUR HOUSEHOLD</span><h1>Family members</h1><p>Keep the people connected to your care in one place.</p></section>
       <Dialog
         open={isDialogOpen2}
