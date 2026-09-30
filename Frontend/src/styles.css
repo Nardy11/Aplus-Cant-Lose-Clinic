@@ -5617,3 +5617,43 @@ select option:hover {
   background: #eaf2ff !important;
   color: var(--clinic-blue) !important;
 }
+
+.clinic-native-select {
+  width: 100% !important;
+  min-height: 46px !important;
+  box-sizing: border-box !important;
+  padding: 0 12px !important;
+  border: 1px solid #d8e1ea !important;
+  border-radius: 11px !important;
+  outline: none !important;
+  background: #fff !important;
+  color: #344258 !important;
+  font: inherit !important;
+  font-size: 11px !important;
+  transition: border-color .15s ease, box-shadow .15s ease !important;
+}
+.clinic-native-select:focus {
+  border-color: #6d9df8 !important;
+  box-shadow: 0 0 0 3px rgba(23,105,255,.08) !important;
+}
+.clinic-native-select option {
+  background: #fff !important;
+  color: #344258 !important;
+}
+.family-link-submit {
+  width: 100%;
+  min-height: 43px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--clinic-blue);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  box-shadow: none;
+}
+.family-link-submit:hover {
+  background: #125bd9;
+}
