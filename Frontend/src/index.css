@@ -125,6 +125,8 @@ img { max-width: 100%; }
 }
 
 
+.clinic-brand-mark { width: 54px; height: 54px; display: grid; place-items: center; position: relative; overflow: hidden; border-radius: 15px; background: linear-gradient(145deg, #1769ff 0%, #0f4ec4 62%, #18b6a4 100%); color: #fff; box-shadow: 0 9px 22px rgba(23,105,255,.22); flex: 0 0 54px; }
+.clinic-brand-mark > svg { font-size: 31px; position: relative; z-index: 1; }
 .clinic-brand-mark::before { content: ""; position: absolute; inset: 5px; border: 1px solid rgba(255,255,255,.28); border-radius: 11px; pointer-events: none; }
 .clinic-brand-plus { position: absolute; right: 7px; top: 5px; width: 17px; height: 17px; display: grid; place-items: center; border-radius: 50%; background: #fff; color: #1769ff; font-size: 13px; font-weight: 950; line-height: 1; box-shadow: 0 3px 8px rgba(0,0,0,.14); }
 .clinic-schedule-link { display: inline-flex; text-decoration: none; }
