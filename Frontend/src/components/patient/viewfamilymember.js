@@ -380,20 +380,36 @@ handleCloseDialog();      }
             <label htmlFor="gender" style={labelStyle}>
               Gender:
             </label>
-            <select id="gender" name="gender" className="clinic-native-select">
-              <option value="male">male</option>
-              <option value="female">female</option>
-              <option value="none">none</option>
-            </select>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              defaultValue="male"
+              className="family-link-select"
+              SelectProps={{ native: false }}
+              inputProps={{ name: "gender" }}
+            >
+              <MenuItem value="male">male</MenuItem>
+              <MenuItem value="female">female</MenuItem>
+              <MenuItem value="none">none</MenuItem>
+            </TextField>
           </div>
           <div>
             <label htmlFor="relation" style={labelStyle}>
               Relation:
             </label>
-            <select id="relation" name="relation" className="clinic-native-select">
-              <option>spouse</option>
-              <option>child</option>
-            </select>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              defaultValue="spouse"
+              className="family-link-select"
+              SelectProps={{ native: false }}
+              inputProps={{ name: "relation" }}
+            >
+              <MenuItem value="spouse">spouse</MenuItem>
+              <MenuItem value="child">child</MenuItem>
+            </TextField>
           </div>
           <input type="submit" value="Add Family Member" style={buttonStyle} />
         </form>{" "}
