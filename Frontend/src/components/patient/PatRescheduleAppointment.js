@@ -20,6 +20,9 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { API_URL } from "../../Consts.js";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import IconButton from "@mui/material/IconButton";
+import ConfirmDialog from "../common/ConfirmDialog";
 //import Appointment from '../../../Backend/Models/appointments';
 
 
@@ -32,6 +35,7 @@ function RescheduleAppointment({ appointment }) {
     const [patients, setPatients] = useState([]);
     const [currentpatient, setCurrentPatient] = useState("");
     const [selectedUsername, setSelectedUsername] = useState("");
+    const [confirmClose, setConfirmClose] = useState(false);
   
     // Function to fetch appointment data from the server
     const fetchAppointmentData = async (appointmentId) => {
@@ -88,9 +92,34 @@ function RescheduleAppointment({ appointment }) {
       await getPatientList();
       
     };
-    const handleClose = () => {
+    const resetForm = () => {
+      setStartDate("");
+      setEndDate("");
+      setCurrentPatient("");
+      setSelectedUsername("");
+    };
+
+    const hasDraft = Boolean(startDate || endDate || currentpatient || selectedUsername);
+
+    const requestClose = () => {
+      if (hasDraft) {
+        setConfirmClose(true);
+      } else {
+        resetForm();
+        setOpen(false);
+      }
+    };
+
+    const confirmDiscard = () => {
+      setConfirmClose(false);
+      resetForm();
       setOpen(false);
-      rescheduleAppointment();
+    };
+
+    const handleReschedule = async () => {
+      await rescheduleAppointment();
+      resetForm();
+      setOpen(false);
       window.location.reload();
     };
     
@@ -99,8 +128,16 @@ function RescheduleAppointment({ appointment }) {
             <Button variant="outlined" onClick={handleClickOpen}>
             Reschedule Appointment
             </Button>
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Reschedule Appointment</DialogTitle>
+            <Dialog open={open} onClose={requestClose} className="clinic-modern-dialog reschedule-appointment-dialog">
+                <DialogTitle className="clinic-dialog-title">
+                  <div>
+                    <span>CARE SCHEDULE</span>
+                    <h2>Reschedule appointment</h2>
+                  </div>
+                  <IconButton className="clinic-dialog-close" onClick={requestClose} aria-label="Close">
+                    <CloseRoundedIcon />
+                  </IconButton>
+                </DialogTitle>
                 <DialogContent>                  
                     <Typography>Start Date</Typography>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -155,10 +192,22 @@ function RescheduleAppointment({ appointment }) {
                         </ListItem>
                     ))}
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose}>Reschedule</Button>
+                <DialogActions className="clinic-dialog-actions">
+                    <Button onClick={requestClose} className="clinic-dialog-cancel">Cancel</Button>
+                    <Button onClick={handleReschedule} className="clinic-dialog-primary">Reschedule</Button>
                 </DialogActions>
             </Dialog>
+
+            <ConfirmDialog
+              open={confirmClose}
+              title="Discard reschedule changes?"
+              message="Your selected dates and times have not been saved. Leaving now will remove them."
+              confirmLabel="Discard"
+              cancelLabel="Keep editing"
+              destructive
+              onConfirm={confirmDiscard}
+              onCancel={() => setConfirmClose(false)}
+            />
         </>
     );
 }
