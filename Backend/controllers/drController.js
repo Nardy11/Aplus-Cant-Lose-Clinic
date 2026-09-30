@@ -197,9 +197,9 @@ const patientsInUpcomingApointments = async (req, res) => {
 
 const editDoctor = async (req, res) => {
   const { id } = req.params;
-  const { name, email, username, Dbirth, gender, rate, speciality, affiliation, affilation, background, pic, status, contractAccepted } = req.body;
+  const { name, email, username, Dbirth, gender, rate, speciality, affiliation, affilation, background, pic, status, contractAccepted, docs } = req.body;
   const hospitalAffiliation = affiliation ?? affilation;
-  const hasField = [name, email, username, Dbirth, gender, rate, speciality, hospitalAffiliation, background, pic, status, contractAccepted].some((value) => value !== undefined);
+  const hasField = [name, email, username, Dbirth, gender, rate, speciality, hospitalAffiliation, background, pic, status, contractAccepted, docs].some((value) => value !== undefined);
 
   if (!hasField) return res.status(400).json({ error: "At least one profile field is required" });
 
@@ -255,7 +255,7 @@ const editDoctor = async (req, res) => {
     if (normalizedAffiliation !== undefined) doctorUpdate.affilation = normalizedAffiliation;
     if (normalizedBackground !== undefined) doctorUpdate.background = normalizedBackground;
     if (normalizedStatus !== undefined) doctorUpdate.status = normalizedStatus;
-    if (contractAccepted !== undefined) doctorUpdate["contract.accepted"] = Boolean(contractAccepted);
+    if (contractAccepted !== undefined) doctorUpdate["contract.accepted"] = Boolean(contractAccepted);\n    if (docs !== undefined) {\n      if (!Array.isArray(docs)) return res.status(400).json({ error: "Credential documents must be an array." });\n      doctorUpdate.docs = docs.map((doc) => ({ url: String(doc?.url || "").trim(), desc: String(doc?.desc || "").trim() })).filter((doc) => doc.url);\n    }
 
     const updatedDoctor = await Doctor.findByIdAndUpdate(id, { $set: doctorUpdate }, { new: true, runValidators: true });
     if (!updatedDoctor) return res.status(404).json({ error: "Doctor not found" });
