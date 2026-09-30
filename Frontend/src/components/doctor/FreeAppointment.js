@@ -111,8 +111,8 @@ function FreeAppointment() {
                     <Button className="doctor-primary-button" onClick={save}>Add slot</Button>
                 </DialogActions>
             </Dialog>
-        </>
         <ConfirmDialog open={confirmClose} title="Discard time slot?" message="You have selected appointment times. Closing now will discard the unsaved slot." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }} onCancel={() => setConfirmClose(false)} />
+        </>
     );
 }
 
