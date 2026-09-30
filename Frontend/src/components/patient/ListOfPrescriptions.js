@@ -255,25 +255,18 @@ const App = () => {
               />
               <Typography>filled</Typography>
             </Grid>
-            <Grid item sx={{ display: "inline-flex" }}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoContainer
-                  components={["DateTimePicker", "DateTimePicker"]}
-                >
-                  <div>
-                    <DateTimePicker
-                      label="Prescription Issued In"
-                      viewRenderers={{
-                        hours: renderTimeViewClock,
-                        minutes: renderTimeViewClock,
-                        seconds: renderTimeViewClock,
-                      }}
-                      value={selectedDate} // Add this line
-                      onChange={(date) => setSelectedDate(date)}
-                    />
-                  </div>
-                </DemoContainer>
-              </LocalizationProvider>
+            <Grid item className="prescription-date-filter">
+              <TextField
+                label="Prescription date"
+                type="date"
+                value={selectedDate || ""}
+                onChange={(event) => setSelectedDate(event.target.value || null)}
+                InputLabelProps={{ shrink: true }}
+                className="prescription-filter-field"
+                size="small"
+              />
+            </Grid>
+            <Grid item>
               <Button
                 className="prescription-filter-reset"
                 onClick={() => {
