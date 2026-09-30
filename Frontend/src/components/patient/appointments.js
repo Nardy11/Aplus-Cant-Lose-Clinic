@@ -330,8 +330,8 @@ const navigate = useNavigate();
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["DateTimePicker"]}>
                 <DateTimePicker
-                  sx={{ color: "white" }}
-                  label="Appointment start date Schedule"
+                  className="appointments-date-picker"
+                  label="Start date"
                   viewRenderers={{
                     hours: renderTimeViewClock,
                     minutes: renderTimeViewClock,
@@ -372,19 +372,14 @@ const navigate = useNavigate();
         date={date}
         onPayButtonClick={handleOpenPaymentDialog}
       />
-          <Fab
-        className="appointments-fab"
-        color="primary"
-        aria-label="add"
-        sx={{
-          position: 'fixed',
-          bottom:90,
-          right: 16,
-        }}
+          <Button
+        className="appointments-add-button"
+        variant="contained"
+        startIcon={<AddIcon />}
         onClick={handleClickOpen}
       >
-        <AddIcon />
-      </Fab>
+        Book appointment
+      </Button>
 
       <Dialog
         open={open}
@@ -397,7 +392,7 @@ const navigate = useNavigate();
       >
         {Appointments.length === 0 ? (
           (noappoints = true && (
-            <div className="empty-appointments-dialog" style={{ padding: "10px", color: "white", background: "#004e98" }}>
+            <div className="empty-appointments-dialog">
               <h1>There is no Available Appointments</h1>
             </div>
           ))
