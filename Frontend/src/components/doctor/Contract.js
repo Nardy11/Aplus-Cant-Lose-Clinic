@@ -48,4 +48,23 @@ export default function ContractDetails({ embedded = false }) {
     {contractPath && <div className="doctor-action-row">{!accepted && <Button className="doctor-primary-button" onClick={acceptContract}>Accept contract</Button>}<Button className="doctor-secondary-button" onClick={downloadContract}><DownloadRoundedIcon sx={{ fontSize:15, mr:.5 }} />Download contract</Button></div>}
   </section>;
 
-  return embedded ? content : <><AccountAvatar /><main className="doctor-page"><div className="doctor-page-shell"><section className="doctor-page-header"><div className="doctor-page-header-copy"><span>JOB DOCUMENTS</span><h1>Credentials</h1><p>Review your employment contract and keep your clinic documents accessible from one place.</p></div><div className="doctor-page-header-icon"><DescriptionRoundedIcon /></div></section>{content}</div></main></>
+  if (embedded) return content;
+
+  return (
+    <>
+      <AccountAvatar />
+      <main className="doctor-page">
+        <div className="doctor-page-shell">
+          <section className="doctor-page-header">
+            <div className="doctor-page-header-copy">
+              <span>JOB DOCUMENTS</span>
+              <h1>Credentials</h1>
+              <p>Review your employment contract and keep your clinic documents accessible from one place.</p>
+            </div>
+            <div className="doctor-page-header-icon"><DescriptionRoundedIcon /></div>
+          </section>
+          {content}
+        </div>
+      </main>
+    </>
+  );
