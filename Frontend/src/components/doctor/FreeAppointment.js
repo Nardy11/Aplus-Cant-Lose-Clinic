@@ -25,7 +25,7 @@ import ConfirmDialog from "../common/ConfirmDialog";
 
 function FreeAppointment() {
     const [open, setOpen] = React.useState(false);
-    const [endDate, setEndDate] = useState("");
+    const [endDate, setEndDate] = useState(null);
     const { id, role } = useSelector((state) => state.user);
     const [startDate, setStartDate] = useState(null);
     const [confirmClose, setConfirmClose] = useState(false);
@@ -112,6 +112,7 @@ function FreeAppointment() {
                 </DialogActions>
             </Dialog>
         </>
+        <ConfirmDialog open={confirmClose} title="Discard time slot?" message="You have selected appointment times. Closing now will discard the unsaved slot." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }} onCancel={() => setConfirmClose(false)} />
     );
 }
 
