@@ -70,7 +70,7 @@ export default function Navbar() {
                     letterSpacing: "-0.035em",
                   }}
                 >
-                  A+ Clinic
+                  El7a2ny Clinic
                 </Typography>
                 <Typography
                   sx={{
