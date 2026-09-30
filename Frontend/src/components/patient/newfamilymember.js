@@ -167,7 +167,7 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
           <label htmlFor="gender" style={labelStyle}>
             Gender:
           </label>
-          <select id="gender" name="gender" style={selectStyle}>
+          <select id="gender" name="gender" className="clinic-native-select">
             <option value="male">male</option>
             <option value="female">female</option>
             <option value="none">none</option>
@@ -177,7 +177,7 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
           <label htmlFor="relation" style={labelStyle}>
             Relation:
           </label>
-          <select id="relation" name="relation" style={selectStyle}>
+          <select id="relation" name="relation" className="clinic-native-select">
             <option>spouse</option>
             <option>child</option>
           </select>
