@@ -26,6 +26,8 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MedicalServicesRoundedIcon from "@mui/icons-material/MedicalServicesRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { SnackbarContext } from "../../App";
+import { getNotifications } from "../../features/patientSlice.js";
+import { getNotificationsd } from "../../features/doctorSlice.js";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import NavbarGen from "../NavbarGen";
@@ -48,6 +50,12 @@ const AccountAvatar = () => {
   const [emptyFieldError, setEmptyFieldError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPasswordClose, setConfirmPasswordClose] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    if (role === "doctor") dispatch(getNotificationsd(id));
+    if (role === "patient") dispatch(getNotifications(id));
+  }, [dispatch, id, role]);
 
   const patientNotifications = useSelector((state) => state.patient.notifications);
   const doctorNotifications = useSelector((state) => state.doctor.notifications);
