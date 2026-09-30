@@ -5,7 +5,7 @@ import Error from "./components/Error";
 
 import PaHomePage from "./components/patient/Home";
 import { Outlet } from "react-router-dom";
-import DocHome from "./components/doctor/DocHome";
+import DocHome from "./components/doctor/HomePage";
 import Navbar from "./components/Navbar";
 import io from 'socket.io-client';
 import {socketset} from "./features/userSlice";
