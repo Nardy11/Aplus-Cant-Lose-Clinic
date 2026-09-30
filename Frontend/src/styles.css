@@ -8138,3 +8138,50 @@ select option,
   .doctor-credentials-close { width:38px !important; height:38px !important; min-width:38px !important; max-width:38px !important; flex-basis:38px !important; }
   .chat-welcome-empty { min-height:360px; padding:25px 18px; }
 }
+
+/* ===== Final interaction and form cleanup ===== */
+.patient-profile-back:hover,
+.clinic-page-back:hover { color:#68778c !important; background:transparent !important; }
+
+.chat-drawer-close {
+  width:38px !important; height:38px !important; min-width:38px !important;
+  padding:0 !important; border:1px solid #dbe4ee !important; border-radius:11px !important;
+  color:#718096 !important; background:#fff !important; font-size:22px !important;
+  line-height:1 !important; display:grid !important; place-items:center !important;
+}
+.chat-drawer-close:hover { color:#718096 !important; background:#f7f9fc !important; border-color:#dbe4ee !important; }
+
+.chat-contact-value { display:block; min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#344258; }
+.chat-search-row .MuiFormControl-root { min-width:0 !important; flex:1 1 auto !important; }
+.chat-search-row .MuiSelect-select { min-width:0 !important; overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.chat-search-row .MuiInputLabel-root { max-width:calc(100% - 35px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.chat-notification-button span {
+  background:#f2a0aa !important; color:#fff !important;
+  box-shadow:0 2px 7px rgba(214,88,103,.18) !important; border-radius:999px !important;
+}
+.clinic-notification-badge {
+  background:#f2a0aa !important;
+  box-shadow:0 2px 7px rgba(214,88,103,.18) !important;
+}
+
+.clinic-datetime-field { display:block; width:100%; margin:0 0 15px; }
+.clinic-datetime-field > span { display:block; margin:0 0 6px; color:#5e6d81; font-size:10px; font-weight:750; }
+.clinic-datetime-control {
+  display:flex; align-items:center; gap:9px; min-height:48px; box-sizing:border-box;
+  padding:0 11px; border:1px solid #dbe4ee; border-radius:12px; background:#fff;
+  transition:border-color .16s ease, box-shadow .16s ease;
+}
+.clinic-datetime-control:focus-within { border-color:#78a9f7; box-shadow:0 0 0 3px rgba(23,105,255,.08); }
+.clinic-datetime-icon { color:#7e8ca0 !important; font-size:19px !important; flex:0 0 auto; }
+.clinic-datetime-control input {
+  width:100%; min-width:0; height:46px; border:0; outline:0; background:transparent;
+  color:#344258; font:inherit; font-size:11px;
+}
+.clinic-datetime-control input::-webkit-calendar-picker-indicator { opacity:.58; cursor:pointer; }
+
+.chat-empty-list-image { width:96px !important; height:96px !important; object-fit:contain !important; border-radius:20px !important; }
+.chat-empty-list strong { color:#26364d !important; font-size:13px !important; font-weight:800 !important; }
+.chat-empty-list span, .chat-empty-list small { color:#69788c !important; font-size:10px !important; line-height:1.55 !important; }
+.chat-welcome-empty { align-items:center !important; justify-content:center !important; }
+.chat-welcome-copy { text-align:center !important; }
