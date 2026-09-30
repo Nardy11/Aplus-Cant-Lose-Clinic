@@ -39,7 +39,7 @@ export const WalletDialog = ({ open, onClose }) => {
           <div className="clinic-wallet-icon">
             <WalletIcon />
           </div>
-          <IconButton onClick={onClose} aria-label="Close wallet">
+          <IconButton className="clinic-dialog-close" onClick={onClose} aria-label="Close wallet">
             <CloseIcon />
           </IconButton>
         </div>
