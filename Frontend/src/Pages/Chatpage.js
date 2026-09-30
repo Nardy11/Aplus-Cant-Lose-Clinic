@@ -20,17 +20,15 @@ const Chatpage = () => {
   };
 
   return (
-    <div style={{ width: "100%" }}>
-      {console.log(user)}
-      <AccountAvatar sx={containerStyles} />
-
-      {user && <SideDrawer />}
-      <Box d="flex" flexDirection="row">
-        {user && <MyChats fetchAgain={fetchAgain} />}
-        {user && (
-          <Chatbox fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />
-        )}
-      </Box>
+    <div className="chat-page">
+      <AccountAvatar />
+      <div className="chat-workspace">
+        {user && <SideDrawer />}
+        <div className="chat-columns">
+          {user && <MyChats fetchAgain={fetchAgain} />}
+          {user && <Chatbox fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />}
+        </div>
+      </div>
     </div>
   );
 };
