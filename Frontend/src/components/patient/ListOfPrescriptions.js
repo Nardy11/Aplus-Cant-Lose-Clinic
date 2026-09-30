@@ -62,7 +62,7 @@ const App = () => {
   const dispatch = useDispatch();
   const [specialityFilter, setSpecialityFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
   const [isFilled, setIsFilled] = useState(false);
   const [open, setOpen] = useState(false);
   const patientId = useSelector((state) => state.user.id);
@@ -287,7 +287,7 @@ const App = () => {
               </LocalizationProvider>
               <span
                 onClick={() => {
-                  setSelectedDate("");
+                  setSelectedDate(null);
                 }}
               >
                 <span>Cancel</span>
