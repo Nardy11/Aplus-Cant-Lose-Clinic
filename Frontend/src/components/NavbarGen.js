@@ -69,7 +69,7 @@ export default function NavbarGen() {
 
           {role === "doctor" && (
             <Button className="clinic-nav-item" onClick={() => setDialogOpen(true)}>
-              <Badge badgeContent={1} color="error">
+              <Badge badgeContent={1} color="primary" sx={{ "& .MuiBadge-badge": { minWidth: 15, height: 15, borderRadius: "999px", fontSize: 8, fontWeight: 800, border: "2px solid #fff", boxShadow: "0 2px 6px rgba(23,105,255,.18)" } }}>
                 <BadgeRoundedIcon className="clinic-nav-icon" />
               </Badge>
               <span className="clinic-nav-label">
