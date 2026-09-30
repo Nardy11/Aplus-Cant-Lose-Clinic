@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import { ClinicSearchField, ClinicTextField, ClinicDateField } from "../common/ClinicFields";
 import InputAdornment from "@mui/material/InputAdornment";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
 import { Link } from "react-router-dom";
@@ -244,39 +244,25 @@ const App = () => {
                 <span>Filled only</span>
               </button>
 
-              <TextField
+              <ClinicDateField
                 className="prescription-filter-field prescription-date-filter"
-                label="Prescription date"
-                type="date"
+                placeholder="Prescription date"
                 value={selectedDate || ""}
-                onChange={(event) => setSelectedDate(event.target.value || null)}
-                InputLabelProps={{ shrink: true }}
-                size="small"
+                onChange={(value) => setSelectedDate(value || null)}
               />
 
-              <TextField
-                value={nameFilter}
-                onChange={(e) => setNameFilter(e.target.value)}
-                placeholder="Search doctor"
-                variant="outlined"
+              <ClinicSearchField
                 className="prescription-filter-field prescription-search-field"
-                size="small"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchRoundedIcon />
-                    </InputAdornment>
-                  ),
-                }}
+                placeholder="Search doctor"
+                value={nameFilter}
+                onChange={setNameFilter}
               />
 
-              <TextField
-                value={specialityFilter}
-                onChange={(e) => setSpecialityFilter(e.target.value)}
-                placeholder="Speciality"
-                variant="outlined"
+              <ClinicTextField
                 className="prescription-filter-field"
-                size="small"
+                placeholder="Speciality"
+                value={specialityFilter}
+                onChange={setSpecialityFilter}
               />
 
               <Button
