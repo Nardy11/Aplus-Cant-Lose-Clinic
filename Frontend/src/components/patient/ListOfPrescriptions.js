@@ -43,7 +43,7 @@ import {
 } from "../../features/patientSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Dialog from "@mui/material/Dialog";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import SearchIcon from "@mui/icons-material/Search";
 
 const handlePay = async (prescriptionId) => {
   try {
@@ -218,36 +218,17 @@ const App = () => {
                   downloadFileName="prescription"
                 />
                 <Button
-                  sx={{
-                    margin: "10px 0px 0px 50px",
-                    justifyItems: "center",
-                    color: "black",
-                    border: "black",
-                  }}
-                  onClick={() => {
-                handlePay(prescriptionid._id);
-                  }}
+                  className="prescription-action-button"
+                  onClick={() => handlePay(prescriptionid._id)}
+                  variant="contained"
                 >
-                  <IconButton sx={{ paddingLeft: "0px" }}>
-                    <ArrowBackIosIcon />
-                  </IconButton>
-                  Pay
+                  Pay & checkout
                 </Button>
                 <Button
-                  sx={{
-                    margin: "10px 0px 0px 50px",
-                    justifyItems: "center",
-                    color: "black",
-                    border: "black",
-                  }}
-                  onClick={() => {
-                    setOpen(false);
-                  }}
+                  className="prescription-action-secondary"
+                  onClick={() => setOpen(false)}
                 >
-                  <IconButton sx={{ paddingLeft: "0px" }}>
-                    <ArrowBackIosIcon />
-                  </IconButton>
-                  Back
+                  Close
                 </Button>
               </Paper>
             </Paper>
@@ -257,9 +238,12 @@ const App = () => {
       <AppBar position="static" className="prescriptions-toolbar" elevation={0}>
         <Toolbar>
           <Grid container className="prescriptions-filter-grid" alignItems="center" spacing={2}>
-            <Grid item></Grid>
-            <Grid item>
-              <Typography variant="h5">My Prescriptions</Typography>
+            <Grid item xs={12} md="auto">
+              <div className="prescriptions-page-heading">
+                <span>MEDICATION</span>
+                <Typography variant="h5">My prescriptions</Typography>
+                <small>Review your prescriptions and medication details.</small>
+              </div>
             </Grid>
             <Grid item className="prescriptions-filled-filter">
               <Checkbox
@@ -291,13 +275,17 @@ const App = () => {
                   </div>
                 </DemoContainer>
               </LocalizationProvider>
-              <span
+              <Button
+                className="prescription-filter-reset"
                 onClick={() => {
                   setSelectedDate(null);
+                  setNameFilter("");
+                  setSpecialityFilter("");
+                  setIsFilled(false);
                 }}
               >
-                <span>Cancel</span>
-              </span>
+                Reset
+              </Button>
             </Grid>
             <Grid item>
               <Search>
@@ -307,11 +295,12 @@ const App = () => {
                     onChange={(e) => {
                       setNameFilter(e.target.value);
                     }}
-                    label="Name..."
-                    variant="filled"
-                    InputLabelProps={{
-                      style: { color: "white" },
-                    }}
+                    label="Search doctor"
+                  variant="outlined"
+                  className="prescription-filter-field"
+                  InputProps={{
+                    startAdornment: <SearchIcon fontSize="small" />,
+                  }}
                   />
                 </Grid>
               </Search>
@@ -322,38 +311,23 @@ const App = () => {
                 onChange={(e) => {
                   setSpecialityFilter(e.target.value);
                 }}
-                // sx={{
-                //   height: "80%",
-                //   borderRadius: "15px",
-                //   backgroundColor: "white",
-                //   color: "white !important",
-                // }}
-                InputLabelProps={{
-                  style: { color: "white" },
-                }}
-                label="Speciality..."
-                variant="filled"
+                label="Speciality"
+                variant="outlined"
+                className="prescription-filter-field"
               />
             </Grid>
           </Grid>
         </Toolbar>
       </AppBar>
-      <Paper
-        sx={{
-          width: "60%",
-          marginTop: "40px",
-          marginLeft: "20%",
-          boxShadow: "5px 5px 5px 5px #8585854a",
-        }}
-      >
+            <Paper className="prescriptions-table-card" elevation={0}>
         <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
+          <Table aria-label="prescriptions table">
             <TableHead>
               <TableRow>
-                <TableCell align="left" sx={{ fontSize: "20px" }}>
+                <TableCell align="left" className="prescription-table-heading">
                   Filled
                 </TableCell>
-                <TableCell align="left" sx={{ fontSize: "20px" }}>
+                <TableCell align="left" className="prescription-table-cell">
                   Date
                 </TableCell>
                 <TableCell align="left" sx={{ fontSize: "20px" }}>
