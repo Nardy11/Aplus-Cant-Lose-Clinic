@@ -37,7 +37,7 @@ const AccountAvatar = () => {
   const snackbarMessage = useContext(SnackbarContext);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { username, role, id } = useSelector((state) => state.user);
+  const { username, role, id, pic } = useSelector((state) => state.user);
 
   const [accountAnchor, setAccountAnchor] = useState(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
@@ -176,7 +176,7 @@ const AccountAvatar = () => {
           <Divider orientation="vertical" flexItem className="clinic-header-divider" />
 
           <button className="clinic-profile-button" onClick={(e) => setAccountAnchor(e.currentTarget)}>
-            <Avatar className="clinic-profile-avatar" />
+            <Avatar src={pic || undefined} className="clinic-profile-avatar" />
             <span>
               <strong>{username || "Account"}</strong>
               <small>Profile</small>
@@ -200,7 +200,7 @@ const AccountAvatar = () => {
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <div className="clinic-account-menu-head">
-          <Avatar className="clinic-menu-avatar" />
+          <Avatar src={pic || undefined} className="clinic-menu-avatar" />
           <div>
             <strong>{username}</strong>
             <span>{role}</span>
