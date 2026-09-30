@@ -8,7 +8,6 @@ import ConfirmDialog from "../common/ConfirmDialog";
 import {
   Avatar,
   Button,
-  TextField,
 } from "@mui/material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
@@ -305,7 +304,7 @@ export default function PatientProfile() {
           <article className="patient-profile-card">
             <div className="patient-profile-card-heading">
               <div className="profile-card-icon"><PersonRoundedIcon /></div>
-              <div><span>PERSONAL INFORMATION</span><h2>About you</h2></div>
+              <div className="profile-card-heading-copy"><span>PERSONAL INFORMATION</span><h2>About you</h2></div>
             </div>
 
             <div className="patient-profile-fields">
@@ -372,17 +371,19 @@ function ProfileField({ icon, label, value, editing, onChange, type = "text", fu
   }
 
   return (
-    <div className={`patient-profile-edit-field ${fullWidth ? "full-width" : ""}`}>
-      <TextField
-        fullWidth
-        label={label}
-        type={type}
-        value={value || ""}
-        onChange={(event) => onChange(event.target.value)}
-        variant="outlined"
-        size="small"
-        InputLabelProps={type === "date" ? { shrink: true } : undefined}
-      />
-    </div>
+    <label className={`patient-profile-edit-field ${fullWidth ? "full-width" : ""}`}>
+      <span className="patient-profile-edit-label">{label}</span>
+      <span className="patient-profile-edit-input-wrap">
+        <span className="profile-field-icon">{icon}</span>
+        <input
+          type={type}
+          value={value || ""}
+          onChange={(event) => onChange(event.target.value)}
+          className="patient-profile-edit-input"
+          autoComplete="off"
+        />
+      </span>
+    </label>
   );
 }
+
