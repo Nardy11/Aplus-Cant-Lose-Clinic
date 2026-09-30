@@ -129,8 +129,18 @@ const paSchema = new mongoose.Schema(
     ],
     wallet: {
       type: Number,
-  // wallet is required
+      default: 0,
     },
+    walletTransactions: [
+      {
+        amount: { type: Number, required: true },
+        balanceAfter: { type: Number, required: true },
+        direction: { type: String, enum: ["credit", "debit"], required: true },
+        type: { type: String, default: "other" },
+        description: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
     notifications: [
       {
         message: String,
