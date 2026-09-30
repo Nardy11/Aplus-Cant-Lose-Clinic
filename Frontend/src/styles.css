@@ -6729,3 +6729,21 @@ select option,
     padding: 18px;
   }
 }
+
+
+.clinic-search-field input[type="search"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+.clinic-search-field input[type="search"]::-webkit-search-cancel-button,
+.clinic-search-field input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  display: none !important;
+}
+
+.clinic-date-field {
+  cursor: pointer;
+  user-select: none;
+}
