@@ -146,6 +146,7 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
           <input
             type="number"
             id="NID"
+            name="NID"
             placeholder="National ID"
             style={inputStyle}
           />
