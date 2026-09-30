@@ -7,7 +7,7 @@ import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import LoginIcon from "@mui/icons-material/Login";
 import AppRegistrationIcon from "@mui/icons-material/AppRegistration";
-import HealthAndSafetyRoundedIcon from "@mui/icons-material/HealthAndSafetyRounded";
+import LocalHospitalRoundedIcon from "@mui/icons-material/LocalHospitalRounded";
 import { NavLink } from "react-router-dom";
 import RegisterOptions from "./Authentication/RegisterAs";
 
@@ -30,8 +30,8 @@ export default function Navbar() {
           <Toolbar
             disableGutters
             sx={{
-              minHeight: "68px !important",
-              height: 68,
+              minHeight: "76px !important",
+              height: 76,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -48,18 +48,23 @@ export default function Navbar() {
                 flexShrink: 0,
               }}
             >
-              <Box
+              <Box className="clinic-brand-mark"
                 sx={{
-                  width: 40,
-                  height: 40,
+                  width: 52,
+                  height: 52,
                   display: "grid",
                   placeItems: "center",
-                  borderRadius: "12px",
-                  background: "linear-gradient(135deg, #1769ff 0%, #16a6a0 100%)",
+                  position: "relative",
+                  overflow: "hidden",
+                  borderRadius: "15px",
+                  background: "linear-gradient(145deg, #1769ff 0%, #0f4ec4 62%, #18b6a4 100%)",
                   color: "#fff",
+                  boxShadow: "0 9px 22px rgba(23,105,255,.22)",
+                  flexShrink: 0,
                 }}
               >
-                <HealthAndSafetyRoundedIcon sx={{ fontSize: 22 }} />
+                <LocalHospitalRoundedIcon sx={{ fontSize: 31 }} />
+                <Box className="clinic-brand-plus">+</Box>
               </Box>
               <Box>
                 <Typography
