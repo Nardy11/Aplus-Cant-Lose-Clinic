@@ -183,11 +183,6 @@ const AccountAvatar = () => {
             </span>
           </button>
 
-          <Tooltip title="Logout">
-            <IconButton className="clinic-logout-button" onClick={handleLogout} aria-label="Logout">
-              <LogoutRoundedIcon />
-            </IconButton>
-          </Tooltip>
         </div>
       </div>
 
@@ -211,6 +206,10 @@ const AccountAvatar = () => {
           <ListItemIcon><LockResetIcon fontSize="small" /></ListItemIcon>
           Change password
         </MenuItem>
+        <MenuItem onClick={handleLogout} className="clinic-account-logout-item">
+          <ListItemIcon><LogoutRoundedIcon fontSize="small" /></ListItemIcon>
+          Logout
+        </MenuItem>
       </Menu>
 
       <Dialog
@@ -225,7 +224,7 @@ const AccountAvatar = () => {
             <span>SECURITY</span>
             <h2>Change password</h2>
           </div>
-          <IconButton onClick={closePassword}><CloseRoundedIcon /></IconButton>
+          <IconButton className="clinic-dialog-close" onClick={closePassword} aria-label="Close"><CloseRoundedIcon /></IconButton>
         </DialogTitle>
         <DialogContent className="clinic-dialog-content">
           <p className="clinic-dialog-copy">Update your password securely. You will be signed out after a successful change.</p>
@@ -280,7 +279,7 @@ const AccountAvatar = () => {
             <span>UPDATES</span>
             <h2>Notifications</h2>
           </div>
-          <IconButton onClick={() => setNotificationsOpen(false)}><CloseRoundedIcon /></IconButton>
+          <IconButton className="clinic-dialog-close" onClick={() => setNotificationsOpen(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
         </DialogTitle>
         <DialogContent className="clinic-dialog-content clinic-notifications-content">
           {notifications?.length ? notifications.map((notification, index) => (
