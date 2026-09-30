@@ -29,7 +29,7 @@ export default function DoctorProfileDialog({ open, handleClose, onContractAccep
   const requestClose = () => { if (dirty) setConfirmClose(true); else handleClose(); };
   const save = async () => {
     setSaving(true);
-    try { await dispatch(editDoctorCredentials({ id, email:form.email, rate:form.rate, affiliation:form.affiliation })).unwrap(); notify?.("Credentials updated successfully.", "success"); handleClose(); }
+    try { await dispatch(editDoctorCredentials({ id, email:form.email, rate:form.rate, affilation:form.affiliation })).unwrap(); notify?.("Credentials updated successfully.", "success"); handleClose(); }
     catch { notify?.("Unable to update credentials.", "error"); }
     finally { setSaving(false); }
   };
