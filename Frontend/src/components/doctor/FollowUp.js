@@ -20,14 +20,15 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { API_URL } from "../../Consts.js";
+import ConfirmDialog from "../common/ConfirmDialog";
 function FollowUp() {
     const [open, setOpen] = React.useState(false);
-    const [endDate, setEndDate] = useState("");
-    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState(null);
+    const [startDate, setStartDate] = useState(null);
     const { id, role } = useSelector((state) => state.user);
     const [patients, setPatients] = useState([]);
     const [currentpatient, setCurrentPatient] = useState("");
-    var closes = false;
+    const [confirmClose, setConfirmClose] = useState(false);
        //to get list of doctors patients so he can choose the name of the patient he want to schedule follow up with
     const getPatientList = async () => {
         try {
@@ -57,26 +58,24 @@ function FollowUp() {
         await getPatientList();
     };
 
-    const handleClose = () => {
-        if (closes) {
-            closes = false;
-            setOpen(false);
-            addFollowUp();
-        } else {
-            if (endDate === "" || startDate === "") {
-                alert("Choose dates");
-            } else {
-                setOpen(false);
-                addFollowUp();
-            }
-        }
+    const reset = () => { setStartDate(null); setEndDate(null); setCurrentPatient(""); };
+    const hasDraft = Boolean(startDate || endDate || currentpatient);
+    const requestClose = () => {
+        if (hasDraft) setConfirmClose(true);
+        else { setOpen(false); reset(); }
+    };
+    const save = async () => {
+        if (!startDate || !endDate || !currentpatient) { alert("Choose a patient, start time and end time."); return; }
+        await addFollowUp();
+        setOpen(false);
+        reset();
     };
     return (
         <>
-            <Button variant="outlined" onClick={handleClickOpen}>
+            <Button className="doctor-secondary-button" variant="outlined" onClick={handleClickOpen}>
                 Create a Follow up appointment
             </Button>
-            <Dialog open={open} onClose={handleClose}>
+            <Dialog open={open} onClose={requestClose} className="doctor-dialog">
                 <DialogTitle>Create Follow up Appointment</DialogTitle>
                 <DialogContent>
                     <Typography>Start Date</Typography>
@@ -133,9 +132,10 @@ function FollowUp() {
                     ))}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Create</Button>
+                    <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button className="doctor-primary-button" onClick={save}>Create follow-up</Button>
                 </DialogActions>
             </Dialog>
+            <ConfirmDialog open={confirmClose} title="Discard follow-up?" message="You have selected follow-up details. Closing now will discard the unsaved appointment." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }} onCancel={() => setConfirmClose(false)} />
         </>
     );
 }
