@@ -346,6 +346,7 @@ export default function Hpackages() {
           </TableBody>
         </Table>
       </TableContainer>
+      </main>
     </>
   ) : (
     <>
