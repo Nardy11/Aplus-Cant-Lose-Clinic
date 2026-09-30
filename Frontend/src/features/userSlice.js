@@ -136,7 +136,21 @@ const user = createSlice({
     ...userInitial,
     ...JSON.parse(localStorage.getItem("user") || "{}"),
   },
-  reducers: {},
+  reducers: {
+    syncProfile: (state, action) => {
+      const profile = action.payload || {};
+      state.username = profile.username || state.username;
+      state.pic = profile.pic ?? state.pic;
+      localStorage.setItem("user", JSON.stringify({
+        username: state.username,
+        role: state.role,
+        id: state.id,
+        logId: state.logId,
+        token: state.token,
+        pic: state.pic
+      }));
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(loginGuest.pending, (state) => {
@@ -211,4 +225,5 @@ const user = createSlice({
   },
 });
 
+export const { syncProfile } = user.actions;
 export default user.reducer;
