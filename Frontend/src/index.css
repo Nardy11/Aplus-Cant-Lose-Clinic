@@ -123,3 +123,8 @@ img { max-width: 100%; }
   .doctor-profile-card-wide, .doctor-profile-edit-field.doctor-profile-card-wide, .doctor-profile-docs-editor.doctor-profile-card-wide { grid-column: auto; }
   .doctor-profile-doc-row { grid-template-columns: 1fr; }
 }
+
+
+.clinic-brand-mark::before { content: ""; position: absolute; inset: 5px; border: 1px solid rgba(255,255,255,.28); border-radius: 11px; pointer-events: none; }
+.clinic-brand-plus { position: absolute; right: 7px; top: 5px; width: 17px; height: 17px; display: grid; place-items: center; border-radius: 50%; background: #fff; color: #1769ff; font-size: 13px; font-weight: 950; line-height: 1; box-shadow: 0 3px 8px rgba(0,0,0,.14); }
+.clinic-schedule-link { display: inline-flex; text-decoration: none; }
