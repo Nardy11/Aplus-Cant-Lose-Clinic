@@ -1,6 +1,8 @@
 // FamilyMemberForm.js
 
 import React, { useState } from "react";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { API_URL } from "../../Consts";
@@ -81,20 +83,17 @@ const navigate = useNavigate();
         </label>
         <label>
           Relation:
-          <select
+          <TextField
+            select
+            fullWidth
+            size="small"
             value={relation}
             onChange={(e) => setRelation(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-            }}
+            className="family-link-select"
           >
-            <option value="spouse">Spouse</option>
-            <option value="child">Child</option>
-          </select>
+            <MenuItem value="spouse">Spouse</MenuItem>
+            <MenuItem value="child">Child</MenuItem>
+          </TextField>
         </label>
         <button
           type="submit"
