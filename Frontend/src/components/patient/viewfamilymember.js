@@ -411,62 +411,20 @@ handleCloseDialog();      }
           <input type="submit" value="Add Family Member" style={buttonStyle} />
         </form>{" "}
       </Dialog>
-        <Toolbar>
-          {/* ... (your existing code) */}
-          <Fab
-            color="primary"
-            aria-label="add"
-            sx={{ position: "fixed", top: "50%", right: "20px" }}
-            onClick={handleOpenDialog}
-          >
-            <GroupAddIcon sx={{ fontSize: "36px" }} size="large" />
-          </Fab>
-          <Popover
-            open={Boolean(addPopover)}
-            anchorEl={addPopover}
-            onClose={handleAddClose}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "left",
-            }}
-          >
-            <Typography sx={{ p: 2 }}>Add</Typography>
-          </Popover>
-          <Fab
-            color="secondary"
-            aria-label="link"
-            sx={{ position: "fixed", top: "60%", right: "20px" }}
-            onClick={handleOpenDialog2}
-          >
-            <PeopleOutlineIcon sx={{ fontSize: "36px" }} size="large" />
-          </Fab>
-          <Typography
-            sx={{ position: "fixed", top: "66%", right: "34px", color: "grey" }}
-          >
-            link
-          </Typography>
-          <Popover
-            open={Boolean(linkPopover)}
-            anchorEl={linkPopover}
-            onClose={handleLinkClose}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "left",
-            }}
-          >
-            <List>
-              <Typography sx={{ p: 2 }}>Link</Typography>
-            </List>
-          </Popover>
-        </Toolbar>
+      <section className="family-actions">
+        <div>
+          <span>HOUSEHOLD MANAGEMENT</span>
+          <strong>Add or connect someone to your family</strong>
+        </div>
+        <div className="family-action-buttons">
+          <Button className="family-action-primary" onClick={handleOpenDialog} startIcon={<GroupAddIcon />}>
+            Add family member
+          </Button>
+          <Button className="family-action-secondary" onClick={handleOpenDialog2} startIcon={<PeopleOutlineIcon />}>
+            Link existing member
+          </Button>
+        </div>
+      </section>
       <BasicTable />
     </Box>
   ) : (
