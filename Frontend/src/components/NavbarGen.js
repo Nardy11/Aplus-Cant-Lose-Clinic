@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { NavLink, useLocation, Link } from "react-router-dom";
 import { Box, Button, Badge, Tooltip } from "@mui/material";
+import axios from "axios";
+import { API_URL } from "../Consts";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import FamilyRestroomRoundedIcon from "@mui/icons-material/FamilyRestroomRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
@@ -30,9 +32,28 @@ const doctorItems = [
 ];
 
 export default function NavbarGen() {
-  const role = useSelector((state) => state.user.role);
+  const { role, id } = useSelector((state) => state.user);
   const location = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [contractPending, setContractPending] = useState(false);
+
+  useEffect(() => {
+    if (role !== "doctor" || !id) {
+      setContractPending(false);
+      return;
+    }
+    let active = true;
+    axios.get(`${API_URL}/doctor/getContract/${id}`)
+      .then((response) => {
+        if (!active) return;
+        const contract = response.data?.contract;
+        setContractPending(Boolean(contract?.file && !contract?.accepted));
+      })
+      .catch(() => {
+        if (active) setContractPending(false);
+      });
+    return () => { active = false; };
+  }, [id, role]);
 
   if (!role || (role !== "patient" && role !== "doctor")) return null;
 
@@ -69,7 +90,7 @@ export default function NavbarGen() {
 
           {role === "doctor" && (
             <Button className="clinic-nav-item" onClick={() => setDialogOpen(true)}>
-              <Badge badgeContent={1} color="primary" sx={{ "& .MuiBadge-badge": { minWidth: 15, height: 15, borderRadius: "999px", fontSize: 8, fontWeight: 800, border: "2px solid #fff", boxShadow: "0 2px 6px rgba(23,105,255,.18)" } }}>
+              <Badge badgeContent={contractPending ? 1 : 0} color="primary" invisible={!contractPending} sx={{ "& .MuiBadge-badge": { minWidth: 15, height: 15, borderRadius: "999px", fontSize: 8, fontWeight: 800, border: "2px solid #fff", boxShadow: "0 2px 6px rgba(23,105,255,.18)" } }}>
                 <BadgeRoundedIcon className="clinic-nav-icon" />
               </Badge>
               <span className="clinic-nav-label">
