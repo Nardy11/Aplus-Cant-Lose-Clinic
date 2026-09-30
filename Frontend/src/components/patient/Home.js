@@ -23,95 +23,82 @@ import DialogActions from '@mui/material/DialogActions';
 
 
 function Home() {
-    const styles = {
-        marginRight: '10px',
-        color: 'white'
-    }
-    const picstyle = {
-        position: 'relative',
-        margin: '10px',
-        left: '45%',
-    }
-    const pic2style = {
-        margin: '10px',
-    }
-    const textstyle = {
-        position: 'relative',
-        padding: '10px',
-        right: '53%',
-        marginTop: '10%',
-    }
-    const text2style = {
-        padding: '10px',
-        marginTop: '10%',
-    }
-    const divstyle = {
-        display: 'flex',
+  const patientId = useSelector((state) => state.user.id);
+  const dispatch = useDispatch();
+  const notifications = useSelector((state) => state.patient.notifications);
+  const [openDialog, setOpenDialog] = useState(false);
 
-    }
+  useEffect(() => {
+    if (patientId) dispatch(getNotifications(patientId));
+  }, [dispatch, patientId]);
 
+  return (
+    <main className="patient-home">
+      <section className="patient-hero">
+        <div className="patient-hero-copy">
+          <span className="patient-kicker">A+ CLINIC · PATIENT PORTAL</span>
+          <h1>Healthcare that stays<br />with you.</h1>
+          <p>
+            Find trusted doctors, manage appointments, and keep your
+            healthcare journey organized in one simple place.
+          </p>
+          <div className="patient-hero-actions">
+            <NavLink to="/DoctorsList" className="patient-primary-action">
+              Find a doctor
+            </NavLink>
+            <NavLink to="/Appointments" className="patient-secondary-action">
+              View appointments
+            </NavLink>
+          </div>
+        </div>
 
-    const patientId = useSelector((state) => state.user.id);
-  
-    const dispatch= useDispatch();
-    useEffect(() => {
-     dispatch(getNotifications(patientId));
-      console.log("notifiactionsssss");
-      console.log(notifications)
-    }, [dispatch]);
+        <div className="patient-hero-visual">
+          <div className="patient-hero-image-wrap">
+            <img src="/doctors.jpg" alt="Healthcare professionals" />
+          </div>
+          <div className="patient-hero-badge">
+            <span className="patient-hero-badge-dot" />
+            <div>
+              <strong>Care, simplified</strong>
+              <small>Appointments · Records · Prescriptions</small>
+            </div>
+          </div>
+        </div>
+      </section>
 
-    const notifications = useSelector((state) => state.patient.notifications);
-  
+      <section className="patient-quick-grid">
+        <NavLink to="/DoctorsList" className="patient-quick-card">
+          <span className="patient-quick-number">01</span>
+          <div>
+            <strong>Find doctors</strong>
+            <small>Browse specialties and profiles</small>
+          </div>
+          <span className="patient-quick-arrow">→</span>
+        </NavLink>
+        <NavLink to="/Appointments" className="patient-quick-card">
+          <span className="patient-quick-number">02</span>
+          <div>
+            <strong>Appointments</strong>
+            <small>Manage your upcoming visits</small>
+          </div>
+          <span className="patient-quick-arrow">→</span>
+        </NavLink>
+        <NavLink to="/HealthRecords" className="patient-quick-card">
+          <span className="patient-quick-number">03</span>
+          <div>
+            <strong>Health records</strong>
+            <small>Keep your medical information close</small>
+          </div>
+          <span className="patient-quick-arrow">→</span>
+        </NavLink>
+      </section>
 
-const [openDialog, setOpenDialog] = useState(false);
-
-  const handleOpenDialog = () => {
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-
-   
-   
-    
-
-    return (
-        <>
-
-
-        
-            <Paper sx={{ width: '60%', marginTop: '40px', marginLeft: '20%', boxShadow: "5px 5px 5px 5px #8585854a", }}>
-                <div style={divstyle}>
-                    <img src="../doctors.jpg" alt="doctors" width="50%" height="auto" style={picstyle} />
-                    <Typography sx={{ margin: '10px',fontSize:"20px" ,ml:"30px"}} style={textstyle}>Here you can find Professional doctors in different specialities,
-                        Find your doctor and schadule your appointment with us.
-                    </Typography>
-                </div>
-                <NavLink to='/DoctorsList'>
-
-                    <Button sx={{
-                        color: 'white', borderRadius: '25px', backgroundColor: '#004E98',
-                        width:"300px",
-                        margin: '10px', left: '50%', '&:hover': {
-                            backgroundColor: 'grey',
-                        },
-                    }}>
-                        Find Doctors
-                    </Button>
-                </NavLink>
-
-            </Paper>
-          
-
-
-            <Snackbar open={false} anchorOrigin={{ vertical: 'top', horizontal: 'left' }}>
-      <MuiAlert elevation={6} variant="filled" severity="info">
-        appointement is resuchudeled!!
-      </MuiAlert>
-    </Snackbar>
-        </>
-    );
+      <Snackbar open={false} anchorOrigin={{ vertical: "top", horizontal: "left" }}>
+        <MuiAlert elevation={3} variant="filled" severity="info">
+          Appointment is rescheduled!!
+        </MuiAlert>
+      </Snackbar>
+    </main>
+  );
 }
 export default Home;
