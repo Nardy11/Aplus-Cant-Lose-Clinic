@@ -197,23 +197,36 @@ const patientsInUpcomingApointments = async (req, res) => {
 
 const editDoctor = async (req, res) => {
   const { id } = req.params; // Get the ID from the request parameters
-  const { email, rate, affiliation } = req.body; // Get the updated values from the request body
+  const { email, rate, affiliation, affilation } = req.body;
+  const hospitalAffiliation = affiliation ?? affilation;
 
-  // Check if at least one of the fields (email, rate, affiliation) is provided
-  if (!email && !rate && !affiliation) {
+  if (email === undefined && rate === undefined && hospitalAffiliation === undefined) {
     return res.status(400).json({ error: "At least one input is required" });
   }
 
   try {
-    // Check for email duplicates in doctor, patient, and pharmacist tables
-    const emailExists =
-      (await Doctor.findOne({ email })) ||
-      (await Patient.findOne({ email })) ||
-      (await Pharmacist.findOne({ email }));
+    const existingDoctor = await Doctor.findById(id);
+    if (!existingDoctor) {
+      return res.status(404).json({ error: "Doctor not found" });
+    }
 
+    if (email && email !== existingDoctor.email) {
+      const emailExists =
+        (await Doctor.findOne({ email, _id: { $ne: id } })) ||
+        (await Patient.findOne({ email })) ||
+        (await Pharmacist.findOne({ email }));
 
-    // Find the doctor by ID and update the specified fields
-    const updatedDoctor = await Doctor.updateOne({ _id: id }, { $set: { email, rate, affiliation } })
+      if (emailExists) {
+        return res.status(409).json({ error: "Email is already in use." });
+      }
+    }
+
+    const update = {};
+    if (email !== undefined) update.email = email;
+    if (rate !== undefined) update.rate = Number(rate);
+    if (hospitalAffiliation !== undefined) update.affilation = hospitalAffiliation;
+
+    const updatedDoctor = await Doctor.updateOne({ _id: id }, { $set: update });
 
 
     if (!updatedDoctor) {
