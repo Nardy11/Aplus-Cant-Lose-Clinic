@@ -470,3 +470,5 @@ const Prescriptions = () => {
         </div>
     );
 };
+
+export default Prescriptions;
