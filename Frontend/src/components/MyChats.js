@@ -49,7 +49,7 @@ const MyChats = ({ fetchAgain }) => {
                 : chat.chatName;
               return (
                 <button
-                  className={`my-chat-item ${selectedChat === chat ? "selected" : ""}`}
+                  className={`my-chat-item ${selectedChat?._id === chat._id ? "selected" : ""}`}
                   onClick={() => { setSelectedChat(chat); setNotification((notification || []).filter((item) => item.chat?._id !== chat._id)); }}
                   key={chat._id}
                 >
