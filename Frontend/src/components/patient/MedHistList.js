@@ -14,6 +14,9 @@ import {
   Snackbar,
   Box,
   Fab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
@@ -25,11 +28,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import AccountAvatar from "../Authentication/AccountAvatar";
 import ConfirmDialog from "../common/ConfirmDialog";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 const MedHistList = () => {
   const [filesList, setFilesList] = useState([]);
   const [open, setOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [previewFile, setPreviewFile] = useState(null);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -82,23 +87,21 @@ const MedHistList = () => {
     }
   };
 
-  const reviewFile = async (fid, mimetype) => {
-    const previewWindow = window.open("", "_blank");
+  const closePreview = () => {
+    if (previewFile?.url) URL.revokeObjectURL(previewFile.url);
+    setPreviewFile(null);
+  };
+
+  const reviewFile = async (fid, mimetype, title) => {
     try {
       const result = await axios.get(
         `${API_URL}/patient/download/${fid}/${id}`,
         { responseType: "blob" }
       );
       const url = URL.createObjectURL(new Blob([result.data], { type: mimetype }));
-      if (previewWindow) {
-        previewWindow.location.href = url;
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-      } else {
-        URL.revokeObjectURL(url);
-        setErrorMsg("Please allow pop-ups to review this document.");
-      }
+      setPreviewFile({ url, mimetype, title });
+      setErrorMsg("");
     } catch (error) {
-      if (previewWindow) previewWindow.close();
       setErrorMsg("Unable to open this document.");
     }
   };
@@ -155,7 +158,7 @@ const MedHistList = () => {
                   type="button"
                   className="medical-history-file-action"
                   aria-label="Review document"
-                  onClick={() => reviewFile(_id, file_mimetype)}
+                  onClick={() => reviewFile(_id, file_mimetype, title)}
                 >
                   <VisibilityRoundedIcon />
                   <span>Review</span>
@@ -177,6 +180,45 @@ const MedHistList = () => {
           <span>Add lab reports, scans or other supporting medical files.</span>
         </div>
       )}
+
+      <Dialog
+        open={Boolean(previewFile)}
+        onClose={closePreview}
+        className="clinic-modern-dialog medical-history-preview-dialog"
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle className="clinic-dialog-title">
+          <div>
+            <span>MEDICAL HISTORY</span>
+            <h2>{previewFile?.title || "Document review"}</h2>
+          </div>
+          <IconButton className="clinic-dialog-close" onClick={closePreview} aria-label="Close">
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent className="medical-history-preview-content">
+          {previewFile?.mimetype?.startsWith("image/") ? (
+            <img
+              src={previewFile.url}
+              alt={previewFile.title || "Medical document"}
+              className="medical-history-preview-image"
+            />
+          ) : previewFile?.mimetype === "application/pdf" ? (
+            <iframe
+              src={previewFile.url}
+              title={previewFile.title || "Medical document"}
+              className="medical-history-preview-frame"
+            />
+          ) : (
+            <div className="medical-history-preview-unsupported">
+              <VisibilityRoundedIcon />
+              <strong>Preview is not available for this file type.</strong>
+              <span>Use Download to save the original document.</span>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <MedHist open={open} onClose={handleClose} />
 
