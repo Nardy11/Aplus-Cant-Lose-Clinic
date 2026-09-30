@@ -52,7 +52,18 @@ const drSchema = new mongoose.Schema(
     },
     wallet: {
       type: Number,
+      default: 0,
     },
+    walletTransactions: [
+      {
+        amount: { type: Number, required: true },
+        balanceAfter: { type: Number, required: true },
+        direction: { type: String, enum: ["credit", "debit"], required: true },
+        type: { type: String, default: "other" },
+        description: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
     contract: {
       file: String, // assuming you store the file path, adjust as needed
       accepted: {
