@@ -153,7 +153,7 @@ function SideDrawer() {
             <span>NEW CONVERSATION</span>
             <h2>Find someone</h2>
           </div>
-          <IconButton onClick={() => setIsOpen(false)}>×</IconButton>
+          <IconButton className="chat-drawer-close" onClick={() => setIsOpen(false)} aria-label="Close search">×</IconButton>
         </div>
 
         <Typography className="chat-drawer-copy">
@@ -169,6 +169,7 @@ function SideDrawer() {
               onChange={handleNameSelect}
               MenuProps={{ PaperProps: { className: "clinic-select-menu" } }}
               displayEmpty
+              renderValue={(value) => <span className="chat-contact-value">{value || "Select contact"}</span>}
             >
               <MenuItem value=""><em>Select contact</em></MenuItem>
               {names.map((name, index) => {
