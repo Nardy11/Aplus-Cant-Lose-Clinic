@@ -1,34 +1,12 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
-import DocProfile from './components/doctor/DoctorProfileDialog';
-import {useNavigate} from 'react-router-dom';
-import Typography from "@mui/material/Typography";
-import { Link } from "react-router-dom";
+import React from "react";
+import { useSelector } from "react-redux";
+import DocProfile from "./components/doctor/DoctorProfileDialog";
+import PatientProfile from "./components/patient/PatientProfile";
+
 export default function ProfileDirect() {
-  const navigate=useNavigate();
-    const { role } = useSelector((state) => state.user);
+  const role = useSelector((state) => state.user.role);
 
-  return (
-    <div>
-        {role === "doctor"?  <DocProfile/>:(
-    <>
-      <Link to="/Login" sx={{ left: "100%" }}>
-        <Typography
-          variant="h6"
-          noWrap
-          component="div"
-          sx={{
-            flexGrow: 1,
-            display: { xs: "none", sm: "flex" },
-            fontSize: "20px",
-            maragin: "auto",
-          }}
-        >
-          Login
-        </Typography>
-      </Link>
-    </>
-
-  )}</div>
-  )
+  if (role === "patient") return <PatientProfile />;
+  if (role === "doctor") return <DocProfile open handleClose={() => {}} />;
+  return null;
 }
