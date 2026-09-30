@@ -383,7 +383,7 @@ const App = () => {
                 })
                 .filter((row) => {
                   return (
-                    selectedDate === "" ||
+                    !selectedDate ||
                     new Date(row.datePrescribed) >= new Date(selectedDate)
                   );
                 })
