@@ -7979,3 +7979,104 @@ select option,
     grid-template-columns: 1fr;
   }
 }
+
+
+.doctor-appointment-search {
+  width: 260px !important;
+  min-width: 220px !important;
+}
+
+.doctor-toolbar > .clinic-field {
+  width: 185px;
+  flex: 0 0 auto;
+}
+
+.doctor-toolbar > .clinic-field.doctor-appointment-search {
+  width: 260px;
+}
+
+.doctor-toolbar > .clinic-select-field {
+  width: 155px !important;
+  flex: 0 0 155px;
+}
+
+.doctor-upcoming-toggle {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid #dbe4ee;
+  border-radius: 11px;
+  background: #fff;
+  color: #67768a;
+  font-size: 9px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.doctor-upcoming-toggle input {
+  width: 15px;
+  height: 15px;
+  accent-color: #1769ff;
+}
+
+.doctor-danger-button {
+  color: #bd5965 !important;
+  border-color: #f0d5d8 !important;
+}
+
+.doctor-danger-button:hover {
+  background: #fff5f6 !important;
+  border-color: #e9bfc4 !important;
+}
+
+.doctor-dialog .MuiTextField-root {
+  width: 100%;
+}
+
+.doctor-dialog .MuiOutlinedInput-root {
+  border-radius: 11px !important;
+  background: #fff !important;
+}
+
+.doctor-dialog .MuiOutlinedInput-notchedOutline {
+  border-color: #dbe4ee !important;
+}
+
+.doctor-dialog .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #78a9f7 !important;
+}
+
+.doctor-dialog .MuiInputBase-input {
+  min-height: 44px;
+  box-sizing: border-box;
+  font-size: 10px;
+}
+
+.doctor-dialog .MuiInputLabel-root {
+  font-size: 10px;
+}
+
+.doctor-dialog .MuiPickersTextField-root {
+  width: 100%;
+}
+
+.doctor-page .doctor-surface > .doctor-toolbar > .search-field {
+  width: min(360px, 100%);
+}
+
+@media (max-width: 800px) {
+  .doctor-toolbar > .clinic-field,
+  .doctor-toolbar > .clinic-field.doctor-appointment-search,
+  .doctor-toolbar > .clinic-select-field,
+  .doctor-page .doctor-surface > .doctor-toolbar > .search-field {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 100%;
+  }
+
+  .doctor-upcoming-toggle {
+    width: 100%;
+  }
+}
