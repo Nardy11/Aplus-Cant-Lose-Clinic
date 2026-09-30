@@ -3490,3 +3490,684 @@ textarea {
 .health-packages-page .MuiFab-root {
   display: none !important;
 }
+
+
+/* ===== Unified dialog system: final popup pass ===== */
+.clinic-modern-dialog .MuiBackdrop-root,
+.clinic-wallet-dialog .MuiBackdrop-root {
+  background: rgba(20, 31, 48, 0.58) !important;
+  backdrop-filter: blur(2px);
+}
+
+.clinic-modern-dialog .MuiDialog-container,
+.clinic-wallet-dialog .MuiDialog-container {
+  box-sizing: border-box;
+  padding: 20px !important;
+}
+
+.clinic-modern-dialog .MuiDialog-paper,
+.clinic-wallet-dialog .MuiDialog-paper {
+  box-sizing: border-box !important;
+  width: min(560px, calc(100vw - 40px)) !important;
+  max-width: 560px !important;
+  max-height: calc(100vh - 40px) !important;
+  margin: 0 !important;
+  border: 1px solid #e2e8ef !important;
+  border-radius: 18px !important;
+  background: #fff !important;
+  box-shadow: 0 24px 70px rgba(20, 35, 55, .18) !important;
+}
+
+.clinic-modern-dialog .MuiDialogTitle-root,
+.clinic-wallet-dialog .MuiDialogTitle-root {
+  box-sizing: border-box;
+  padding: 24px 26px 12px !important;
+}
+
+.clinic-dialog-title {
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 18px;
+}
+
+.clinic-dialog-title > div {
+  min-width: 0;
+}
+
+.clinic-dialog-title span,
+.clinic-dialog-eyebrow {
+  display: block;
+  color: var(--clinic-blue) !important;
+  font-size: 9px !important;
+  line-height: 1.2;
+  font-weight: 850 !important;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.clinic-dialog-title h2 {
+  margin: 7px 0 0 !important;
+  color: var(--clinic-ink) !important;
+  font-size: 25px !important;
+  line-height: 1.12 !important;
+  font-weight: 800 !important;
+  letter-spacing: -.035em;
+}
+
+.clinic-dialog-close,
+.clinic-native-close {
+  position: static !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  flex: 0 0 36px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  align-self: flex-start !important;
+  border: 1px solid #dfe6ee !important;
+  border-radius: 10px !important;
+  color: #718096 !important;
+  background: #f8fafc !important;
+  box-shadow: none !important;
+}
+
+.clinic-dialog-close:hover,
+.clinic-native-close:hover {
+  color: #26364b !important;
+  background: #f0f4f8 !important;
+  border-color: #ccd6e1 !important;
+}
+
+.clinic-dialog-close svg {
+  font-size: 19px !important;
+}
+
+.clinic-native-close {
+  font-family: inherit;
+  font-size: 21px !important;
+  line-height: 1 !important;
+  cursor: pointer;
+}
+
+.clinic-dialog-content {
+  box-sizing: border-box;
+  padding: 10px 26px 22px !important;
+  color: var(--clinic-text) !important;
+  overflow-x: hidden !important;
+}
+
+.clinic-dialog-copy {
+  margin: 0 0 17px !important;
+  color: #7a8799 !important;
+  font-size: 11px !important;
+  line-height: 1.6 !important;
+}
+
+.clinic-dialog-content .MuiTextField-root {
+  margin: 0 0 14px !important;
+}
+
+.clinic-dialog-content .MuiInputLabel-root {
+  color: #657389 !important;
+}
+
+.clinic-dialog-content .MuiOutlinedInput-root {
+  min-height: 48px !important;
+  border-radius: 10px !important;
+  background: #fbfcfe !important;
+}
+
+.clinic-dialog-content .MuiOutlinedInput-root:hover {
+  background: #fff !important;
+}
+
+.clinic-dialog-content .MuiOutlinedInput-root.Mui-focused {
+  background: #fff !important;
+  box-shadow: 0 0 0 3px rgba(23,105,255,.08) !important;
+}
+
+.clinic-dialog-content .MuiOutlinedInput-input {
+  color: #26354a !important;
+  font-size: 12px !important;
+}
+
+.clinic-dialog-content .MuiInputAdornment-root .MuiIconButton-root {
+  width: 34px !important;
+  height: 34px !important;
+  color: #7b8797 !important;
+}
+
+.clinic-dialog-actions {
+  box-sizing: border-box;
+  min-height: 70px;
+  padding: 12px 26px 22px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px;
+}
+
+.clinic-dialog-actions button {
+  min-width: 88px !important;
+  min-height: 40px !important;
+  padding: 0 15px !important;
+  border-radius: 9px !important;
+  text-transform: none !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+}
+
+.clinic-dialog-cancel {
+  color: #647287 !important;
+  background: transparent !important;
+}
+
+.clinic-dialog-cancel:hover {
+  background: #f4f6f9 !important;
+}
+
+.clinic-dialog-primary {
+  color: #fff !important;
+  background: var(--clinic-blue) !important;
+  box-shadow: 0 6px 14px rgba(23,105,255,.14) !important;
+}
+
+.clinic-dialog-primary:hover {
+  background: var(--clinic-blue-dark) !important;
+}
+
+/* Notifications */
+.clinic-notifications-content {
+  min-height: 120px;
+  max-height: min(430px, calc(100vh - 190px));
+  overflow-y: auto !important;
+}
+
+.clinic-notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.clinic-notification-item:last-child {
+  border-bottom: 0;
+}
+
+.clinic-notification-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--clinic-blue);
+  background: var(--clinic-soft-blue);
+}
+
+.clinic-notification-icon svg {
+  font-size: 18px;
+}
+
+.clinic-notification-item strong {
+  display: block;
+  color: #344258;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.clinic-notification-item p {
+  margin: 4px 0 0;
+  color: #788598;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+/* Wallet */
+.clinic-wallet-dialog .MuiDialog-paper {
+  width: min(520px, calc(100vw - 40px)) !important;
+  max-width: 520px !important;
+}
+
+.clinic-wallet-content {
+  padding: 26px !important;
+}
+
+.clinic-wallet-top {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  margin: 0 0 16px !important;
+}
+
+.clinic-wallet-icon {
+  width: 48px !important;
+  height: 48px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 13px !important;
+  color: var(--clinic-blue) !important;
+  background: var(--clinic-soft-blue) !important;
+}
+
+.clinic-wallet-icon svg {
+  font-size: 25px !important;
+}
+
+.clinic-wallet-title {
+  margin: 7px 0 20px !important;
+  color: var(--clinic-ink) !important;
+  font-size: 27px !important;
+  font-weight: 800 !important;
+  letter-spacing: -.035em;
+}
+
+.clinic-wallet-balance {
+  box-sizing: border-box;
+  padding: 20px 21px !important;
+  border: 1px solid #e1e7ee !important;
+  border-radius: 14px !important;
+  background: #f7f9fc !important;
+}
+
+.clinic-wallet-balance span,
+.clinic-wallet-balance small {
+  display: block;
+  color: #8793a4 !important;
+  font-size: 10px !important;
+}
+
+.clinic-wallet-balance strong {
+  display: block;
+  margin: 7px 0 6px !important;
+  color: var(--clinic-blue) !important;
+  font-size: 38px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+}
+
+/* Family dialogs */
+.family-add-member-dialog .MuiDialog-paper,
+.family-link-member-dialog .MuiDialog-paper {
+  width: min(520px, calc(100vw - 40px)) !important;
+  max-width: 520px !important;
+}
+
+.family-dialog-form,
+.family-link-form {
+  box-sizing: border-box;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 8px 26px 26px !important;
+}
+
+.family-dialog-form h3,
+.family-link-form h4 {
+  margin: 0 0 18px !important;
+  color: var(--clinic-ink) !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  letter-spacing: -.03em;
+}
+
+.family-dialog-form > div,
+.family-link-form > label {
+  display: block;
+  margin-bottom: 14px !important;
+}
+
+.family-dialog-form label,
+.family-link-form label {
+  display: block;
+  margin-bottom: 6px;
+  color: #536176 !important;
+  font-size: 10px !important;
+  font-weight: 750 !important;
+}
+
+.family-dialog-form input:not([type="submit"]),
+.family-dialog-form select,
+.family-link-form input,
+.family-link-form select {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 47px !important;
+  min-height: 47px !important;
+  margin: 0 !important;
+  padding: 0 13px !important;
+  border: 1px solid #dbe2ea !important;
+  border-radius: 10px !important;
+  outline: none !important;
+  color: #26354a !important;
+  background: #fbfcfe !important;
+  font-size: 12px !important;
+}
+
+.family-dialog-form input:not([type="submit"]):focus,
+.family-dialog-form select:focus,
+.family-link-form input:focus,
+.family-link-form select:focus {
+  border-color: #6d9df8 !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 3px rgba(23,105,255,.08) !important;
+}
+
+.family-dialog-form input[type="submit"],
+.family-link-form button[type="submit"] {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 43px !important;
+  margin: 3px 0 0 !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  color: #fff !important;
+  background: var(--clinic-blue) !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  cursor: pointer;
+}
+
+.family-dialog-form input[type="submit"]:hover,
+.family-link-form button[type="submit"]:hover {
+  background: var(--clinic-blue-dark) !important;
+}
+
+.family-link-dialog {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 8px 26px 26px !important;
+  background: #fff !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.family-link-dialog > form {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0 !important;
+}
+
+/* Medical history */
+.medical-history-dialog .MuiDialog-paper {
+  width: min(620px, calc(100vw - 40px)) !important;
+  max-width: 620px !important;
+}
+
+.medical-history-content {
+  padding: 8px 26px 0 !important;
+}
+
+.medical-history-form > div:not(.medical-history-upload) {
+  margin-bottom: 14px;
+}
+
+.medical-history-form > div:not(.medical-history-upload) label {
+  display: block;
+  margin-bottom: 6px;
+  color: #536176;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.medical-history-form > div:not(.medical-history-upload) input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 47px;
+  margin: 0;
+  padding: 0 13px;
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+  outline: none;
+  color: #26354a;
+  background: #fbfcfe;
+  font-size: 12px;
+}
+
+.medical-history-form > div:not(.medical-history-upload) input:focus {
+  border-color: #6d9df8;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(23,105,255,.08);
+}
+
+.medical-history-upload .drop-zone {
+  min-height: 128px !important;
+  box-sizing: border-box;
+  border: 1.5px dashed #b8cde9 !important;
+  border-radius: 13px !important;
+  background: #f8fbff !important;
+}
+
+.medical-history-actions {
+  padding: 12px 26px 24px !important;
+}
+
+.medical-history-submit {
+  min-width: 92px !important;
+}
+
+/* Health package flow */
+.package-choice-dialog .MuiDialog-paper,
+.package-info-dialog .MuiDialog-paper {
+  width: min(470px, calc(100vw - 40px)) !important;
+  max-width: 470px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+}
+
+.package-choice-dialog .package-dialog-body {
+  padding: 8px 26px 4px;
+}
+
+.package-choice-dialog .package-dialog-body p {
+  margin: 0 0 20px;
+  color: #7b8799;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.package-choice-dialog .package-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.package-choice-dialog .package-choice-option {
+  min-height: 86px !important;
+  padding: 15px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  flex-direction: column !important;
+  border: 1px solid #dfe7f0 !important;
+  border-radius: 12px !important;
+  color: #344258 !important;
+  background: #fbfcfe !important;
+  text-align: left !important;
+  box-shadow: none !important;
+}
+
+.package-choice-dialog .package-choice-option:hover {
+  border-color: #b8cdf1 !important;
+  background: #f5f9ff !important;
+}
+
+.package-choice-dialog .package-choice-option strong {
+  font-size: 12px;
+}
+
+.package-choice-dialog .package-choice-option span {
+  margin-top: 4px;
+  color: #8a96a6;
+  font-size: 9px;
+}
+
+.package-dialog-body .MuiTextField-root {
+  width: 100%;
+  margin: 0 !important;
+}
+
+.package-info-dialog .package-info-content {
+  padding: 8px 26px 12px !important;
+}
+
+.package-info-row {
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid #edf0f4;
+  color: #7a8798;
+  font-size: 10px;
+}
+
+.package-info-row strong {
+  color: #344258;
+}
+
+/* Appointment dialogs */
+.appointment-book-dialog .MuiDialog-paper {
+  width: min(570px, calc(100vw - 40px)) !important;
+  max-width: 570px !important;
+}
+
+.appointment-book-dialog .appointment-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 230px;
+  overflow-y: auto;
+}
+
+.appointment-book-dialog .appointment-slot {
+  padding: 11px 12px !important;
+  border: 1px solid #dfe7f0 !important;
+  border-radius: 9px !important;
+  color: #405066 !important;
+  background: #fbfcfe !important;
+  text-align: left !important;
+}
+
+.appointment-book-dialog .appointment-slot:hover {
+  border-color: #b8cdf1 !important;
+  background: #f5f9ff !important;
+}
+
+.empty-appointments-dialog {
+  min-width: 0 !important;
+  width: 100% !important;
+  padding: 26px !important;
+  text-align: center;
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.empty-appointments-dialog p {
+  margin: 0;
+  color: #6e7b8e;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* Prescription viewer */
+.prescription-view-dialog .MuiDialog-paper {
+  width: min(850px, calc(100vw - 40px)) !important;
+  max-width: 850px !important;
+}
+
+.prescription-view-dialog #pagetodownload {
+  max-height: calc(100vh - 175px);
+  overflow-y: auto;
+  padding: 0 26px 20px;
+}
+
+.prescription-view-dialog #pagetodownload > .MuiPaper-root {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 20px !important;
+  border: 1px solid #e2e8ef !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.prescription-view-dialog #pagetodownload .MuiTypography-root {
+  color: #526176 !important;
+}
+
+.prescription-view-dialog #pagetodownload strong {
+  color: #334258;
+}
+
+.prescription-view-dialog #pagetodownload hr {
+  border: 0;
+  border-top: 1px solid #edf0f4;
+}
+
+.prescription-view-dialog .prescription-dialog-actions {
+  padding: 10px 26px 24px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 8px;
+}
+
+.prescription-view-dialog .prescription-dialog-actions button {
+  min-width: 92px;
+  min-height: 40px;
+  border-radius: 9px;
+  color: #fff;
+  background: var(--clinic-blue);
+  text-transform: none;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+@media (max-width: 620px) {
+  .clinic-modern-dialog .MuiDialog-container,
+  .clinic-wallet-dialog .MuiDialog-container {
+    padding: 10px !important;
+  }
+
+  .clinic-modern-dialog .MuiDialog-paper,
+  .clinic-wallet-dialog .MuiDialog-paper,
+  .family-add-member-dialog .MuiDialog-paper,
+  .family-link-member-dialog .MuiDialog-paper,
+  .appointment-book-dialog .MuiDialog-paper,
+  .package-choice-dialog .MuiDialog-paper,
+  .package-info-dialog .MuiDialog-paper,
+  .medical-history-dialog .MuiDialog-paper,
+  .prescription-view-dialog .MuiDialog-paper {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    border-radius: 15px !important;
+  }
+
+  .package-choice-dialog .package-choice-grid,
+  .appointment-book-dialog .appointment-slots {
+    grid-template-columns: 1fr;
+  }
+
+  .clinic-dialog-title,
+  .clinic-modern-dialog .MuiDialogTitle-root {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .clinic-dialog-content,
+  .family-dialog-form,
+  .family-link-form,
+  .family-link-dialog {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
