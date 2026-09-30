@@ -34,6 +34,7 @@ import {API_URL} from "../../Consts";
 import { useNavigate } from "react-router-dom";
 import DownloadPage from "./DownloadP";
 import AccountAvatar from "../Authentication/AccountAvatar";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 // ...
 import {
   viewPrescriptions,
@@ -110,7 +111,11 @@ const App = () => {
   return role === "patient" ? (
     <Box className="prescriptions-page">
       <AccountAvatar />
-      <Dialog open={open} className="clinic-modern-dialog prescription-view-dialog" maxWidth="md" fullWidth>
+      <Dialog open={open} onClose={() => setOpen(false)} className="clinic-modern-dialog prescription-view-dialog" maxWidth="md" fullWidth>
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>MEDICATION</span><h2>Prescription details</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={() => setOpen(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
+        </DialogTitle>
         {prescriptionid && prescriptionid.patientID ? (
           <div id="pagetodownload">
             <Paper
