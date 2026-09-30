@@ -6,6 +6,7 @@ import { changePassword } from "../../features/userSlice";
 import { SnackbarContext } from "../../App";
 import { useNavigate, useParams } from "react-router-dom";
 import IconButton from "@mui/material/IconButton";
+import LockResetIcon from "@mui/icons-material/LockResetRounded";
 import InputAdornment from "@mui/material/InputAdornment";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Visibility from "@mui/icons-material/Visibility";
