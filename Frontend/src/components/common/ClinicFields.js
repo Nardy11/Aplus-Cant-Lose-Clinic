@@ -141,3 +141,21 @@ export function ClinicDateField({ value, onChange, placeholder = "Select date", 
     </>
   );
 }
+
+
+export function ClinicDateTimeField({ value, onChange, label }) {
+  return (
+    <label className="clinic-datetime-field">
+      <span>{label}</span>
+      <div className="clinic-datetime-control">
+        <CalendarMonthRoundedIcon className="clinic-datetime-icon" />
+        <input
+          type="datetime-local"
+          value={value || ""}
+          onChange={(event) => onChange(event.target.value)}
+          aria-label={label}
+        />
+      </div>
+    </label>
+  );
+}
