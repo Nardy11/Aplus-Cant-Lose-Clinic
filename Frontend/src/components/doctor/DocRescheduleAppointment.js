@@ -20,11 +20,13 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { API_URL } from "../../Consts.js";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 function RescheduleAppointment({  appointmentID }) {
     const [open, setOpen] = React.useState(false);
-    const [endDate, setEndDate] = useState("");
-    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState(null);
+    const [startDate, setStartDate] = useState(null);
+    const [confirmClose, setConfirmClose] = useState(false);
     const { id, role } = useSelector((state) => state.user);
     const [patients, setPatients] = useState([]);
     const [currentpatient, setCurrentPatient] = useState("");
@@ -87,28 +89,24 @@ function RescheduleAppointment({  appointmentID }) {
 
         // You can set the appointmentId in the state or use it directly in the rescheduleAppointment function
     };
-    const handleClose = () => {
-        if (closes) {
-            closes = false;
-            setOpen(false);
-            rescheduleAppointment(); // Change the function call to rescheduleAppointment
-        } else {
-            if (endDate === "" || startDate === "") {
-                alert("Choose dates");
-            } else {
-                setOpen(false);
-                rescheduleAppointment(); // Change the function call to rescheduleAppointment
-            }
-        }
+    const reset = () => { setStartDate(null); setEndDate(null); };
+    const requestClose = () => {
+        if (startDate || endDate) setConfirmClose(true);
+        else { setOpen(false); reset(); }
+    };
+    const save = async () => {
+        if (!startDate || !endDate) { alert("Choose start and end dates."); return; }
+        await rescheduleAppointment();
+        setOpen(false);
+        reset();
         window.location.reload();
-
     };
     return (
         <>
-            <Button variant="outlined" onClick={handleClickOpen}>
+            <Button className="doctor-secondary-button" variant="outlined" onClick={handleClickOpen}>
             Reschedule Appointment
             </Button>
-            <Dialog open={open} onClose={handleClose}>
+            <Dialog open={open} onClose={requestClose} className="doctor-dialog">
                 <DialogTitle>Reschedule Appointment</DialogTitle>
                 <DialogContent>
                     <Typography>Start Date</Typography>
@@ -165,9 +163,10 @@ function RescheduleAppointment({  appointmentID }) {
                     ))}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Reschedule</Button>
+                    <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button className="doctor-primary-button" onClick={save}>Reschedule</Button>
                 </DialogActions>
             </Dialog>
+            <ConfirmDialog open={confirmClose} title="Discard reschedule?" message="You have selected a new appointment time. Closing now will discard the unsaved changes." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }} onCancel={() => setConfirmClose(false)} />
         </>
     );
 }
