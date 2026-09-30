@@ -59,7 +59,9 @@ function HomePage() {
           <div className="doctor-toolbar">
             <div><span style={{ color:"#1769ff", fontSize:8, fontWeight:850, letterSpacing:".14em" }}>SCHEDULE</span><div style={{ color:"#33435a", fontSize:17, fontWeight:800, marginTop:3 }}>Upcoming appointments</div></div>
             <div className="doctor-toolbar-spacer" />
-            <Link to="/DocPatients" style={{ textDecoration:"none" }}><button type="button" className="doctor-secondary-button">View full schedule <ArrowForwardRoundedIcon sx={{ fontSize:15, verticalAlign:"middle", ml:.4 }} /></button></Link>
+            <Link to="/DocPatients" style={{ textDecoration:"none" }}><button type="button" className="doctor-secondary-button" style={{ minWidth: 190, whiteSpace: "nowrap", justifyContent: "center", display: "inline-flex", alignItems: "center" }}>
+  View full schedule <ArrowForwardRoundedIcon sx={{ fontSize: 15, ml: .5 }} />
+</button></Link>
           </div>
 
           {loading && !appointments.length ? <div className="doctor-empty-state"><strong>Loading your schedule...</strong></div> : upcoming.length ? (
