@@ -7181,3 +7181,23 @@ select option,
     min-width: 72px;
   }
 }
+
+
+/* Chat message count: match clinic's calm blue notification language */
+.chat-notification-button span {
+  top: 2px !important;
+  right: 1px !important;
+  min-width: 16px !important;
+  width: auto !important;
+  height: 16px !important;
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+  border: 2px solid #fff !important;
+  border-radius: 999px !important;
+  color: #fff !important;
+  background: #1769ff !important;
+  box-shadow: 0 2px 7px rgba(23,105,255,.22) !important;
+  font-size: 7px !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+}
