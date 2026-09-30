@@ -389,7 +389,6 @@ handleCloseDialog();      }
               defaultValue="male"
               className="family-link-select"
               SelectProps={{ native: false }}
-              inputProps={{ name: "relation" }}
               inputProps={{ name: "gender" }}
             >
               <MenuItem value="male">male</MenuItem>
