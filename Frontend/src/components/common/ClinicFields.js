@@ -117,7 +117,7 @@ export function ClinicDateField({ value, onChange, placeholder = "Select date", 
         onClose={() => setAnchorEl(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
-        slotProps={{ paper: { className: "clinic-calendar-popover" } }}
+        PaperProps={{ className: "clinic-calendar-popover" }}
       >
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DateCalendar
