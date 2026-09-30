@@ -1761,6 +1761,134 @@ const AddFromPrescToCart2 = async (req, res) => {
   }
 };
 
+
+const getPatientProfile = async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.patientId).lean();
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
+
+    const user = await User.findById(req.params.patientId).select(
+      "name email username pic role createdAt updatedAt"
+    ).lean();
+
+    if (!user) return res.status(404).json({ error: "User account not found" });
+
+    return res.json({
+      ...patient,
+      name: patient.name ?? user.name ?? "",
+      email: patient.email ?? user.email ?? "",
+      username: patient.username ?? user.username ?? "",
+      pic: user.pic || "",
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    });
+  } catch (error) {
+    console.error("Error getting patient profile:", error);
+    return res.status(500).json({ error: "Unable to load profile" });
+  }
+};
+
+const updatePatientProfile = async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.patientId);
+    const user = await User.findById(req.params.patientId);
+
+    if (!patient || !user) {
+      return res.status(404).json({ error: "Patient profile not found" });
+    }
+
+    const {
+      name,
+      email,
+      username,
+      dBirth,
+      mobile,
+      emergencyContact,
+      address,
+      pic,
+    } = req.body;
+
+    if (!name?.trim() || !email?.trim() || !username?.trim() || !mobile) {
+      return res.status(400).json({
+        error: "Name, email, username and mobile number are required.",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = username.trim();
+
+    const emailOwner = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: user._id },
+    });
+    if (emailOwner) {
+      return res.status(409).json({ error: "This email is already in use." });
+    }
+
+    const usernameOwner = await User.findOne({
+      username: normalizedUsername,
+      _id: { $ne: user._id },
+    });
+    if (usernameOwner) {
+      return res.status(409).json({ error: "This username is already in use." });
+    }
+
+    const patientEmailOwner = await Patient.findOne({
+      email: normalizedEmail,
+      _id: { $ne: patient._id },
+    });
+    if (patientEmailOwner) {
+      return res.status(409).json({ error: "This email is already in use." });
+    }
+
+    const patientUsernameOwner = await Patient.findOne({
+      username: normalizedUsername,
+      _id: { $ne: patient._id },
+    });
+    if (patientUsernameOwner) {
+      return res.status(409).json({ error: "This username is already in use." });
+    }
+
+    patient.name = name.trim();
+    patient.email = normalizedEmail;
+    patient.username = normalizedUsername;
+    patient.dBirth = dBirth ? new Date(dBirth) : undefined;
+    patient.mobile = mobile;
+    if (emergencyContact) {
+      patient.emergencyContact = {
+        fullName: emergencyContact.fullName || "",
+        mobile: emergencyContact.mobile || "",
+        relation: emergencyContact.relation || "",
+      };
+    }
+    if (address !== undefined) {
+      patient.addresses = address.trim() ? [{ location: address.trim() }] : [];
+    }
+
+    user.name = name.trim();
+    user.email = normalizedEmail;
+    user.username = normalizedUsername;
+    if (typeof pic === "string" && pic.trim()) {
+      user.pic = pic;
+    }
+
+    await Promise.all([patient.save(), user.save()]);
+
+    return res.json({
+      message: "Profile updated successfully",
+      profile: {
+        ...patient.toObject(),
+        pic: user.pic || "",
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating patient profile:", error);
+    return res.status(500).json({ error: "Unable to update profile" });
+  }
+};
+
 module.exports = {
   addPatient,
   addFamilyMember,
