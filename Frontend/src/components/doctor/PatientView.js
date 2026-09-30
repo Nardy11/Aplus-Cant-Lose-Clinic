@@ -72,7 +72,7 @@ export default function PatientView() {
   if (role !== "doctor") return null;
 
   return (
-    <main className="doctor-page">
+    <><AccountAvatar /><main className="doctor-page">
       <div className="doctor-page-shell">
         <section className="doctor-page-header">
           <div className="doctor-page-header-copy"><span>PATIENT CARE</span><h1>My patients</h1><p>Review the patients connected to your care, open their records, and add clinical information without leaving the portal.</p></div>
@@ -137,6 +137,4 @@ export default function PatientView() {
       </Dialog>
 
       <ConfirmDialog open={confirmClose} title="Discard health record?" message="You have entered clinical information. If you close this form now, the unsaved changes will be lost." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setHealthDialog(false); resetForm(); }} onCancel={() => setConfirmClose(false)} />
-    </main>
-  );
-}
+    </main></>
