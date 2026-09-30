@@ -44,6 +44,8 @@ const {
   sendEmail,
   getID,
   payWithWalletF,
+  getPatientProfile,
+  updatePatientProfile,
 } = require("../controllers/paController");
 
 const { getUser } = require("../controllers/userController");
@@ -555,6 +557,9 @@ router.patch("/:patientId/notifications", updatePatientNotifications);
 // send email to a patient
 router.post("/:patientId/send-email", sendPatientEmail);
 router.post("/requestFollowUp/:pid/:did", requestFollowUp);
+router.get("/profile/:patientId", getPatientProfile);
+router.patch("/profile/:patientId", updatePatientProfile);
+
 router.get("/patientID/:username", getID);
 
 module.exports = router;
