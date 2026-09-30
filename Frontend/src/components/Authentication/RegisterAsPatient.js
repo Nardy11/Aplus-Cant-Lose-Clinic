@@ -1,23 +1,27 @@
 import { addPatient } from "../../features/patientSlice";
 import { useNavigate } from "react-router-dom";
-import React, { useState, useContext } from "react";
-import "./styleRegister.css";
-import { useDispatch, useSelector } from "react-redux";
-
+import React, { useContext } from "react";
+import "../../styles.css";
 import { SnackbarContext } from "../../App";
 import { NavLink } from "react-router-dom";
+import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
+import EmergencyRoundedIcon from "@mui/icons-material/EmergencyRounded";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+
 function RegisterAsPatient() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const snackbarMessage = useContext(SnackbarContext);
+
   const handleSubmit = (event) => {
     event.preventDefault();
+
     const emergencyContact = {
       fullName: event.target.elements.fullname.value,
       mobile: event.target.elements.mobile.value,
       relation: event.target.elements.relation.value,
     };
+
     const sampleData = {
       name: event.target.elements.name.value,
       email: event.target.elements.email.value,
@@ -25,130 +29,141 @@ function RegisterAsPatient() {
       dBirth: event.target.elements.dBirth.value,
       gender: event.target.elements.gender.value,
       password: event.target.elements.password.value,
-      emergencyContact: emergencyContact,
+      emergencyContact,
       mobile: event.target.elements.pmobile.value,
     };
 
     const response = dispatch(addPatient(sampleData));
     response.then((responseData) => {
-      console.log(responseData);
       if (responseData.payload === undefined) {
-        snackbarMessage(`error: ${responseData} has occurred`, "error");
+        snackbarMessage("Registration could not be completed.", "error");
       } else {
         snackbarMessage("You have successfully registered", "success");
         navigate("/login");
       }
     });
   };
+
   return (
-    <form className="form" onSubmit={handleSubmit}>
-      <div className="form-body">
-        <label for="username">Username</label>
-        <input
-          type="text"
-          id="username"
-          placeholder="Enter your username here..."
-          required
-        />
+    <main className="auth-page">
+      <section className="auth-layout">
+        <aside className="auth-intro auth-intro-patient">
+          <div className="auth-brand-mark"><PersonAddAltRoundedIcon /></div>
+          <span className="auth-eyebrow">PATIENT ACCOUNT</span>
+          <h1>Start your care journey.</h1>
+          <p>
+            Create your A+ Clinic patient account to book appointments,
+            manage prescriptions, and keep your healthcare information in one place.
+          </p>
+          <div className="auth-trust">
+            <span>01</span>
+            <div><strong>Your details</strong><small>Private account information</small></div>
+          </div>
+          <div className="auth-trust">
+            <span>02</span>
+            <div><strong>Emergency contact</strong><small>Available when it matters</small></div>
+          </div>
+          <div className="auth-trust">
+            <span>03</span>
+            <div><strong>Ready to use</strong><small>Sign in after registration</small></div>
+          </div>
+        </aside>
 
-        <label className="form__label" for="name">
-          Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          placeholder="Enter your full name here..."
-          required
-        />
-        <label for="email">Email</label>
-        <input
-          style={{ width: "92%" }}
-          type="email"
-          id="email"
-          placeholder="Enter your email address here..."
-          required
-        />
-        <label className="form__label" for="password">
-          Password
-        </label>
-        <input
-          style={{ width: "92%" }}
-          type="password"
-          id="password"
-          pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-          title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
-          placeholder="Enter your password here..."
-          required
-        />
-        <label for="gender">Gender</label>
-        <select style={{ width: "92%" }} id="gender" name="Gender">
-          <option value="male">male</option>
-          <option value="female">female</option>
-          <option value="none">none</option>
-        </select>
-        <div>
-        <label className="form__label" for="dBirth">
-          Date of Birth
-        </label>
-        <input
-          style={{ width: "92%" }}
-          type="date"
-          id="dBirth"
-          max="2001-10-15"
-          required
-        />
-          <label className="form__label" for="pmobile">
-            mobile number
-          </label>
-          <input
-            style={{ width: "94%" }}
-            id="pmobile"
-            type="number"
-            name="phone"
-            pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-            required
-          />
+        <div className="auth-card auth-register-card">
+          <div className="auth-card-header">
+            <div>
+              <span className="auth-eyebrow">CREATE ACCOUNT</span>
+              <h2>Patient registration</h2>
+              <p>Enter your information to create your account.</p>
+            </div>
+          </div>
+
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="auth-section">
+              <div className="auth-section-heading">
+                <span>01</span>
+                <div><strong>Personal information</strong><small>Your basic account details</small></div>
+              </div>
+
+              <div className="auth-grid">
+                <div className="auth-field">
+                  <label htmlFor="username">Username</label>
+                  <input type="text" id="username" placeholder="Choose a username" required />
+                </div>
+                <div className="auth-field">
+                  <label htmlFor="name">Full name</label>
+                  <input type="text" id="name" placeholder="Your full name" required />
+                </div>
+                <div className="auth-field auth-field-wide">
+                  <label htmlFor="email">Email address</label>
+                  <input type="email" id="email" placeholder="you@example.com" required />
+                </div>
+                <div className="auth-field">
+                  <label htmlFor="password">Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                    title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
+                    placeholder="At least 8 characters"
+                    required
+                  />
+                </div>
+                <div className="auth-field">
+                  <label htmlFor="gender">Gender</label>
+                  <select id="gender" name="Gender" defaultValue="male">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="none">Prefer not to say</option>
+                  </select>
+                </div>
+                <div className="auth-field">
+                  <label htmlFor="dBirth">Date of birth</label>
+                  <input type="date" id="dBirth" max="2001-10-15" required />
+                </div>
+                <div className="auth-field">
+                  <label htmlFor="pmobile">Mobile number</label>
+                  <input type="tel" id="pmobile" placeholder="+20 1X XXX XXXX" required />
+                </div>
+              </div>
+            </div>
+
+            <div className="auth-section">
+              <div className="auth-section-heading">
+                <span className="auth-section-icon"><EmergencyRoundedIcon /></span>
+                <div><strong>Emergency contact</strong><small>Someone we can contact if needed</small></div>
+              </div>
+
+              <div className="auth-grid">
+                <div className="auth-field">
+                  <label htmlFor="fullname">Full name</label>
+                  <input type="text" id="fullname" placeholder="Contact's full name" required />
+                </div>
+                <div className="auth-field">
+                  <label htmlFor="mobile">Mobile number</label>
+                  <input type="tel" id="mobile" placeholder="+20 1X XXX XXXX" required />
+                </div>
+                <div className="auth-field auth-field-wide">
+                  <label htmlFor="relation">Relationship</label>
+                  <input type="text" id="relation" placeholder="e.g. Parent, spouse, sibling" required />
+                </div>
+              </div>
+            </div>
+
+            <div className="auth-form-footer">
+              <button type="submit" className="auth-submit">
+                Create patient account
+                <ArrowForwardRoundedIcon />
+              </button>
+              <span>
+                Already have an account? <NavLink to="/login">Sign in</NavLink>
+              </span>
+            </div>
+          </form>
         </div>
-
-
-        <hr/>
-        <h5 style={{ marginLeft: "30%" }}> Emergency Contact </h5>
-
-        <label className="form__label" for="fullname">
-          Full name
-        </label>
-        <input type="text" id="fullname" required />
-
-        <label className="form__label" for="mobile">
-          mobile number
-        </label>
-        <input style={{ width: "92%" }} type="number" id="mobile" required />
-
-        <label style={{ width: "92%" }} className="form__label" for="relation">
-          Relation to the patient
-        </label>
-        <input type="text" id="relation" required />
-
-        <button
-          type="submit"
-          className="btn"
-          style={{
-            width:"30%",
-            backgroundColor: "#4caf50", // Green background color
-            color: "#fff", // White text color
-            padding: "10px 20px", // Padding around the text
-            fontSize: "16px", // Font size
-            border: "none", // Remove border
-            borderRadius: "5px", // Rounded corners
-            cursor: "pointer", // Cursor style on hover
-          }}
-        >
-          Register
-        </button>
-<span style={{marginLeft:"28%"}}>
-        <NavLink to="/login">Already a user? Login</NavLink></span>
-      </div>
-    </form>
+      </section>
+    </main>
   );
 }
+
 export default RegisterAsPatient;
