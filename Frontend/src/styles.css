@@ -6076,7 +6076,7 @@ select option:hover {
   height: 8px !important;
   margin: -15px 0 0 12px !important;
   border: 2px solid #fff !important;
-  background: rgba(229, 86, 99, .78) !important;
+  background: rgba(229, 86, 99, .45) !important;
   box-shadow: 0 0 0 2px rgba(229, 86, 99, .08) !important;
 }
 
