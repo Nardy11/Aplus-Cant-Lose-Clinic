@@ -83,7 +83,7 @@ const MedHistList = () => {
   };
 
   const reviewFile = async (fid, mimetype) => {
-    const previewWindow = window.open("", "_blank", "noopener,noreferrer");
+    const previewWindow = window.open("", "_blank");
     try {
       const result = await axios.get(
         `${API_URL}/patient/download/${fid}/${id}`,
