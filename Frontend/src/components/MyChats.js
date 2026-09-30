@@ -11,7 +11,7 @@ const MyChats = ({ fetchAgain }) => {
   const logId = useSelector((state) => state.user.logId);
   const user = useSelector((state) => state.user);
   const [loading, setLoading] = useState(true);
-  const { selectedChat, setSelectedChat, chats, setChats } = ChatState();
+  const { selectedChat, setSelectedChat, chats, setChats, notification, setNotification } = ChatState();
 
   const fetchChats = async () => {
     try {
@@ -50,7 +50,7 @@ const MyChats = ({ fetchAgain }) => {
               return (
                 <button
                   className={`my-chat-item ${selectedChat === chat ? "selected" : ""}`}
-                  onClick={() => setSelectedChat(chat)}
+                  onClick={() => { setSelectedChat(chat); setNotification((notification || []).filter((item) => item.chat?._id !== chat._id)); }}
                   key={chat._id}
                 >
                   <span className="my-chat-avatar">
