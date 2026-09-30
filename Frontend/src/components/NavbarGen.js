@@ -105,6 +105,7 @@ export default function NavbarGen() {
       <DoctorProfileDialog
         open={dialogOpen}
         handleClose={() => setDialogOpen(false)}
+        onContractAccepted={() => setContractPending(false)}
       />
     </>
   );
