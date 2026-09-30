@@ -147,3 +147,6 @@ function HealthRecords() {
         </section>
       </main>
     </div>
+  ) : (
+    <Link to="/Login" className="login-fallback">Login</Link>
+  );
