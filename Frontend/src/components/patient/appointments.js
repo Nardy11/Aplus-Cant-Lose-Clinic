@@ -41,6 +41,7 @@ import RescheduleAppointment from "./PatRescheduleAppointment";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import AccountAvatar from "../Authentication/AccountAvatar.js";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 
 
@@ -383,46 +384,53 @@ const navigate = useNavigate();
 
       <Dialog
         open={open}
-        onClose={handleClose}
-        PaperProps={{
-          style: noappoints
-            ? { backgroundColor: "#004e98" }
-            : { backgroundColor: "white" },
-        }}
+        onClose={() => setOpen(false)}
+        className="clinic-modern-dialog appointment-book-dialog"
       >
+        <DialogTitle className="clinic-dialog-title">
+          <div>
+            <span>CARE SCHEDULE</span>
+            <h2>{Appointments.length === 0 ? "No appointments available" : "Book an appointment"}</h2>
+          </div>
+          <IconButton className="clinic-dialog-close" onClick={() => setOpen(false)} aria-label="Close">
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
         {Appointments.length === 0 ? (
           (noappoints = true && (
             <div className="empty-appointments-dialog">
-              <h1>There is no Available Appointments</h1>
+              <p>There are no available appointment slots for this doctor right now. Please try again later.</p>
             </div>
           ))
         ) : (
           <>
-            <DialogTitle>Add An Appointment</DialogTitle>
-            <DialogContent>
-              <Typography>Date & Time</Typography>
-              {Appointments.map((appointment) => (
-                <ListItem disableGutters key={appointment._id}>
-                  <ListItemButton>
-                    <ListItemText
-                      primary={formatDateTimeToEnglish(appointment.startDate)}
+            <DialogContent className="clinic-dialog-content">
+              <Typography className="appointment-dialog-label">Choose a date and time</Typography>
+              <div className="appointment-slots">
+                {Appointments.map((appointment) => (
+                  <ListItem disableGutters key={appointment._id}>
+                    <ListItemButton
+                      className="appointment-slot"
+                      selected={currentAppointment === appointment._id}
                       onClick={() => setCurrentAppointment(appointment._id)}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-              <div style={{ padding: "10px" }}>
-                <Typography>Patient User Name</Typography>
-                <TextField onChange={(event) => setPname(event.target.value)} />
+                    >
+                      <ListItemText primary={formatDateTimeToEnglish(appointment.startDate)} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
               </div>
-              <div style={{ padding: "10px" }}>
+              <div className="appointment-form-field">
+                <Typography>Patient username</Typography>
+                <TextField fullWidth onChange={(event) => setPname(event.target.value)} />
+              </div>
+              <div className="appointment-form-field">
                 <Typography>Description</Typography>
-                <TextField onChange={(event) => setDescription(event.target.value)} />
+                <TextField fullWidth onChange={(event) => setDescription(event.target.value)} />
               </div>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose}>Add</Button>
-              <Button onClick={(noappoints = true && handleClose)}  >Cancel</Button>
+            <DialogActions className="clinic-dialog-actions">
+              <Button onClick={() => setOpen(false)} className="clinic-dialog-cancel">Cancel</Button>
+              <Button onClick={handleClose} className="clinic-dialog-primary">Book appointment</Button>
             </DialogActions>
           </>
         )}
