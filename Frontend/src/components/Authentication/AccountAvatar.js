@@ -305,4 +305,8 @@ const AccountAvatar = () => {
         onCancel={() => setConfirmPasswordClose(false)}
       />
 
+    </header>
+  );
+};
 
+export default AccountAvatar;
