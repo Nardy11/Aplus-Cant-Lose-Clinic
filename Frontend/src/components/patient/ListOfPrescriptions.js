@@ -244,16 +244,15 @@ const App = () => {
                 <small>Review your prescriptions and medication details.</small>
               </div>
             </Grid>
-            <Grid item className="prescriptions-filled-filter">
-              <Checkbox
-                label="Filled"
-                sx={{ color: "black" }}
-                value={isFilled}
-                onChange={(event) => {
-                  setIsFilled(event.target.checked);
-                }}
-              />
-              <Typography>filled</Typography>
+            <Grid item>
+              <button
+                type="button"
+                className={`prescriptions-filled-toggle ${isFilled ? "active" : ""}`}
+                onClick={() => setIsFilled((current) => !current)}
+              >
+                <span className="prescriptions-filled-check">{isFilled ? "✓" : ""}</span>
+                <span>Filled only</span>
+              </button>
             </Grid>
             <Grid item className="prescription-date-filter">
               <TextField
