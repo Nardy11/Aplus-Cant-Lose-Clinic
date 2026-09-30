@@ -97,6 +97,13 @@ const login = async (req, res) => {
         return res.status(500).json({ error: "Unknown role" });
     }
 
+    // Keep the account photo available to the frontend for both patient and doctor profiles.
+    if (userData.fUser && typeof userData.fUser.toObject === "function") {
+      userData.fUser = { ...userData.fUser.toObject(), pic: user.pic };
+    } else if (userData.fUser) {
+      userData.fUser.pic = user.pic;
+    }
+
     // Set the JWT as a cookie
     res.cookie("jwt", token, {
       httpOnly: true,
