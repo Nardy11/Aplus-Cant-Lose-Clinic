@@ -1,12 +1,6 @@
-import * as React from 'react';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import React from "react";
+import { ClinicDateField } from "../common/ClinicFields";
 
-export default function FirstComponent() {
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DatePicker />
-    </LocalizationProvider>
-  );
+export default function Calendar({ value = "", onChange = () => {}, placeholder = "Select date" }) {
+  return <ClinicDateField value={value} onChange={onChange} placeholder={placeholder} />;
 }
