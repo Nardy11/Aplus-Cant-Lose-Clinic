@@ -396,11 +396,9 @@ const navigate = useNavigate();
           </IconButton>
         </DialogTitle>
         {Appointments.length === 0 ? (
-          (
-            <div className="empty-appointments-dialog">
-              <p>There are no available appointment slots for this doctor right now. Please try again later.</p>
-            </div>
-          ))
+          <div className="empty-appointments-dialog">
+            <p>There are no available appointment slots for this doctor right now. Please try again later.</p>
+          </div>
         ) : (
           <>
             <DialogContent className="clinic-dialog-content">
