@@ -52,7 +52,7 @@ export default function FollowUpRequests() {
     } catch { notify?.("Unable to schedule the follow-up.", "error"); }
   };
 
-  return <main className="doctor-page">
+  return <><AccountAvatar /><main className="doctor-page">
     <div className="doctor-page-shell">
       <section className="doctor-page-header"><div className="doctor-page-header-copy"><span>CONTINUITY OF CARE</span><h1>Follow-up requests</h1><p>Review requests from your patients and schedule the next visit without leaving the portal.</p></div><div className="doctor-page-header-icon"><GroupRoundedIcon /></div></section>
       <section className="doctor-stats">
@@ -86,5 +86,4 @@ export default function FollowUpRequests() {
       </DialogContent>
       <DialogActions sx={{ px:3, pb:2.5 }}><Button className="doctor-secondary-button" onClick={() => setSelected(null)}>Cancel</Button><Button className="doctor-primary-button" onClick={accept}><CalendarMonthRoundedIcon sx={{ fontSize:15, mr:.5 }} />Schedule follow-up</Button></DialogActions>
     </Dialog>
-  </main>;
-}
+  </main></>
