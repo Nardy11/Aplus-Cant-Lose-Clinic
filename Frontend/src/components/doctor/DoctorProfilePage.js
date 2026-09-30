@@ -6,8 +6,8 @@ import LocalHospitalRoundedIcon from "@mui/icons-material/LocalHospitalRounded";
 import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
 import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
-import AccountAvatar from "./Authentication/AccountAvatar";
-import { getDr } from "../features/doctorSlice";
+import AccountAvatar from "../Authentication/AccountAvatar";
+import { getDr } from "../../features/doctorSlice";
 
 const DoctorProfilePage = () => {
   const dispatch = useDispatch();
