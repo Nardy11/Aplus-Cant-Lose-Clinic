@@ -14,11 +14,7 @@ import TextField from '@mui/material/TextField';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { ClinicDateTimeField } from "../common/ClinicFields";
 import { API_URL } from "../../Consts.js";
 import ConfirmDialog from "../common/ConfirmDialog";
 function FollowUp() {
@@ -78,50 +74,8 @@ function FollowUp() {
             <Dialog open={open} onClose={requestClose} className="doctor-dialog">
                 <DialogTitle>Create Follow up Appointment</DialogTitle>
                 <DialogContent>
-                    <Typography>Start Date</Typography>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer
-                            components={["DateTimePicker", "DateTimePicker"]}
-                        >
-                            <DateTimePicker
-                                label="Start time"
-                                viewRenderers={{
-                                    hours: renderTimeViewClock,
-                                    minutes: renderTimeViewClock,
-                                    seconds: renderTimeViewClock,
-                                }}
-                                value={startDate} // Add this line
-                                onChange={(date) => setStartDate(date)}
-                            />
-                        </DemoContainer>
-                    </LocalizationProvider>
-                    <span
-                        onClick={() => {
-                            setStartDate("");
-                        }}
-                    ></span>
-                    <Typography>End Date </Typography>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer
-                            components={["DateTimePicker", "DateTimePicker"]}
-                        >
-                            <DateTimePicker
-                                label="End time"
-                                viewRenderers={{
-                                    hours: renderTimeViewClock,
-                                    minutes: renderTimeViewClock,
-                                    seconds: renderTimeViewClock,
-                                }}
-                                value={endDate}
-                                onChange={(date) => setEndDate(date)}
-                            />
-                        </DemoContainer>
-                    </LocalizationProvider>
-                    <span
-                        onClick={() => {
-                            setEndDate("");
-                        }}
-                    ></span>
+                    <ClinicDateTimeField value={startDate} onChange={setStartDate} label="Start date & time" />
+                    <ClinicDateTimeField value={endDate} onChange={setEndDate} label="End date & time" />
                     {patients.map((patient) => (
                         <ListItem disableGutters key={patient}>
                             <ListItemButton onClick={() => setCurrentPatient(patient._id)}>
