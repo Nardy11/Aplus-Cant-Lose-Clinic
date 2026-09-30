@@ -198,18 +198,15 @@ handleCloseDialog();      }
     });
   };
   return role === "patient" ? (
-    <Box sx={{ flexGrow: 1 }}>
-        <div>
-        <AccountAvatar />
-      </div>
-      <h2 style={{marginTop:"30px"}}> family members</h2>
+    <Box className="family-page">
+        <div className="family-page-spacer" />
+      <section className="page-heading family-heading"><span>YOUR HOUSEHOLD</span><h1>Family members</h1><p>Keep the people connected to your care in one place.</p></section>
       <Dialog
         open={isDialogOpen2}
         onClose={handleCloseDialog2}
         BackdropProps={{ onClick: handleCloseDialog2 }}
       >
-        <div
-          style={{
+        <div className="family-link-dialog" style={{
             width: "80%",
             margin: "0 auto",
             padding: "20px",
@@ -346,7 +343,7 @@ handleCloseDialog();      }
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <form onSubmit={handleSubmit} method="post" style={formStyle}>
+        <form className="family-add-form" onSubmit={handleSubmit} method="post" style={formStyle}>
           <h3
             style={{
               textAlign: "center",
@@ -508,7 +505,7 @@ function BasicTable() {
   };
 
   return (
-    <TableContainer component={Paper} style={tableStyle}>
+    <TableContainer component={Paper} className="modern-data-table" style={tableStyle}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <TableRow>
