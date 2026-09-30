@@ -21,7 +21,8 @@ import {
   DialogTitle,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
-import SearchIcon from "@mui/icons-material/Search";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import InputAdornment from "@mui/material/InputAdornment";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
 import { Link } from "react-router-dom";
 import { TextField } from "@mui/material";
@@ -72,13 +73,6 @@ const App = () => {
   const filterStyle = {
     marginLeft: "40%",
   };
-
-  const Search = styled("div")(({ theme }) => ({
-    display: "flex",
-    alignItems: "center",
-    marginLeft: "auto",
-    border: "0",
-  }));
 
   const dateTimePickerContainer = {
     display: "flex",
@@ -231,7 +225,7 @@ const App = () => {
       </Dialog>
       <AppBar position="static" className="prescriptions-toolbar" elevation={0}>
         <Toolbar>
-          <Grid container className="prescriptions-filter-grid" alignItems="center" spacing={2}>
+          <Grid container className="prescriptions-filter-grid" alignItems="center" spacing={1.5}>
             <Grid item xs={12} md="auto">
               <div className="prescriptions-page-heading">
                 <span>MEDICATION</span>
@@ -239,7 +233,8 @@ const App = () => {
                 <small>Review your prescriptions and medication details.</small>
               </div>
             </Grid>
-            <Grid item>
+
+            <Grid item className="prescriptions-filter-controls">
               <button
                 type="button"
                 className={`prescriptions-filled-toggle ${isFilled ? "active" : ""}`}
@@ -248,19 +243,42 @@ const App = () => {
                 <span className="prescriptions-filled-check">{isFilled ? "✓" : ""}</span>
                 <span>Filled only</span>
               </button>
-            </Grid>
-            <Grid item className="prescription-date-filter">
+
               <TextField
+                className="prescription-filter-field prescription-date-filter"
                 label="Prescription date"
                 type="date"
                 value={selectedDate || ""}
                 onChange={(event) => setSelectedDate(event.target.value || null)}
                 InputLabelProps={{ shrink: true }}
+                size="small"
+              />
+
+              <TextField
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+                placeholder="Search doctor"
+                variant="outlined"
+                className="prescription-filter-field prescription-search-field"
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchRoundedIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                value={specialityFilter}
+                onChange={(e) => setSpecialityFilter(e.target.value)}
+                placeholder="Speciality"
+                variant="outlined"
                 className="prescription-filter-field"
                 size="small"
               />
-            </Grid>
-            <Grid item>
+
               <Button
                 className="prescription-filter-reset"
                 onClick={() => {
@@ -273,37 +291,7 @@ const App = () => {
                 Reset
               </Button>
             </Grid>
-            <Grid item>
-              <Search>
-                <Grid item>
-                  <TextField
-                    value={nameFilter}
-                    onChange={(e) => {
-                      setNameFilter(e.target.value);
-                    }}
-                    label="Search doctor"
-                  variant="outlined"
-                  className="prescription-filter-field"
-                  InputProps={{
-                    startAdornment: <SearchIcon fontSize="small" />,
-                  }}
-                  />
-                </Grid>
-              </Search>
-            </Grid>
-            <Grid item>
-              <TextField
-                value={specialityFilter}
-                onChange={(e) => {
-                  setSpecialityFilter(e.target.value);
-                }}
-                label="Speciality"
-                variant="outlined"
-                className="prescription-filter-field"
-              />
-            </Grid>
-          </Grid>
-        </Toolbar>
+          </Grid>        </Toolbar>
       </AppBar>
             <Paper className="prescriptions-table-card" elevation={0}>
         <TableContainer sx={{ maxHeight: 440 }}>
