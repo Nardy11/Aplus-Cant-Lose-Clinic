@@ -35,6 +35,7 @@ import List from "@mui/material/List";
 import { API_URL } from "../../Consts";
 import axios from "axios";
 import AccountAvatar from "../Authentication/AccountAvatar";
+import ConfirmDialog from "../common/ConfirmDialog";
 export default function ButtonAppBar() {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -70,6 +71,22 @@ export default function ButtonAppBar() {
 
   const handleCloseDialog2 = () => {
     setIsDialogOpen2(false);
+  };
+
+  const requestLinkClose = () => {
+    if (contactValue.trim()) {
+      setConfirmLinkClose(true);
+    } else {
+      handleCloseDialog2();
+    }
+  };
+
+  const discardLinkChanges = () => {
+    setConfirmLinkClose(false);
+    setContactValue("");
+    setEmailOrPhone("email");
+    setRelation("spouse");
+    handleCloseDialog2();
   };
 
   const handleAddClick = (event) => {
@@ -131,6 +148,7 @@ export default function ButtonAppBar() {
   const [emailOrPhone, setEmailOrPhone] = useState("email");
   const [contactValue, setContactValue] = useState("");
   const [relation, setRelation] = useState("spouse");
+  const [confirmLinkClose, setConfirmLinkClose] = useState(false);
 
   const handleSubmit2 = async (e) => {
     e.preventDefault();
@@ -203,13 +221,13 @@ handleCloseDialog();      }
       <section className="page-heading family-heading"><span>YOUR HOUSEHOLD</span><h1>Family members</h1><p>Keep the people connected to your care in one place.</p></section>
       <Dialog
         open={isDialogOpen2}
-        onClose={handleCloseDialog2}
+        onClose={requestLinkClose}
         className="clinic-modern-dialog family-link-member-dialog"
         BackdropProps={{ onClick: handleCloseDialog2 }}
       >
         <DialogTitle className="clinic-dialog-title">
           <div><span>HOUSEHOLD</span><h2>Link family member</h2></div>
-          <IconButton className="clinic-dialog-close" onClick={handleCloseDialog2} aria-label="Close"><CloseIcon /></IconButton>
+          <IconButton className="clinic-dialog-close" onClick={requestLinkClose} aria-label="Close"><CloseIcon /></IconButton>
         </DialogTitle>
         <div className="family-link-dialog">
           <h4>Connect an existing member</h4>
@@ -223,12 +241,7 @@ handleCloseDialog();      }
                 value={emailOrPhone}
                 onChange={(e) => setEmailOrPhone(e.target.value)}
                 required
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                }}
+                className="clinic-native-select"
               >
                 <option value="email">Email</option>
                 <option value="phone">Phone Number</option>
@@ -290,19 +303,7 @@ handleCloseDialog();      }
 
             <button
               type="submit"
-              style={{
-                width: "40%",
-                padding: "10px",
-
-                backgroundColor: "#007bff",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                postion: "relative",
-                marginLeft: "30%",
-                cursor: "pointer",
-                transition: "background-color 0.3s ease",
-              }}
+              className="family-link-submit"
             >
               Link
             </button>
@@ -310,6 +311,17 @@ handleCloseDialog();      }
 
         </div>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmLinkClose}
+        title="Discard family link?"
+        message="You have entered contact information. If you close this form now, the unsaved details will be lost."
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        destructive
+        onConfirm={discardLinkChanges}
+        onCancel={() => setConfirmLinkClose(false)}
+      />
       <Dialog
         open={isDialogOpen}
         onClose={handleCloseDialog}
