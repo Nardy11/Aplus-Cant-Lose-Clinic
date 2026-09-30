@@ -5602,3 +5602,18 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+/* Native select theme normalization */
+select {
+  color-scheme: light;
+  accent-color: var(--clinic-blue);
+}
+select option {
+  background: #ffffff !important;
+  color: #344258 !important;
+}
+select option:checked,
+select option:hover {
+  background: #eaf2ff !important;
+  color: var(--clinic-blue) !important;
+}
