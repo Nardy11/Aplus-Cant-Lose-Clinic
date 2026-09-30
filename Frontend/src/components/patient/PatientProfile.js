@@ -304,7 +304,10 @@ export default function PatientProfile() {
           <article className="patient-profile-card">
             <div className="patient-profile-card-heading">
               <div className="profile-card-icon"><PersonRoundedIcon /></div>
-              <div className="profile-card-heading-copy"><span>PERSONAL INFORMATION</span><h2>About you</h2></div>
+              <div className="profile-card-heading-copy">
+                <span>PERSONAL INFORMATION</span>
+                <h2>About you</h2>
+              </div>
             </div>
 
             <div className="patient-profile-fields">
