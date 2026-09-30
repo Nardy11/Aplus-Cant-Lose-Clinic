@@ -468,3 +468,5 @@ const Prescriptions = () => {
               </div>
             </main>
         </div>
+    );
+};
