@@ -1767,7 +1767,7 @@ const getPatientProfile = async (req, res) => {
     const patient = await Patient.findById(req.params.patientId).lean();
     if (!patient) return res.status(404).json({ error: "Patient not found" });
 
-    const user = await User.findById(req.params.patientId).select(
+    const user = await User.findOne({ username: patient.username }).select(
       "name email username pic role createdAt updatedAt"
     ).lean();
 
@@ -1791,7 +1791,7 @@ const getPatientProfile = async (req, res) => {
 const updatePatientProfile = async (req, res) => {
   try {
     const patient = await Patient.findById(req.params.patientId);
-    const user = await User.findById(req.params.patientId);
+    const user = patient ? await User.findOne({ username: patient.username }) : null;
 
     if (!patient || !user) {
       return res.status(404).json({ error: "Patient profile not found" });
