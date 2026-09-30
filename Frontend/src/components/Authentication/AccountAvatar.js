@@ -25,12 +25,9 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MedicalServicesRoundedIcon from "@mui/icons-material/MedicalServicesRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
-import { WalletDialog } from "../WalletDialog.js";
 import { SnackbarContext } from "../../App";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { getNotifications } from "../../features/patientSlice.js";
-import { getNotificationsd } from "../../features/doctorSlice.js";
 import NavbarGen from "../NavbarGen";
 import { API_URL } from "../../Consts";
 import ConfirmDialog from "../common/ConfirmDialog";
@@ -43,8 +40,6 @@ const AccountAvatar = () => {
 
   const [accountAnchor, setAccountAnchor] = useState(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [walletOpen, setWalletOpen] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -54,15 +49,9 @@ const AccountAvatar = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPasswordClose, setConfirmPasswordClose] = useState(false);
 
-  useEffect(() => {
-    if (!id) return;
-    if (role === "doctor") dispatch(getNotificationsd(id));
-    if (role === "patient") dispatch(getNotifications(id));
-  }, [dispatch, id, role]);
-
-  const patientNotifications = useSelector((state) => state.patient.notifications);
-  const doctorNotifications = useSelector((state) => state.doctor.notifications);
-  const notifications = role === "doctor" ? doctorNotifications : patientNotifications;
+  const notifications = role === "doctor"
+    ? useSelector((state) => state.doctor.notifications)
+    : useSelector((state) => state.patient.notifications);
 
   const handleLogout = () => {
     dispatch(logout()).then(() => navigate("/Login")).catch(console.error);
@@ -165,18 +154,22 @@ const AccountAvatar = () => {
               <Tooltip title="Notifications">
                 <IconButton
                   className="clinic-utility-button"
-                  onClick={() => setNotificationsOpen(true)}
+                  onClick={() => navigate("/Notifications")}
                   aria-label="Notifications"
                 >
                   <NotificationsNoneRoundedIcon />
-                  {notifications?.length > 0 && <span className="clinic-notification-dot" />}
+                  {notifications?.length > 0 && (
+                    <span className="clinic-notification-badge">
+                      {notifications.length > 9 ? "9+" : notifications.length}
+                    </span>
+                  )}
                 </IconButton>
               </Tooltip>
 
               <Tooltip title="Wallet">
                 <IconButton
                   className="clinic-utility-button"
-                  onClick={() => setWalletOpen(true)}
+                  onClick={() => navigate("/Wallet")}
                   aria-label="Wallet"
                 >
                   <WalletIcon />
