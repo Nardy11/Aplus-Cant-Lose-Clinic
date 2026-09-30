@@ -35,7 +35,7 @@ export default function DoctorProfileDialog({ open, handleClose }) {
   };
 
   return <Dialog open={Boolean(open)} onClose={requestClose} fullWidth maxWidth="md" className="doctor-dialog">
-    <DialogTitle className="doctor-dialog-title"><div><span>DOCTOR ACCOUNT</span><h2>Credentials</h2></div><IconButton className="doctor-dialog-close" onClick={requestClose}><CloseRoundedIcon /></IconButton></DialogTitle>
+    <DialogTitle className="doctor-dialog-title"><div><span>DOCTOR ACCOUNT</span><h2>Credentials</h2></div><IconButton className="doctor-credentials-close" onClick={requestClose} aria-label="Close credentials"><CloseRoundedIcon /></IconButton></DialogTitle>
     <DialogContent className="doctor-dialog-content">
       <section className="doctor-dialog-section"><div style={{ display:"flex", gap:11, alignItems:"center" }}><div className="doctor-empty-icon" style={{ width:42, height:42, flex:"0 0 42px", margin:0 }}><BadgeRoundedIcon /></div><div><h3>Professional information</h3><p>Keep your contact details and consultation rate up to date.</p></div></div>
         <div className="doctor-form-grid">
