@@ -384,7 +384,7 @@ const Prescriptions = () => {
                             ) : (
                                 ''
                             )}
-                            <Link to={'/home'}>
+                            <Link to={'/Home'}>
                                 <Button
                                     sx={{
                                         margin: '10px 0px 0px 50px',
