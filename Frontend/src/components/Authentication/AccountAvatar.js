@@ -50,6 +50,7 @@ const AccountAvatar = () => {
   const [emptyFieldError, setEmptyFieldError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPasswordClose, setConfirmPasswordClose] = useState(false);
+  const [notificationBadgeVisible, setNotificationBadgeVisible] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -61,6 +62,9 @@ const AccountAvatar = () => {
   const doctorNotifications = useSelector((state) => state.doctor.notifications);
   const rawNotifications = role === "doctor" ? doctorNotifications : patientNotifications;
   const notifications = Array.isArray(rawNotifications) ? rawNotifications.filter(Boolean) : [];
+  useEffect(() => {
+    setNotificationBadgeVisible(notifications.length > 0);
+  }, [notifications.length]);
 
   const handleLogout = () => {
     dispatch(logout()).then(() => navigate("/Login")).catch(console.error);
@@ -163,11 +167,22 @@ const AccountAvatar = () => {
               <Tooltip title="Notifications">
                 <IconButton
                   className="clinic-utility-button"
-                  onClick={() => navigate("/Notifications")}
+                  onClick={async () => {
+                    setNotificationBadgeVisible(false);
+                    try {
+                      const notificationUrl = role === "doctor"
+                        ? API_URL + "/doctor/" + id + "/notifications"
+                        : API_URL + "/patient/" + id + "/notifications";
+                      await axios.patch(notificationUrl, { notifications: [] });
+                    } catch (error) {
+                      console.error("Unable to mark notifications as read:", error);
+                    }
+                    navigate("/Notifications");
+                  }
                   aria-label="Notifications"
                 >
                   <NotificationsNoneRoundedIcon />
-                  {notifications?.length > 0 && (
+                  {notificationBadgeVisible && notifications?.length > 0 && (
                     <span className="clinic-notification-badge">
                       {notifications.length > 9 ? "9+" : notifications.length}
                     </span>
