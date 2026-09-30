@@ -43,7 +43,6 @@ import {
 } from "../../features/patientSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Dialog from "@mui/material/Dialog";
-import SearchIcon from "@mui/icons-material/Search";
 
 const handlePay = async (prescriptionId) => {
   try {
