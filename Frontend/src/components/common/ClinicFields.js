@@ -86,10 +86,17 @@ export function ClinicDateField({ value, onChange, placeholder = "Select date", 
 
   return (
     <>
-      <button
-        type="button"
+      <div
         className={`clinic-field clinic-date-field ${className}`}
+        role="button"
+        tabIndex={0}
         onClick={(event) => setAnchorEl(event.currentTarget)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setAnchorEl(event.currentTarget);
+          }
+        }}
         aria-label={placeholder}
       >
         <CalendarMonthRoundedIcon className="clinic-field-leading-icon" />
@@ -110,7 +117,7 @@ export function ClinicDateField({ value, onChange, placeholder = "Select date", 
             <CloseRoundedIcon />
           </IconButton>
         ) : null}
-      </button>
+      </div>
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
