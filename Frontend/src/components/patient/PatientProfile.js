@@ -8,7 +8,6 @@ import ConfirmDialog from "../common/ConfirmDialog";
 import {
   Avatar,
   Button,
-  IconButton,
   TextField,
 } from "@mui/material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
