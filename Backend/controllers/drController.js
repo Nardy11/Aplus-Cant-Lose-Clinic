@@ -414,19 +414,26 @@ const addPrescription = async (req, res) => {
 
 
 const getDr = async (req, res) => {
-  const doctorId = req.params.id; // Get doctorId from URL parameters
-
-
+  const doctorId = req.params.id;
 
   try {
-    // Find appointments that match the query
     const dr = await Doctor.findById(doctorId);
+    if (!dr) {
+      return res.status(404).json({ error: "Doctor not found" });
+    }
 
-    res
-      .status(200)
-      .json({ message: "dr found successfully", dr });
+    const user = await User.findOne({ username: dr.username });
+
+    res.status(200).json({
+      message: "dr found successfully",
+      dr: {
+        ...dr.toObject(),
+        pic: user?.pic || "",
+        userUpdatedAt: user?.updatedAt || null,
+      },
+    });
   } catch (error) {
-    console.error("Error filtering appointments:", error);
+    console.error("Error getting doctor profile:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
