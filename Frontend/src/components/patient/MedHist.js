@@ -98,10 +98,10 @@ const MedHist = ({ open, onClose }) => {
   };
 
   return role === "patient" ? (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add Medical History</DialogTitle>
-      <DialogContent sx={{ mt: "20px" }}>
-        <form onSubmit={handleOnSubmit} style={{ width: "80%", margin: "40px", paddingLeft: "50px" }}>
+    <Dialog open={open} onClose={onClose} className="clinic-modern-dialog medical-history-dialog">
+      <DialogTitle className="clinic-dialog-title"><div><span>HEALTH FILE</span><h2>Add medical history</h2></div><button type="button" className="clinic-native-close" onClick={onClose} aria-label="Close">×</button></DialogTitle>
+      <DialogContent className="clinic-dialog-content medical-history-content">
+        <form onSubmit={handleOnSubmit} className="medical-history-form">
           {errorMsg && <p className="errorMsg">{errorMsg}</p>}
           <div>
             <label htmlFor="title">Title:</label>
@@ -125,7 +125,7 @@ const MedHist = ({ open, onClose }) => {
               onChange={handleInputChange}
             />
           </div>
-          <div className="upload-section">
+          <div className="medical-history-upload">
             <Dropzone onDrop={onDrop}>
               {({ getRootProps, getInputProps }) => (
                 <div
@@ -166,8 +166,8 @@ const MedHist = ({ open, onClose }) => {
               </div>
             )}
           </div>
-          <DialogActions sx={{ mt: "40px" }}>
-            <button type="submit" style={{ backgroundColor: "green", color: "white", width: "30%", marginRight: "20%" }}>
+          <DialogActions className="clinic-dialog-actions medical-history-actions">
+            <button type="submit" className="clinic-dialog-primary medical-history-submit">
               Add
             </button>
           </DialogActions>
