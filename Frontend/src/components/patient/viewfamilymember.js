@@ -174,7 +174,10 @@ export default function ButtonAppBar() {
             
           );
           if (response) {
-            snackbarMessage("You have successfully edited", "success");
+            snackbarMessage("You have successfully linked the family member", "success");
+            setContactValue("");
+            setEmailOrPhone("email");
+            setRelation("spouse");
             handleCloseDialog2();
           } else {
             snackbarMessage(`error: ${response} has occurred`, "error");
@@ -223,7 +226,7 @@ handleCloseDialog();      }
         open={isDialogOpen2}
         onClose={requestLinkClose}
         className="clinic-modern-dialog family-link-member-dialog"
-        BackdropProps={{ onClick: handleCloseDialog2 }}
+        BackdropProps={{ onClick: requestLinkClose }}
       >
         <DialogTitle className="clinic-dialog-title">
           <div><span>HOUSEHOLD</span><h2>Link family member</h2></div>
@@ -289,12 +292,7 @@ handleCloseDialog();      }
                 value={relation}
                 onChange={(e) => setRelation(e.target.value)}
                 required
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                }}
+                className="clinic-native-select"
               >
                 <option value="spouse">Spouse</option>
                 <option value="child">Child</option>
