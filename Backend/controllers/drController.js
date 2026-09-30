@@ -549,12 +549,16 @@ const viewWallet = async(req , res)=>{
     }
 
     
-    const walletAmount  = doctor.wallet ;
+    const walletAmount  = doctor.wallet;
+    const transactions = [...(doctor.walletTransactions || [])].sort(
+      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+    );
 
     res.status(200).json({
       message:" wallet amount is fetched successfully",
       doctor: doctor,
-      wallet:walletAmount
+      wallet:walletAmount,
+      transactions
     })
   }
   catch(error){
@@ -1042,7 +1046,14 @@ const cancelAppointment=async (req,res)=>
       console.log(timeDifference)
       console.log(patient.wallet)
       patient.wallet+=doctor.rate;
-      await patient.save()     
+      patient.walletTransactions.push({
+        amount: Number(doctor.rate),
+        balanceAfter: patient.wallet,
+        direction: "credit",
+        type: "appointment_refund",
+        description: `Appointment cancellation refund from Dr. ${doctor.name}`,
+      });
+      await patient.save()
       await doctor.save();
   }
    const app = await Appointment.find();
