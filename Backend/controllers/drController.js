@@ -197,32 +197,25 @@ const patientsInUpcomingApointments = async (req, res) => {
 
 const editDoctor = async (req, res) => {
   const { id } = req.params;
-  const { name, email, rate, affiliation, affilation, background, pic } = req.body;
+  const { name, email, username, Dbirth, gender, rate, speciality, affiliation, affilation, background, pic, status, contractAccepted } = req.body;
   const hospitalAffiliation = affiliation ?? affilation;
+  const hasField = [name, email, username, Dbirth, gender, rate, speciality, hospitalAffiliation, background, pic, status, contractAccepted].some((value) => value !== undefined);
 
-  if (
-    name === undefined &&
-    email === undefined &&
-    rate === undefined &&
-    hospitalAffiliation === undefined &&
-    background === undefined &&
-    pic === undefined
-  ) {
-    return res.status(400).json({ error: "At least one profile field is required" });
-  }
+  if (!hasField) return res.status(400).json({ error: "At least one profile field is required" });
 
   try {
     const existingDoctor = await Doctor.findById(id);
-    if (!existingDoctor) {
-      return res.status(404).json({ error: "Doctor not found" });
-    }
+    if (!existingDoctor) return res.status(404).json({ error: "Doctor not found" });
 
+    const currentUser = await User.findOne({ username: existingDoctor.username });
     const normalizedName = typeof name === "string" ? name.trim() : name;
     const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : email;
-    const normalizedAffiliation = typeof hospitalAffiliation === "string"
-      ? hospitalAffiliation.trim()
-      : hospitalAffiliation;
+    const normalizedUsername = typeof username === "string" ? username.trim() : username;
+    const normalizedAffiliation = typeof hospitalAffiliation === "string" ? hospitalAffiliation.trim() : hospitalAffiliation;
     const normalizedBackground = typeof background === "string" ? background.trim() : background;
+    const normalizedSpeciality = typeof speciality === "string" ? speciality.trim() : speciality;
+    const normalizedGender = typeof gender === "string" ? gender.trim().toLowerCase() : gender;
+    const normalizedStatus = typeof status === "string" ? status.trim().toLowerCase() : status;
     const normalizedPic = typeof pic === "string" ? pic.trim() : pic;
 
     if (normalizedEmail && normalizedEmail !== existingDoctor.email) {
@@ -230,55 +223,57 @@ const editDoctor = async (req, res) => {
         (await Doctor.findOne({ email: normalizedEmail, _id: { $ne: id } })) ||
         (await Patient.findOne({ email: normalizedEmail })) ||
         (await Pharmacist.findOne({ email: normalizedEmail })) ||
-        (await User.findOne({ email: normalizedEmail, username: { $ne: existingDoctor.username } }));
+        (await User.findOne({ email: normalizedEmail, _id: { $ne: currentUser?._id } }));
+      if (emailExists) return res.status(409).json({ error: "Email is already in use." });
+    }
 
-      if (emailExists) {
-        return res.status(409).json({ error: "Email is already in use." });
-      }
+    if (normalizedUsername && normalizedUsername !== existingDoctor.username) {
+      const usernameExists =
+        (await User.findOne({ username: normalizedUsername, _id: { $ne: currentUser?._id } })) ||
+        (await Doctor.findOne({ username: normalizedUsername, _id: { $ne: id } }));
+      if (usernameExists) return res.status(409).json({ error: "Username is already in use." });
+    }
+
+    if (normalizedStatus !== undefined && !["pending", "accepted", "rejected"].includes(normalizedStatus)) {
+      return res.status(400).json({ error: "Invalid account status." });
+    }
+    if (normalizedGender !== undefined && !["male", "female", "none"].includes(normalizedGender)) {
+      return res.status(400).json({ error: "Invalid gender." });
+    }
+    if (rate !== undefined && (Number.isNaN(Number(rate)) || Number(rate) < 0)) {
+      return res.status(400).json({ error: "Hourly rate must be a valid non-negative number." });
     }
 
     const doctorUpdate = {};
     if (normalizedName !== undefined) doctorUpdate.name = normalizedName;
     if (normalizedEmail !== undefined) doctorUpdate.email = normalizedEmail;
+    if (normalizedUsername !== undefined) doctorUpdate.username = normalizedUsername;
+    if (Dbirth !== undefined) doctorUpdate.Dbirth = Dbirth || null;
+    if (normalizedGender !== undefined) doctorUpdate.gender = normalizedGender;
     if (rate !== undefined) doctorUpdate.rate = Number(rate);
+    if (normalizedSpeciality !== undefined) doctorUpdate.speciality = normalizedSpeciality;
     if (normalizedAffiliation !== undefined) doctorUpdate.affilation = normalizedAffiliation;
     if (normalizedBackground !== undefined) doctorUpdate.background = normalizedBackground;
+    if (normalizedStatus !== undefined) doctorUpdate.status = normalizedStatus;
+    if (contractAccepted !== undefined) doctorUpdate["contract.accepted"] = Boolean(contractAccepted);
 
-    const updatedDoctor = await Doctor.findByIdAndUpdate(
-      id,
-      { $set: doctorUpdate },
-      { new: true, runValidators: true }
-    );
+    const updatedDoctor = await Doctor.findByIdAndUpdate(id, { $set: doctorUpdate }, { new: true, runValidators: true });
+    if (!updatedDoctor) return res.status(404).json({ error: "Doctor not found" });
 
-    if (!updatedDoctor) {
-      return res.status(404).json({ error: "Doctor not found" });
-    }
-
-    const user = await User.findOne({ username: existingDoctor.username });
-    if (user) {
+    if (currentUser) {
       const userUpdate = {};
       if (normalizedName !== undefined) userUpdate.name = normalizedName;
       if (normalizedEmail !== undefined) userUpdate.email = normalizedEmail;
+      if (normalizedUsername !== undefined) userUpdate.username = normalizedUsername;
       if (normalizedPic !== undefined) userUpdate.pic = normalizedPic;
-
-      if (Object.keys(userUpdate).length) {
-        await User.updateOne({ _id: user._id }, { $set: userUpdate });
-      }
+      if (Object.keys(userUpdate).length) await User.updateOne({ _id: currentUser._id }, { $set: userUpdate });
     }
 
+    const refreshedUser = currentUser ? await User.findById(currentUser._id) : null;
     res.status(200).json({
       message: "Doctor profile updated successfully",
-      doctor: {
-        ...updatedDoctor.toObject(),
-        pic: normalizedPic !== undefined ? normalizedPic : user?.pic || "",
-      },
-      user: user ? {
-        _id: user._id,
-        name: normalizedName !== undefined ? normalizedName : user.name,
-        email: normalizedEmail !== undefined ? normalizedEmail : user.email,
-        username: user.username,
-        pic: normalizedPic !== undefined ? normalizedPic : user.pic,
-      } : null,
+      doctor: { ...updatedDoctor.toObject(), pic: normalizedPic !== undefined ? normalizedPic : refreshedUser?.pic || "" },
+      user: refreshedUser ? { _id: refreshedUser._id, name: refreshedUser.name, email: refreshedUser.email, username: refreshedUser.username, pic: refreshedUser.pic } : null,
     });
   } catch (error) {
     console.error("Error updating doctor profile:", error);
