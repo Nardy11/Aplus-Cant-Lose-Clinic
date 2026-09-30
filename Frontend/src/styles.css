@@ -3405,3 +3405,88 @@ textarea {
     padding: 8px;
   }
 }
+
+
+/* Final color corrections */
+.health-packages-grid tbody td:last-child .MuiIconButton-root {
+  width: 35px;
+  height: 35px;
+  color: #fff !important;
+  background: var(--clinic-blue) !important;
+  border-radius: 9px;
+}
+
+.health-packages-grid tbody td:last-child .MuiIconButton-root:hover {
+  background: var(--clinic-blue-dark) !important;
+}
+
+.health-packages-grid tbody td:nth-last-child(2) button {
+  color: #fff !important;
+  background: var(--clinic-blue) !important;
+}
+
+.health-packages-grid tbody td:nth-last-child(2) button:hover {
+  background: var(--clinic-blue-dark) !important;
+}
+
+.health-packages-grid tbody td:nth-last-child(2) button[style*="a80b0b"] {
+  background: var(--clinic-danger) !important;
+}
+
+.health-packages-grid tbody td:nth-last-child(2) button[style*="a80b0b"]:hover {
+  background: #b74343 !important;
+}
+
+.prescriptions-toolbar .MuiGrid-item > .MuiTypography-root,
+.prescriptions-toolbar .MuiGrid-item > span {
+  color: #657287 !important;
+}
+
+.prescriptions-toolbar .MuiPickersInputBase-root,
+.prescriptions-toolbar .MuiPickersOutlinedInput-root {
+  background: #fff !important;
+}
+
+.prescriptions-toolbar .MuiPickersInputBase-root *,
+.prescriptions-toolbar .MuiPickersOutlinedInput-root * {
+  color: #435168;
+}
+
+.prescriptions-toolbar .MuiPickersInputBase-root fieldset,
+.prescriptions-toolbar .MuiPickersOutlinedInput-root fieldset {
+  border-color: #dbe2ea !important;
+}
+
+.prescriptions-toolbar .MuiButtonBase-root {
+  color: #657287;
+}
+
+.prescriptions-toolbar .MuiButtonBase-root:hover {
+  background: #f3f6fa;
+}
+
+.appointments-page .MuiPickersInputBase-root,
+.appointments-page .MuiPickersOutlinedInput-root {
+  background: #fff !important;
+}
+
+.appointments-page .MuiPickersInputBase-root *,
+.appointments-page .MuiPickersOutlinedInput-root * {
+  color: #435168 !important;
+}
+
+.appointments-page .MuiPickersInputBase-root fieldset,
+.appointments-page .MuiPickersOutlinedInput-root fieldset {
+  border-color: #dbe2ea !important;
+}
+
+.appointments-page .MuiSelect-icon {
+  color: #69778b !important;
+}
+
+/* Remove legacy oversized floating controls if any older page still renders them */
+.health-records-page .MuiFab-root,
+.prescriptions-page .MuiFab-root,
+.health-packages-page .MuiFab-root {
+  display: none !important;
+}
