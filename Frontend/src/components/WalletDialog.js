@@ -1,72 +1,59 @@
-// WalletDialog.js
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect } from "react";
 import { viewWallet as viewWalletPatient } from "../features/patientSlice";
 import { viewWallet as viewWalletDoctor } from "../features/doctorSlice";
-
 import {
   Dialog,
   IconButton,
   Typography,
-  Button,
   DialogContent,
 } from "@mui/material";
-import WalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import CloseIcon from "@mui/icons-material/Close";
-const styles = {
-  dialogContent: {
-    // display: 'flex',
-    // flexDirection: 'column',
-    // alignItems: 'center',
-    // padding: '16px',
-    // width: '150px',
-  },
-  walletAmount: {
-    fontSize: "24px",
-    fontWeight: "bold",
-    margin: "12px 0",
-  },
-  walletIcon: {
-    fontSize: "48px",
-  },
-  cancelButtonContainer: {
-    display: "flex",
-    justifyContent: "center", // Center the child elements horizontally
-    marginTop: "16px",
-  },
-};
+import WalletIcon from "@mui/icons-material/AccountBalanceWalletRounded";
+import CloseIcon from "@mui/icons-material/CloseRounded";
 
-export const WalletDialog = ({ open, onClose}) => {
+export const WalletDialog = ({ open, onClose }) => {
   const id = useSelector((state) => state.user.id);
   const role = useSelector((state) => state.user.role);
-
   const dispatch = useDispatch();
 
   useEffect(() => {
-    role === "patient"
-      ? dispatch(viewWalletPatient(id))
-      : dispatch(viewWalletDoctor(id));
-  }, [dispatch]);
+    if (!open || !id) return;
+    if (role === "patient") dispatch(viewWalletPatient(id));
+    if (role === "doctor") dispatch(viewWalletDoctor(id));
+  }, [dispatch, id, role, open]);
 
   const amount = useSelector((state) =>
     role === "patient" ? state.patient.wallet : state.doctor.wallet
   );
-  // const amount = 0;
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <IconButton onClick={onClose} size="small" sx={{ ml: "65%" }}>
-        <CloseIcon fontSize="small" />
-      </IconButton>
-      <DialogContent styles={styles.dialogContent}>
-        <IconButton>
-          <WalletIcon style={styles.walletIcon} />
-        </IconButton>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      className="clinic-wallet-dialog"
+    >
+      <DialogContent className="clinic-wallet-content">
+        <div className="clinic-wallet-top">
+          <div className="clinic-wallet-icon">
+            <WalletIcon />
+          </div>
+          <IconButton onClick={onClose} aria-label="Close wallet">
+            <CloseIcon />
+          </IconButton>
+        </div>
 
-        <Typography variant="h5" style={styles.walletAmount}>
-          Wallet Amount: {amount}
+        <span className="clinic-dialog-eyebrow">ACCOUNT BALANCE</span>
+        <Typography component="h2" className="clinic-wallet-title">
+          Wallet
         </Typography>
+
+        <div className="clinic-wallet-balance">
+          <span>Available balance</span>
+          <strong>{amount ?? 0}</strong>
+          <small>Clinic account credit</small>
+        </div>
       </DialogContent>
     </Dialog>
   );
