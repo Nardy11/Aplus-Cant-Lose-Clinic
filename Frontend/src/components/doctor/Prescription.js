@@ -466,5 +466,5 @@ const Prescriptions = () => {
                   )}
                 </section>
               </div>
-            </main></>
+            </main>
         </div>
