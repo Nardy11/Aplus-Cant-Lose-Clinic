@@ -13,6 +13,7 @@ import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
 import MoreTimeRoundedIcon from "@mui/icons-material/MoreTimeRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import AccountAvatar from "../Authentication/AccountAvatar";
 
 export default function DocPatients() {
   const dispatch = useDispatch();
@@ -46,7 +47,7 @@ export default function DocPatients() {
 
   if (role !== "doctor") return null;
 
-  return <main className="doctor-page">
+  return <><AccountAvatar /><main className="doctor-page">
     <div className="doctor-page-shell">
       <section className="doctor-page-header">
         <div className="doctor-page-header-copy"><span>CLINIC SCHEDULE</span><h1>Appointments</h1><p>Manage your patient visits, free time slots, follow-up requests, and rescheduling from one consistent workspace.</p></div>
@@ -89,5 +90,4 @@ export default function DocPatients() {
         </div> : <div className="doctor-empty-state"><div className="doctor-empty-icon"><EventAvailableRoundedIcon /></div><h3>{appointments.length ? "No appointments match these filters" : "No appointments yet"}</h3><p>{appointments.length ? "Adjust the filters or reset the toolbar to see your full schedule." : "Scheduled patient visits will appear here."}</p></div>}
       </section>
     </div>
-  </main>;
-}
+  </main></>
