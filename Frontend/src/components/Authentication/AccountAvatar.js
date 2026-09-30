@@ -229,39 +229,37 @@ const AccountAvatar = () => {
     color: "white",
   };
   return (
-    <div sx={containerStyles}>
+    <div className="account-shell">
       <>
         <Avatar
           src="/path-to-your-avatar-image.jpg"
-          sx={avatarStyles}
+          className="account-avatar"
           onClick={handleAvatarClick}
         />
         <Typography
           component="span"
           onClick={handleAvatarClick}
-          sx={myAccountStyles}
+          className="account-link"
         >
           Account
         </Typography>
       </>
       <>
         <Button
+          className="account-logout"
           style={logoutButtonStyles}
           onClick={handleLogout}
           startIcon={<LogoutIcon />}
         >
           Logout
         </Button>
-        <span sx={{ display: "flex", mb: "10px" }}>
+        <span className="account-actions">
           {role === "doctor" || role === "patient" ? (
             <>
                 <Button
                 variant="outlined"
                 size="large"
-                sx={{
-                width:"2%",
-                borderRadius:"50%",ml:"100px",mb:"11px"
-                }}
+                className="account-action-button"
                 onClick={handleOpenDialogg}
               >
                 <NotificationsIcon fontSize="small" sx={{ color: "grey" }} />
@@ -269,7 +267,7 @@ const AccountAvatar = () => {
               <Button
                 variant="outlined"
                 size="large"
-                sx={{ width: "10%", ml: "4%", mb: "17px", mt: "0px" }}
+                className="account-action-button"
                 startIcon={
                   <WalletIcon fontSize="large" sx={{ color: "grey" }} />
                 }
