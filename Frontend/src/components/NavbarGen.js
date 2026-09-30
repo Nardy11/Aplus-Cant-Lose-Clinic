@@ -1,354 +1,111 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import {
-  Paper,
-  Tooltip,
-  Button,
-  Avatar,
-  Container,
-  Menu,
-  Typography,
-  IconButton,
+  AppBar,
   Toolbar,
   Box,
-  AppBar,
+  Button,
+  Typography,
+  Badge,
+  IconButton,
+  Container,
+  Snackbar,
 } from "@mui/material";
-import { NavLink, useLocation } from "react-router-dom";
-import { Badge } from "@mui/icons-material";
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
-import GroupIcon from "@mui/icons-material/Group";
-import WalletIcon from "@mui/icons-material/Wallet";
-import { useState } from "react";
-import HomeIcon from "@mui/icons-material/Home";
-
-import BadgeIcon from "@mui/icons-material/Badge";
-import Snackbar from "@mui/material/Snackbar";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import FamilyRestroomRoundedIcon from "@mui/icons-material/FamilyRestroomRounded";
+import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import MedicalInformationRoundedIcon from "@mui/icons-material/MedicalInformationRounded";
+import VaccinesRoundedIcon from "@mui/icons-material/VaccinesRounded";
+import LocalHospitalRoundedIcon from "@mui/icons-material/LocalHospitalRounded";
+import SickRoundedIcon from "@mui/icons-material/SickRounded";
+import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
+import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
+import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
 import MuiAlert from "@mui/material/Alert";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
-import PendingActionsIcon from "@mui/icons-material/PendingActions";
-import SickIcon from "@mui/icons-material/Sick";
-import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import DoctorProfileDialog from "./doctor/DoctorProfileDialog";
-import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import MedicalInformationIcon from "@mui/icons-material/MedicalInformation";
-import VaccinesIcon from "@mui/icons-material/Vaccines";
-import { Link } from "react-router-dom";
-import PermPhoneMsgIcon from "@mui/icons-material/PermPhoneMsg";
-import { useEffect } from "react";
 
-const NavbarGen = () => {
-  const user = useSelector((state) => state.user);
+const patientItems = [
+  { to: "/viewfamilymembers", label: "Family", sub: "Members", icon: FamilyRestroomRoundedIcon },
+  { to: "/Appointments", label: "My", sub: "Appointments", icon: CalendarMonthRoundedIcon },
+  { to: "/HealthRecords", label: "Health records", sub: "Medical history", icon: MedicalInformationRoundedIcon },
+  { to: "/ListOfPrescriptions", label: "My", sub: "Prescriptions", icon: VaccinesRoundedIcon },
+  { to: "/ViewHealthPackage", label: "Health", sub: "Packages", icon: LocalHospitalRoundedIcon },
+];
 
-  const styles = {
-    marginRight: "10px",
-    color: "white",
-  };
-  const picstyle = {
-    position: "relative",
-    margin: "10px",
-    left: "45%",
-  };
-  const pic2style = {
-    margin: "10px",
-  };
-  const textstyle = {
-    position: "relative",
-    padding: "10px",
-    right: "53%",
-    marginTop: "10%",
-  };
-  const text2style = {
-    padding: "10px",
-    marginTop: "10%",
-  };
-  const divstyle = {
-    display: "flex",
-  };
+const doctorItems = [
+  { to: "/PatientsList", label: "My", sub: "Patients", icon: SickRoundedIcon },
+  { to: "/DocPatients", label: "Appointments", sub: "", icon: PendingActionsRoundedIcon },
+  { to: "/FollowUpRequests", label: "Follow ups", sub: "", icon: GroupRoundedIcon },
+  { to: "/Prescription", label: "Prescriptions", sub: "", icon: PendingActionsRoundedIcon },
+];
+
+export default function NavbarGen() {
+  const role = useSelector((state) => state.user.role);
+  const location = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleOpenDialog = () => {
-    setDialogOpen(true);
-  };
+  if (!role || (role !== "patient" && role !== "doctor")) return null;
 
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
+  const items = role === "patient" ? patientItems : doctorItems;
 
-  const [dialoogOpen, setDialoogOpen] = useState(false);
-
-  const handleOpenDialoog = () => {
-    setDialogOpen(true);
-  };
-
-  const handleCloseDialoog = () => {
-    setDialogOpen(false);
-  };
-  const [dialogHealthRecord, setOpenDialogHealthRecord] = useState(false);
-  const [dialogMedicalHistory, setOpenDialogMedicalHistory] = useState(false);
-
-  const [selectedHealthRecord, setSelectedHealthRecord] = useState(null);
-  const [selectedMedicalHistory, setSelectedMedicalHistory] = useState(null);
-
-  // Function to open the health record dialog
-  const handleOpenHealthRecordDialog = (healthRecord) => {
-    setSelectedHealthRecord(healthRecord);
-    setOpenDialogHealthRecord(true);
-  };
-
-  // Function to open the medical history dialog
-  const handleOpenMedicalHistoryDialog = (medicalHistory) => {
-    setSelectedMedicalHistory(medicalHistory);
-    setOpenDialogMedicalHistory(true);
-  };
-
-  // Function to close the health record dialog
-  const handleCloseHealthRecordDialog = () => {
-    setSelectedHealthRecord(null);
-    setOpenDialogHealthRecord(false);
-  };
-
-  // Function to close the medical history dialog
-  const handleCloseMedicalHistoryDialog = () => {
-    setSelectedMedicalHistory(null);
-    setOpenDialogMedicalHistory(false);
-  };
-  const isActive = (path) => location.pathname === path;
-  const location = useLocation(); // Get the current location
-
-  const role = useSelector((state) => state.user.role);
   return (
-    <div>
-      {role === "doctor" && (
-        <>
-          <AppBar position="static" sx={{ backgroundColor: "#004E98" }}>
-            <Container maxWidth="xl">
-              <Toolbar disableGutters>
-                <Link to="/Home">
-                  <Button variant="large">
-                    <IconButton>
-                      <HomeIcon sx={{ color: "white", mr: "30px" }} />
-                    </IconButton>
-                  </Button>
-                </Link>{" "}
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <NavLink
-                    to="/PatientsList"
-                    isActive={() => isActive("/PatientsList")}
-                  >
-                    <Button
-                      sx={{
-                        color: isActive("/PatientsList") ? "#ffd791" : "white",
-                      }}
-                    >
-                      <IconButton>
-                        <SickIcon style={styles}></SickIcon>
-                      </IconButton>
-                      <Typography>My Patients</Typography>
-                    </Button>
-                  </NavLink>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <NavLink
-                    to="/DocPatients"
-                    isActive={() => isActive("/DocPatients")}
-                  >
-                    <Button
-                      sx={{
-                        color: isActive("/DocPatients") ? "#ffd791" : "white",
-                      }}
-                    >
-                      <IconButton>
-                        <PendingActionsIcon style={styles}></PendingActionsIcon>
-                      </IconButton>
-                      <Typography>Appointments</Typography>
-                    </Button>
-                  </NavLink>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <NavLink
-                    to="/FollowUpRequests"
-                    isActive={() => isActive("/FollowUpRequests")}
-                  >
-                    <Button
-                      sx={{
-                        color: isActive("/FollowUpRequests")
-                          ? "#ffd791"
-                          : "white",
-                      }}
-                    >
-                      <IconButton>
-                        <GroupIcon style={styles}></GroupIcon>
-                      </IconButton>
-                      <Typography>Follow Ups</Typography>
-                    </Button>
-                  </NavLink>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <NavLink to="/Prescription">
-                    <Button sx={{ color: "white" }}>
-                      <IconButton>
-                        <PendingActionsIcon style={styles}></PendingActionsIcon>
-                      </IconButton>
-                      <Typography>Patient's Prescriptions</Typography>
-                    </Button>
-                  </NavLink>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <Button sx={{ color: "white" }} onClick={handleOpenDialog}>
-                    <IconButton>
-                      <Badge badgeContent={1} color="error">
-                        <BadgeIcon style={styles}></BadgeIcon>
-                      </Badge>
-                    </IconButton>
-                    <Typography>Job Credentials</Typography>
-                  </Button>
-                  <DoctorProfileDialog
-                    open={dialogOpen}
-                    handleClose={handleCloseDialog}
-                  />
-                </Box>
-              </Toolbar>
-            </Container>
-          </AppBar>
+    <div className="clinic-nav-shell">
+      <AppBar position="static" className="clinic-main-nav" elevation={0}>
+        <Container maxWidth="xl">
+          <Toolbar disableGutters className="clinic-nav-toolbar">
+            <Link to="/Home" className="clinic-home-button" aria-label="Home">
+              <HomeRoundedIcon />
+            </Link>
 
-          <Snackbar
-            open={false}
-            anchorOrigin={{ vertical: "top", horizontal: "left" }}
-          >
-            <MuiAlert elevation={6} variant="filled" severity="info">
-              Appointment is rescheduled!!
-            </MuiAlert>
-          </Snackbar>
-        </>
-      )}
-      {role === "patient" && (
-        <>
-          <AppBar position="static" sx={{ backgroundColor: "#004E98" }}>
-            <Container maxWidth="xl">
-              <Toolbar disableGutters>
-                <Link to="/Home">
-                  <Button variant="large">
-                    <IconButton>
-                      <HomeIcon sx={{ color: "white", mr: "30px" }} />
-                    </IconButton>
-                  </Button>
-                </Link>{" "}
-                <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
-                  <IconButton
-                    size="large"
-                    aria-label="account of current user"
-                    aria-controls="menu-appbar"
-                    aria-haspopup="true"
-                    color="inherit"
-                  ></IconButton>
-                  <Menu></Menu>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <NavLink
-                    to="/viewfamilymembers"
-                    isActive={() => isActive("/viewfamilymembers")}
-                  >
-                    <Button
-                      sx={{
-                        color: isActive("/viewfamilymembers")
-                          ? "#ffd791"
-                          : "white",
-                      }}
-                    >
-                      <IconButton>
-                        <FamilyRestroomIcon style={styles}></FamilyRestroomIcon>
-                      </IconButton>
-                      <Typography>Family Members</Typography>
+            <Box className="clinic-nav-items">
+              {items.map(({ to, label, sub, icon: Icon }) => {
+                const active = location.pathname === to;
+                return (
+                  <NavLink key={to} to={to} className="clinic-nav-link">
+                    <Button className={`clinic-nav-item ${active ? "active" : ""}`}>
+                      <Icon className="clinic-nav-icon" />
+                      <span className="clinic-nav-label">
+                        <strong>{label}</strong>
+                        {sub && <small>{sub}</small>}
+                      </span>
                     </Button>
                   </NavLink>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <NavLink
-                    to="/Appointments"
-                    isActive={() => isActive("/Appointments")}
-                  >
-                    <Button
-                      sx={{
-                        color: isActive("/Appointments") ? "#ffd791" : "white",
-                      }}
-                    >
-                      <IconButton>
-                        <CalendarMonthIcon style={styles}></CalendarMonthIcon>
-                      </IconButton>
-                      <Typography>My Appointments</Typography>
-                    </Button>
-                  </NavLink>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <NavLink
-                    to="/HealthRecords"
-                    isActive={() => isActive("/HealthRecords")}
-                  >
-                    <Button
-                      sx={{
-                        color: isActive("/HealthRecords") ? "#ffd791" : "white",
-                        width: "100%",
-                      }}
-                      startIcon={
-                        <MedicalInformationIcon
-                          style={styles}
-                          size="small"
-                        ></MedicalInformationIcon>
-                      }
-                    >
-                      <Typography sx={{ width: "70%" }}>
-                        Health Records/
-                        <br></br>Medical History
-                      </Typography>
-                    </Button>
-                  </NavLink>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <NavLink
-                    to="/ListOfPrescriptions"
-                    isActive={() => isActive("/ListOfPrescriptions")}
-                  >
-                    <Button
-                      sx={{
-                        color: isActive("/ListOfPrescriptions")
-                          ? "#ffd791"
-                          : "white",
-                      }}
-                    >
-                      <IconButton>
-                        <VaccinesIcon style={styles}></VaccinesIcon>
-                      </IconButton>
-                      <Typography>My Percriptions</Typography>
-                    </Button>
-                  </NavLink>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: { xs: "2", md: "flex" } }}>
-                  <NavLink
-                    to="/ViewHealthPackage"
-                    isActive={() => isActive("/ViewHealthPackage")}
-                  >
-                    <Button
-                      sx={{
-                        color: isActive("/ViewHealthPackage")
-                          ? "#ffd791"
-                          : "white",
-                      }}
-                    >
-                      <IconButton>
-                        <LocalHospitalIcon style={styles}></LocalHospitalIcon>
-                      </IconButton>
-                      <Typography>health packages</Typography>
-                    </Button>
-                  </NavLink>
-                </Box>
-              </Toolbar>
-            </Container>
-          </AppBar>
-        </>
-      )}
+                );
+              })}
+
+              {role === "doctor" && (
+                <Button
+                  className="clinic-nav-item"
+                  onClick={() => setDialogOpen(true)}
+                >
+                  <Badge badgeContent={1} color="error">
+                    <BadgeRoundedIcon className="clinic-nav-icon" />
+                  </Badge>
+                  <span className="clinic-nav-label">
+                    <strong>Job</strong>
+                    <small>Credentials</small>
+                  </span>
+                </Button>
+              )}
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+      <DoctorProfileDialog
+        open={dialogOpen}
+        handleClose={() => setDialogOpen(false)}
+      />
+
+      <Snackbar
+        open={false}
+        anchorOrigin={{ vertical: "top", horizontal: "left" }}
+      >
+        <MuiAlert elevation={3} variant="filled" severity="info">
+          Appointment is rescheduled!!
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
-};
-
-export default NavbarGen;
+}
