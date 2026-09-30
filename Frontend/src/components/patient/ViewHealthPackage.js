@@ -31,6 +31,7 @@ import { API_URL } from "../../Consts";
 import AccountAvatar from "../Authentication/AccountAvatar";
 import { useNavigate } from "react-router-dom";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import ConfirmDialog from "../common/ConfirmDialog";
 export default function Hpackages() {
   const snackbarMessage = useContext(SnackbarContext);
   const id = useSelector((state) => state.user.id);
@@ -67,6 +68,7 @@ export default function Hpackages() {
   const[subscribeID,setSubscribeID]=useState("");
   const[packageID,setPackageID]=useState("");
   const[amount,setAmount]=useState("");
+  const [confirmFamilyClose, setConfirmFamilyClose] = useState(false);
 
   const navigate = useNavigate();
 
@@ -106,6 +108,20 @@ export default function Hpackages() {
     setThirdDialogue(true)
 
   }
+  const requestFamilyDialogClose = () => {
+    if (familyMemberUsername.trim()) {
+      setConfirmFamilyClose(true);
+    } else {
+      setThirdDialogue(false);
+    }
+  };
+
+  const discardFamilyDialog = () => {
+    setConfirmFamilyClose(false);
+    setFamilyMemberUsername("");
+    setThirdDialogue(false);
+  };
+
   const handleSubmitFamilyMember=async()=>
   {
 
@@ -337,10 +353,10 @@ export default function Hpackages() {
         <Button onClick={()=>setSecondDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
       </DialogActions>
     </Dialog>
-    <Dialog open={thirdDialogue} onClose={()=>setThirdDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
+    <Dialog open={thirdDialogue} onClose={requestFamilyDialogClose} className="clinic-modern-dialog package-choice-dialog">
       <DialogTitle className="clinic-dialog-title">
         <div><span>HOUSEHOLD</span><h2>Select family member</h2></div>
-        <IconButton className="clinic-dialog-close" onClick={()=>setThirdDialogue(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
+        <IconButton className="clinic-dialog-close" onClick={requestFamilyDialogClose} aria-label="Close"><CloseRoundedIcon /></IconButton>
       </DialogTitle>
       <div className="package-dialog-body">
         <p>Enter the username of the family member who should receive the package.</p>
@@ -353,10 +369,21 @@ export default function Hpackages() {
         />
       </div>
       <DialogActions className="clinic-dialog-actions">
-        <Button onClick={()=>setThirdDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
+        <Button onClick={requestFamilyDialogClose} className="clinic-dialog-cancel">Cancel</Button>
         <Button onClick={handleSubmitFamilyMember} className="clinic-dialog-primary">Continue</Button>
       </DialogActions>
     </Dialog>
+    <ConfirmDialog
+      open={confirmFamilyClose}
+      title="Discard family member selection?"
+      message="The family member username you entered has not been submitted. Leaving now will remove it."
+      confirmLabel="Discard"
+      cancelLabel="Keep editing"
+      destructive
+      onConfirm={discardFamilyDialog}
+      onCancel={() => setConfirmFamilyClose(false)}
+    />
+
     <Dialog open={fourthDialogue} onClose={()=>setFourthDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
       <DialogTitle className="clinic-dialog-title">
         <div><span>PAYMENT</span><h2>Choose payment method</h2></div>
