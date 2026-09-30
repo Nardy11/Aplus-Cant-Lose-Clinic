@@ -1,6 +1,7 @@
 import { addPatient } from "../../features/patientSlice";
 import { useNavigate } from "react-router-dom";
 import React, { useContext } from "react";
+import { useDispatch } from "react-redux";
 import "../../styles.css";
 import { SnackbarContext } from "../../App";
 import { NavLink } from "react-router-dom";
