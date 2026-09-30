@@ -10,7 +10,7 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import Button from "@mui/material/Button";
 import AccountAvatar from "../Authentication/AccountAvatar";
 
-export default function ContractDetails({ embedded = false }) {
+export default function ContractDetails({ embedded = false, onContractAccepted }) {
   const { id, role } = useSelector((state) => state.user);
   const notify = useContext(SnackbarContext);
   const [contractPath, setContractPath] = useState(null);
