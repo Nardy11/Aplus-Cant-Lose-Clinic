@@ -14,11 +14,7 @@ import TextField from '@mui/material/TextField';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { ClinicDateTimeField } from "../common/ClinicFields";
 import { useDispatch, useSelector } from "react-redux";
 import { API_URL } from "../../Consts";
 import ConfirmDialog from "../common/ConfirmDialog";
@@ -63,48 +59,8 @@ function FreeAppointment() {
             <Dialog open={open} onClose={requestClose} className="doctor-dialog">
                 <DialogTitle>Add Free Time Slot</DialogTitle>
                 <DialogContent>
-                    <Typography>Start Date</Typography>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer
-                            components={["DateTimePicker", "DateTimePicker"]}
-                        >
-                            <DateTimePicker
-                                viewRenderers={{
-                                    hours: renderTimeViewClock,
-                                    minutes: renderTimeViewClock,
-                                    seconds: renderTimeViewClock,
-                                }}
-                                value={startDate}
-                                onChange={(date) => setStartDate(date)}
-                            />
-                        </DemoContainer>
-                    </LocalizationProvider>
-                    <span
-                        onClick={() => {
-                            setStartDate("");
-                        }}
-                    ></span>
-                    <Typography>End Date </Typography>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer
-                            components={["DateTimePicker", "DateTimePicker"]}
-                        >
-                            <DateTimePicker
-                                viewRenderers={{
-                                    hours: renderTimeViewClock,
-                                    minutes: renderTimeViewClock,
-                                    seconds: renderTimeViewClock,
-                                }}
-                                value={endDate}
-                                onChange={(date) => setEndDate(date)}
-                            />
-                        </DemoContainer>
-                    </LocalizationProvider>
-                    <span
-                        onClick={() => {
-                            setEndDate("");
-                        }}
-                    ></span>
+                    <ClinicDateTimeField value={startDate} onChange={setStartDate} label="Start date & time" />
+                    <ClinicDateTimeField value={endDate} onChange={setEndDate} label="End date & time" />
                 </DialogContent>
                 <DialogActions>
                     <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button>
