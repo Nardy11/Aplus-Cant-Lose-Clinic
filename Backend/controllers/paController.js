@@ -1890,6 +1890,8 @@ const updatePatientProfile = async (req, res) => {
 };
 
 module.exports = {
+  getPatientProfile,
+  updatePatientProfile,
   addPatient,
   addFamilyMember,
   viewFamilyMembers,
