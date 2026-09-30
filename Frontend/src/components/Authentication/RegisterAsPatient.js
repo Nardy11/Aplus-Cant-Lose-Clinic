@@ -6,7 +6,7 @@ import "../../styles.css";
 import { SnackbarContext } from "../../App";
 import { NavLink } from "react-router-dom";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
-import EmergencyRoundedIcon from "@mui/icons-material/EmergencyRounded";
+import ContactEmergencyRoundedIcon from "@mui/icons-material/ContactEmergencyRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
 function RegisterAsPatient() {
@@ -131,7 +131,7 @@ function RegisterAsPatient() {
 
             <div className="auth-section">
               <div className="auth-section-heading">
-                <span className="auth-section-icon"><EmergencyRoundedIcon /></span>
+                <span className="auth-section-icon"><ContactEmergencyRoundedIcon /></span>
                 <div><strong>Emergency contact</strong><small>Someone we can contact if needed</small></div>
               </div>
 
