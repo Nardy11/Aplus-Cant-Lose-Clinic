@@ -26,9 +26,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
+import { ClinicSearchField } from '../common/ClinicFields';
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 const Prescriptions = () => {
     const doctorId = useSelector((state) => state.user.id);
     const [patientList, setPatientList] = useState([]);
+    const [patientSearch, setPatientSearch] = useState('');
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [prescriptionsList, setPrescriptionsList] = useState([]);
     const [prescriptionid, setPrescriptionid] = useState(null);
@@ -401,65 +406,67 @@ const Prescriptions = () => {
                     </Paper>
                 ) : null}
             </Dialog>
-            <div sx={{ background: '#004E93' }}>
-            <AccountAvatar />
-            </div>
-            <AppBar position="static" sx={{ background: '#004E98' }}>
-            
-                <Container maxWidth="xl">
-                    <Toolbar disableGutters sx={{ justifyContent: 'center' }}>
-                        <Typography
-                            variant="h6"
-                            noWrap
-                            component="a"
-                            sx={{
-                                mr: 2,
-                                display: { xs: 'none', md: 'flex' },
-                                color: 'white',
-                                fontSize: 40,
-                                fontFamily: 'Inter',
-                                fontWeight: '600',
-                                textDecoration: 'none',
-                            }}
-                        >
-                            Patients Prescriptions
-                        </Typography>
-                    </Toolbar>
-                </Container>
-            </AppBar>
-            <Container sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {patientList.map((patient) => (
-                    <div key={patient.id} sx={{ flexGrow: 1 }} onClick={() => getPrescriptions(patient._id)}>
-                        <Paper sx={{ background: '#004E98', borderRadius: '25%', padding: '10px', margin: '10px', width: 'fit-content' }}>
-                            <Paper sx={{ background: 'white', borderRadius: '80.48px', margin: '10px', padding: '10px', textAlign: 'center' }} >
-                                {patient.name}
-                            </Paper>
-                            {selectedPatient === patient._id && prescriptionsList.map((prescription) => (
-                                <Paper
-                                    key={prescription._id}
-                                    sx={{
-                                        background: 'white',
-                                        borderRadius: '80.48px',
-                                        margin: '10px',
-                                        padding: '10px',
-                                        textAlign: 'center',
-                                    }}
-                                    onClick={() => handlePrescriptionClick(prescription)}
+            <main className="doctor-page">
+              <div className="doctor-page-shell">
+                <section className="doctor-page-header">
+                  <div className="doctor-page-header-copy">
+                    <span>PATIENT CARE</span>
+                    <h1>Prescriptions</h1>
+                    <p>Create, review, and update prescriptions for the patients connected to your care.</p>
+                  </div>
+                  <div className="doctor-page-header-icon"><AssignmentRoundedIcon /></div>
+                </section>
 
-                                >
-                                    Prescription Date: {new Date(prescription.datePrescribed).toLocaleDateString()}
-                                </Paper>
-                            ))}
-                            <IconButton
-                                onClick={handleAddPrescription}
-                                sx={{ color: 'white', marginLeft: '25%' }}
-                            >
-                                <AddIcon />
-                            </IconButton>
-                        </Paper>
+                <section className="doctor-stats">
+                  <div className="doctor-stat"><span>Patients</span><strong>{patientList.length}</strong><small>Patients available for prescription care</small></div>
+                  <div className="doctor-stat"><span>Showing</span><strong>{patientList.filter((p) => !patientSearch || (p.name || '').toLowerCase().includes(patientSearch.toLowerCase())).length}</strong><small>Matches your search</small></div>
+                  <div className="doctor-stat"><span>Selected</span><strong>{selectedPatient ? '1' : '0'}</strong><small>Patient currently selected</small></div>
+                  <div className="doctor-stat"><span>Prescriptions</span><strong>{prescriptionsList.length}</strong><small>Prescriptions in the selected view</small></div>
+                </section>
+
+                <section className="doctor-surface">
+                  <div className="doctor-toolbar">
+                    <ClinicSearchField value={patientSearch} onChange={setPatientSearch} placeholder="Search patient by name..." />
+                    <div className="doctor-toolbar-spacer" />
+                    <span style={{ color:"#8995a5", fontSize:9 }}>{patientList.length} patient{patientList.length === 1 ? '' : 's'}</span>
+                  </div>
+
+                  {patientList.filter((patient) => !patientSearch || (patient.name || '').toLowerCase().includes(patientSearch.toLowerCase())).length ? (
+                    <div className="doctor-card-grid">
+                      {patientList.filter((patient) => !patientSearch || (patient.name || '').toLowerCase().includes(patientSearch.toLowerCase())).map((patient) => (
+                        <article className="doctor-patient-card" key={patient._id} onClick={() => getPrescriptions(patient._id)}>
+                          <div className="doctor-patient-card-head">
+                            <div className="doctor-person-avatar"><PersonRoundedIcon sx={{ fontSize:18 }} /></div>
+                            <div><h3>{patient.name || 'Unnamed patient'}</h3><p>{patient.email || patient.username || 'Patient account'}</p></div>
+                          </div>
+                          <div className="doctor-detail" style={{ marginTop:13 }}><span>Selected</span><strong>{selectedPatient === patient._id ? 'Yes · prescriptions loaded' : 'Open patient prescriptions'}</strong></div>
+                          <div className="doctor-row-actions" style={{ marginTop:12 }}>
+                            <button className="doctor-secondary-button" onClick={(event) => { event.stopPropagation(); getPrescriptions(patient._id); }}><AssignmentRoundedIcon sx={{ fontSize:15, mr:.5, verticalAlign:'middle' }} />View prescriptions</button>
+                            <button className="doctor-primary-button" onClick={(event) => { event.stopPropagation(); setSelectedPatient(patient._id); setAddPrescriptionDialogOpen(true); }}><AddCircleOutlineRoundedIcon sx={{ fontSize:15, mr:.5, verticalAlign:'middle' }} />Add</button>
+                          </div>
+                          {selectedPatient === patient._id && prescriptionsList.length > 0 && (
+                            <div style={{ marginTop:12, display:'grid', gap:6 }}>
+                              {prescriptionsList.map((prescription) => (
+                                <button key={prescription._id} className="doctor-detail" style={{ textAlign:'left', border:0, cursor:'pointer' }} onClick={(event) => { event.stopPropagation(); handlePrescriptionClick(prescription); }}>
+                                  <span>Prescription</span>
+                                  <strong>{new Date(prescription.datePrescribed).toLocaleDateString()} · {prescription.status || 'active'}</strong>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </article>
+                      ))}
                     </div>
-                ))}
-            </Container>
+                  ) : (
+                    <div className="doctor-empty-state">
+                      <div className="doctor-empty-icon"><PersonRoundedIcon /></div>
+                      <h3>{patientList.length ? 'No matching patients' : 'No patients available'}</h3>
+                      <p>{patientList.length ? 'Try another patient name.' : 'Patients connected to your doctor account will appear here.'}</p>
+                    </div>
+                  )}
+                </section>
+              </div>
+            </main>
         </div>
     );
 };
