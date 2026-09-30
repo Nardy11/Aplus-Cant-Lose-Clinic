@@ -4171,3 +4171,11 @@ textarea {
   }
 }
 
+
+
+/* Appointment dialog fields */
+.appointment-dialog-label { margin: 0 0 10px !important; color: #536176 !important; font-size: 10px !important; font-weight: 750 !important; }
+.appointment-book-dialog .appointment-slot.Mui-selected { border-color: #8ab0f4 !important; background: #eef4ff !important; color: var(--clinic-blue) !important; }
+.appointment-book-dialog .appointment-form-field { margin-top: 15px; }
+.appointment-book-dialog .appointment-form-field .MuiTypography-root { margin-bottom: 6px; color: #536176; font-size: 10px; font-weight: 750; }
+.appointment-book-dialog .appointment-form-field .MuiTextField-root { margin: 0 !important; }
