@@ -164,15 +164,16 @@ function SideDrawer() {
           <FormControl fullWidth size="small">
             <InputLabel>Contact</InputLabel>
             <Select
-              native
               value={selectedName}
               label="Contact"
               onChange={handleNameSelect}
+              MenuProps={{ PaperProps: { className: "clinic-select-menu" } }}
+              displayEmpty
             >
-              <option value="" />
+              <MenuItem value=""><em>Select contact</em></MenuItem>
               {names.map((name, index) => {
                 const value = typeof name === "string" ? name : (name.username || name.name || name.email || "");
-                return <option key={index} value={value}>{value}</option>;
+                return <MenuItem key={index} value={value}>{value}</MenuItem>;
               })}
             </Select>
           </FormControl>
