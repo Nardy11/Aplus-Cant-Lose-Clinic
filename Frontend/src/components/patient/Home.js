@@ -36,7 +36,7 @@ function Home() {
     <main className="patient-home">
       <section className="patient-hero">
         <div className="patient-hero-copy">
-          <span className="patient-kicker">A+ CLINIC · PATIENT PORTAL</span>
+          <span className="patient-kicker">EL7A2NY CLINIC · PATIENT PORTAL</span>
           <h1>Healthcare that stays<br />with you.</h1>
           <p>
             Find trusted doctors, manage appointments, and keep your
