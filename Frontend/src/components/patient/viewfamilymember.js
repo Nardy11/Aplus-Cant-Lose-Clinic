@@ -250,6 +250,7 @@ handleCloseDialog();      }
                 onChange={(e) => setEmailOrPhone(e.target.value)}
                 className="family-link-select"
                 SelectProps={{ native: false }}
+              inputProps={{ name: "relation" }}
               >
                 <MenuItem value="email">Email</MenuItem>
                 <MenuItem value="phone">Phone Number</MenuItem>
@@ -301,6 +302,7 @@ handleCloseDialog();      }
                 onChange={(e) => setRelation(e.target.value)}
                 className="family-link-select"
                 SelectProps={{ native: false }}
+              inputProps={{ name: "relation" }}
               >
                 <MenuItem value="spouse">Spouse</MenuItem>
                 <MenuItem value="child">Child</MenuItem>
@@ -387,6 +389,7 @@ handleCloseDialog();      }
               defaultValue="male"
               className="family-link-select"
               SelectProps={{ native: false }}
+              inputProps={{ name: "relation" }}
               inputProps={{ name: "gender" }}
             >
               <MenuItem value="male">male</MenuItem>
@@ -405,6 +408,7 @@ handleCloseDialog();      }
               defaultValue="spouse"
               className="family-link-select"
               SelectProps={{ native: false }}
+              inputProps={{ name: "relation" }}
               inputProps={{ name: "relation" }}
             >
               <MenuItem value="spouse">spouse</MenuItem>
