@@ -30,6 +30,7 @@ import axios from "axios";
 import { API_URL } from "../../Consts";
 import AccountAvatar from "../Authentication/AccountAvatar";
 import { useNavigate } from "react-router-dom";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 export default function Hpackages() {
   const snackbarMessage = useContext(SnackbarContext);
   const id = useSelector((state) => state.user.id);
@@ -296,52 +297,85 @@ export default function Hpackages() {
               openDialog={dialogOpen}
               closeDialog={handleCloseDialog}
             ></HealthPackageInfo>
-            <Dialog open={firstDialogue} onClose={()=>{setfirstDialogue(false)}} className="clinic-modern-dialog package-choice-dialog">
-      {/* Your dialog content here */}
-      <div>
-        <Button onClick={handleSubscribeForMyself} color="primary">
-          Myself
-        </Button>
-        <Button onClick={handleSubscribeForFamilyMember} color="primary">
-          Family Member
-        </Button>
+            <Dialog open={firstDialogue} onClose={()=>setfirstDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
+      <DialogTitle className="clinic-dialog-title">
+        <div><span>CARE PLAN</span><h2>Who is this plan for?</h2></div>
+        <IconButton className="clinic-dialog-close" onClick={()=>setfirstDialogue(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
+      </DialogTitle>
+      <div className="package-dialog-body">
+        <p>Select who should receive this health package.</p>
+        <div className="package-choice-grid">
+          <Button className="package-choice-option" onClick={handleSubscribeForMyself}>
+            <strong>Myself</strong><span>Apply the package to your account</span>
+          </Button>
+          <Button className="package-choice-option" onClick={handleSubscribeForFamilyMember}>
+            <strong>Family member</strong><span>Apply it to a connected family member</span>
+          </Button>
+        </div>
       </div>
+      <DialogActions className="clinic-dialog-actions">
+        <Button onClick={()=>setfirstDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
+      </DialogActions>
     </Dialog>
-    <Dialog open={secondDialogue} onClose={()=>{setSecondDialogue(false)}} className="clinic-modern-dialog package-choice-dialog">
-      {/* Your dialog content here */}
-      <div>
-        <Button onClick={handleWalletButtonClick} color="primary">
-          Wallet
-        </Button>
-        <Button onClick={handleCreditCardButtonClick} color="primary">
-          Credit Card
-        </Button>
+    <Dialog open={secondDialogue} onClose={()=>setSecondDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
+      <DialogTitle className="clinic-dialog-title">
+        <div><span>PAYMENT</span><h2>Choose payment method</h2></div>
+        <IconButton className="clinic-dialog-close" onClick={()=>setSecondDialogue(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
+      </DialogTitle>
+      <div className="package-dialog-body">
+        <p>Choose how you want to pay for this health package.</p>
+        <div className="package-choice-grid">
+          <Button className="package-choice-option" onClick={handleWalletButtonClick}>
+            <strong>Wallet</strong><span>Use your clinic account balance</span>
+          </Button>
+          <Button className="package-choice-option" onClick={handleCreditCardButtonClick}>
+            <strong>Credit card</strong><span>Continue securely to card payment</span>
+          </Button>
+        </div>
       </div>
+      <DialogActions className="clinic-dialog-actions">
+        <Button onClick={()=>setSecondDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
+      </DialogActions>
     </Dialog>
-    <Dialog open={thirdDialogue} onClose={()=>{setThirdDialogue(false)}} className="clinic-modern-dialog package-choice-dialog">
-      <div>
+    <Dialog open={thirdDialogue} onClose={()=>setThirdDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
+      <DialogTitle className="clinic-dialog-title">
+        <div><span>HOUSEHOLD</span><h2>Select family member</h2></div>
+        <IconButton className="clinic-dialog-close" onClick={()=>setThirdDialogue(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
+      </DialogTitle>
+      <div className="package-dialog-body">
+        <p>Enter the username of the family member who should receive the package.</p>
         <TextField
-          label="Family Member Username"
+          label="Family member username"
           variant="outlined"
+          fullWidth
           value={familyMemberUsername}
           onChange={(e) => setFamilyMemberUsername(e.target.value)}
-          style={{ marginBottom: "16px" }}
         />
-        <Button onClick={handleSubmitFamilyMember} color="primary">
-          Submit
-        </Button>
       </div>
+      <DialogActions className="clinic-dialog-actions">
+        <Button onClick={()=>setThirdDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
+        <Button onClick={handleSubmitFamilyMember} className="clinic-dialog-primary">Continue</Button>
+      </DialogActions>
     </Dialog>
-    <Dialog open={fourthDialogue} onClose={()=>{setFourthDialogue(false)}} className="clinic-modern-dialog package-choice-dialog">
-      {/* Your dialog content here */}
-      <div>
-        <Button onClick={handleWalletButtonClickFamily} color="primary">
-          Wallet
-        </Button>
-        <Button onClick={handleCreditCardButtonClick} color="primary">
-          Credit Card
-        </Button>
+    <Dialog open={fourthDialogue} onClose={()=>setFourthDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
+      <DialogTitle className="clinic-dialog-title">
+        <div><span>PAYMENT</span><h2>Choose payment method</h2></div>
+        <IconButton className="clinic-dialog-close" onClick={()=>setFourthDialogue(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
+      </DialogTitle>
+      <div className="package-dialog-body">
+        <p>Choose how you want to pay for your family member's package.</p>
+        <div className="package-choice-grid">
+          <Button className="package-choice-option" onClick={handleWalletButtonClickFamily}>
+            <strong>Wallet</strong><span>Use your clinic account balance</span>
+          </Button>
+          <Button className="package-choice-option" onClick={handleCreditCardButtonClick}>
+            <strong>Credit card</strong><span>Continue securely to card payment</span>
+          </Button>
+        </div>
       </div>
+      <DialogActions className="clinic-dialog-actions">
+        <Button onClick={()=>setFourthDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
+      </DialogActions>
     </Dialog>
           </TableBody>
         </Table>
@@ -373,18 +407,19 @@ const HealthPackageInfo = ({ data, openDialog, closeDialog }) => {
   // Use dialogData instead of the static data passed as a prop
   return (
     <Dialog open={openDialog} onClose={closeDialog} className="clinic-modern-dialog package-info-dialog">
-      <DialogTitle>HealthPackage Info</DialogTitle>
-      <DialogContent>
+      <DialogTitle className="clinic-dialog-title">
+        <div><span>CARE PLAN</span><h2>Package details</h2></div>
+        <IconButton className="clinic-dialog-close" onClick={closeDialog} aria-label="Close"><CloseRoundedIcon /></IconButton>
+      </DialogTitle>
+      <DialogContent className="package-info-content">
         {Object.entries(data).map(([key, value]) => (
-          <Typography key={key}>
-            <strong>{key}:</strong> {value}
-          </Typography>
+          <div className="package-info-row" key={key}>
+            <strong>{key}</strong><span>{String(value)}</span>
+          </div>
         ))}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={closeDialog} color="primary">
-          Cancel
-        </Button>
+      <DialogActions className="clinic-dialog-actions">
+        <Button onClick={closeDialog} className="clinic-dialog-primary">Done</Button>
       </DialogActions>
     </Dialog>
   );
