@@ -210,9 +210,9 @@ export default function Hpackages() {
       <div>
         <AccountAvatar />
       </div>
-      <h3 style={{ marginLeft: "40%", marginTop: "20px" }}>Health Packages</h3>
-      <TableContainer component={Paper} style={tableStyle}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      <main className="health-packages-page"><section className="health-packages-heading"><span>CARE PLANS</span><h1>Health packages</h1><p>Choose a plan that fits your care and coverage needs.</p></section>
+      <TableContainer component={Paper} className="health-packages-table">
+        <Table className="health-packages-grid" sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
               <TableCell align="left" style={cellStyle}>
@@ -296,7 +296,7 @@ export default function Hpackages() {
               openDialog={dialogOpen}
               closeDialog={handleCloseDialog}
             ></HealthPackageInfo>
-            <Dialog open={firstDialogue} onClose={()=>{setfirstDialogue(false)}}>
+            <Dialog open={firstDialogue} onClose={()=>{setfirstDialogue(false)}} className="clinic-modern-dialog package-choice-dialog">
       {/* Your dialog content here */}
       <div>
         <Button onClick={handleSubscribeForMyself} color="primary">
@@ -307,7 +307,7 @@ export default function Hpackages() {
         </Button>
       </div>
     </Dialog>
-    <Dialog open={secondDialogue} onClose={()=>{setSecondDialogue(false)}}>
+    <Dialog open={secondDialogue} onClose={()=>{setSecondDialogue(false)}} className="clinic-modern-dialog package-choice-dialog">
       {/* Your dialog content here */}
       <div>
         <Button onClick={handleWalletButtonClick} color="primary">
@@ -318,7 +318,7 @@ export default function Hpackages() {
         </Button>
       </div>
     </Dialog>
-    <Dialog open={thirdDialogue} onClose={()=>{setThirdDialogue(false)}}>
+    <Dialog open={thirdDialogue} onClose={()=>{setThirdDialogue(false)}} className="clinic-modern-dialog package-choice-dialog">
       <div>
         <TextField
           label="Family Member Username"
@@ -332,7 +332,7 @@ export default function Hpackages() {
         </Button>
       </div>
     </Dialog>
-    <Dialog open={fourthDialogue} onClose={()=>{setFourthDialogue(false)}}>
+    <Dialog open={fourthDialogue} onClose={()=>{setFourthDialogue(false)}} className="clinic-modern-dialog package-choice-dialog">
       {/* Your dialog content here */}
       <div>
         <Button onClick={handleWalletButtonClickFamily} color="primary">
@@ -371,7 +371,7 @@ export default function Hpackages() {
 const HealthPackageInfo = ({ data, openDialog, closeDialog }) => {
   // Use dialogData instead of the static data passed as a prop
   return (
-    <Dialog open={openDialog} onClose={closeDialog}>
+    <Dialog open={openDialog} onClose={closeDialog} className="clinic-modern-dialog package-info-dialog">
       <DialogTitle>HealthPackage Info</DialogTitle>
       <DialogContent>
         {Object.entries(data).map(([key, value]) => (
