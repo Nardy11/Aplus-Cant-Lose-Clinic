@@ -6,7 +6,7 @@ import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceW
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import AccountAvatar from "../Authentication/AccountAvatar";
+import AccountAvatar from "./Authentication/AccountAvatar";
 import { API_URL } from "../Consts";
 
 export default function WalletPage() {
