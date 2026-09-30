@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Admin from "./components/Adminstrator/Admin";
 import Error from "./components/Error";
@@ -26,8 +26,12 @@ const socket = io(ENDPOINT);
 const HomeDirect = () => {
 const dispatch = useDispatch();
   const { role, logId } = useSelector((state) => state.user);
-  socket.emit("login", logId);
-dispatch(socketset(socket));
+  useEffect(() => {
+    if (!logId) return;
+    socket.emit("login", logId);
+    dispatch(socketset(socket));
+  }, [dispatch, logId]);
+
   console.log(role);
 
   // Check if role is not one of the specified cases
