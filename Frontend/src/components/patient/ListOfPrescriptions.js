@@ -108,9 +108,9 @@ const App = () => {
   };
 
   return role === "patient" ? (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box className="prescriptions-page">
       <AccountAvatar />
-      <Dialog open={open} sx={{ width: "100%", height: "100%" }}>
+      <Dialog open={open} className="clinic-modern-dialog prescription-view-dialog" maxWidth="md" fullWidth>
         {prescriptionid && prescriptionid.patientID ? (
           <div id="pagetodownload">
             <Paper
@@ -248,14 +248,14 @@ const App = () => {
           </div>
         ) : null}
       </Dialog>
-      <AppBar position="static" sx={{ backgroundColor: "#7b2cbf" }}>
+      <AppBar position="static" className="prescriptions-toolbar" elevation={0}>
         <Toolbar>
-          <Grid container alignItems="center" spacing={2}>
+          <Grid container className="prescriptions-filter-grid" alignItems="center" spacing={2}>
             <Grid item></Grid>
             <Grid item>
               <Typography variant="h5">My Prescriptions</Typography>
             </Grid>
-            <Grid item style={filterStyle}>
+            <Grid item className="prescriptions-filled-filter">
               <Checkbox
                 label="Filled"
                 sx={{ color: "black" }}
