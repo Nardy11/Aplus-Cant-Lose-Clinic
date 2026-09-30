@@ -58,14 +58,16 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
   const id = useSelector((state) => state.user.id);
   const formRef = useRef(null);
   const [confirmClose, setConfirmClose] = useState(false);
+  const [gender, setGender] = useState("male");
+  const [relation, setRelation] = useState("spouse");
   const handleSubmit = (event) => {
     event.preventDefault();
 
     const guest = {
       fullName: event.target.elements.fullName.value,
       age: parseInt(event.target.elements.age.value, 10),
-      relation: event.target.elements.relation.value,
-      gender: event.target.elements.gender.value,
+      relation,
+      gender,
       NID: parseInt(event.target.elements.NID.value, 10),
     };
     console.log(guest);
@@ -91,8 +93,8 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
     const form = formRef.current;
     if (!form) return false;
     return ["fullName", "NID", "age"].some((name) => form.elements[name]?.value) ||
-      form.elements.gender?.value !== "male" ||
-      form.elements.relation?.value !== "spouse";
+      gender !== "male" ||
+      relation !== "spouse";
   };
 
   const requestClose = () => {
@@ -173,13 +175,10 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
             select
             fullWidth
             size="small"
-            value={formRef.current?.elements.gender?.value || "male"}
-            onChange={(event) => {
-              if (formRef.current?.elements.gender) formRef.current.elements.gender.value = event.target.value;
-            }}
+            value={gender}
+            onChange={(event) => setGender(event.target.value)}
             className="family-link-select"
             SelectProps={{ native: false }}
-            inputProps={{ name: "gender" }}
           >
             <MenuItem value="male">male</MenuItem>
             <MenuItem value="female">female</MenuItem>
@@ -194,10 +193,10 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
             select
             fullWidth
             size="small"
-            defaultValue="spouse"
+            value={relation}
+            onChange={(event) => setRelation(event.target.value)}
             className="family-link-select"
             SelectProps={{ native: false }}
-            inputProps={{ name: "relation" }}
           >
             <MenuItem value="spouse">spouse</MenuItem>
             <MenuItem value="child">child</MenuItem>
