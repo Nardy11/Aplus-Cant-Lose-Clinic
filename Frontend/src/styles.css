@@ -4179,3 +4179,539 @@ textarea {
 .appointment-book-dialog .appointment-form-field { margin-top: 15px; }
 .appointment-book-dialog .appointment-form-field .MuiTypography-root { margin-bottom: 6px; color: #536176; font-size: 10px; font-weight: 750; }
 .appointment-book-dialog .appointment-form-field .MuiTextField-root { margin: 0 !important; }
+
+
+/* ===== Final patient workflow polish ===== */
+.clinic-dialog-title > div {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+.clinic-dialog-title > div > span {
+  display: block !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+.clinic-dialog-title > div > h2 {
+  margin-top: 5px !important;
+  text-align: left !important;
+}
+
+.clinic-dialog-close {
+  flex: 0 0 36px !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  background: #f7f9fc !important;
+  border: 1px solid #dce4ed !important;
+}
+
+.clinic-dialog-close:hover {
+  background: #eef3f8 !important;
+  border-color: #cbd6e2 !important;
+}
+
+.clinic-dialog-close svg {
+  font-size: 18px !important;
+}
+
+/* Confirmation dialog */
+.clinic-confirm-dialog .MuiDialog-paper {
+  width: min(430px, calc(100vw - 32px)) !important;
+  max-width: 430px !important;
+}
+
+.clinic-confirm-content {
+  padding: 4px 26px 12px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 13px !important;
+}
+
+.clinic-confirm-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #1769ff;
+  background: #eef4ff;
+}
+
+.clinic-confirm-icon.is-danger {
+  color: #c94b4b;
+  background: #fff1f1;
+}
+
+.clinic-confirm-icon svg {
+  font-size: 20px;
+}
+
+.clinic-confirm-content p {
+  margin: 1px 0 0;
+  color: #66748a;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.clinic-confirm-actions {
+  padding-top: 8px !important;
+}
+
+.clinic-confirm-danger {
+  background: #d95353 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.clinic-confirm-danger:hover {
+  background: #bd4141 !important;
+}
+
+/* Medical history form + file review */
+.medical-history-dialog .MuiDialogTitle-root {
+  padding-bottom: 8px !important;
+}
+
+.medical-history-content {
+  padding-top: 8px !important;
+}
+
+.medical-history-form > div:not(.medical-history-upload) {
+  margin-bottom: 13px !important;
+}
+
+.medical-history-form > div:not(.medical-history-upload) label {
+  margin-bottom: 6px !important;
+}
+
+.medical-history-upload {
+  margin-top: 16px !important;
+}
+
+.medical-history-upload .drop-zone {
+  min-height: 116px !important;
+  padding: 20px !important;
+}
+
+.medical-history-selected-file {
+  margin-top: 10px;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #dce5ef;
+  border-radius: 11px;
+  background: #f8fbff;
+}
+
+.medical-history-selected-file > div {
+  min-width: 0;
+}
+
+.medical-history-selected-file strong,
+.medical-history-selected-file span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medical-history-selected-file strong {
+  color: #344258;
+  font-size: 11px;
+}
+
+.medical-history-selected-file span {
+  margin-top: 3px;
+  color: #8a96a6;
+  font-size: 9px;
+}
+
+.medical-history-review-button {
+  flex: 0 0 auto !important;
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  border: 1px solid #cddbef !important;
+  border-radius: 8px !important;
+  color: #1769ff !important;
+  background: #fff !important;
+  text-transform: none !important;
+  font-size: 10px !important;
+  font-weight: 750 !important;
+}
+
+.medical-history-review-button:hover {
+  background: #eef4ff !important;
+}
+
+.medical-history-review-dialog .MuiDialog-paper {
+  width: min(850px, calc(100vw - 32px)) !important;
+  max-width: 850px !important;
+}
+
+.medical-history-review-content {
+  min-height: 360px;
+  padding: 8px 26px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #f7f9fc;
+}
+
+.medical-history-full-preview {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 62vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(20,35,55,.10);
+}
+
+.medical-history-pdf-preview {
+  width: 100%;
+  height: 62vh;
+  border: 1px solid #dfe6ee;
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* Appointments */
+.appointments-toolbar-inner {
+  align-items: center !important;
+  padding: 27px 0 !important;
+  gap: 18px !important;
+}
+
+.appointments-title {
+  align-self: center;
+}
+
+.appointments-title > span {
+  display: block;
+  margin: 0 !important;
+}
+
+.appointments-filters {
+  align-items: center !important;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.appointments-filters .MuiFormControl-root,
+.appointments-search {
+  min-width: 180px !important;
+}
+
+.appointments-filters .MuiOutlinedInput-root {
+  min-height: 46px !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+}
+
+.appointments-filters .MuiOutlinedInput-notchedOutline {
+  border-color: #d7e0ea !important;
+}
+
+.appointments-filters .MuiInputLabel-root {
+  color: #7a8797 !important;
+  font-size: 11px !important;
+}
+
+.appointments-filters .MuiInputBase-input {
+  color: #344258 !important;
+  font-size: 11px !important;
+}
+
+.appointments-filters > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 4px;
+}
+
+.appointments-filters > span .MuiTypography-root {
+  color: #6d7b8e !important;
+  font-size: 10px !important;
+  font-weight: 650;
+}
+
+.appointments-filters .MuiFormControl-root .MuiSvgIcon-root {
+  color: #6f7d90 !important;
+}
+
+.appointments-date-picker .MuiOutlinedInput-root {
+  min-height: 46px !important;
+}
+
+.appointments-add-button {
+  width: min(620px, calc(100% - 36px)) !important;
+  min-height: 50px !important;
+  margin: 25px auto 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 11px !important;
+}
+
+.empty-appointments-dialog {
+  min-width: 0 !important;
+  width: 100% !important;
+  padding: 22px 26px 25px !important;
+  border: 0 !important;
+  border-radius: 0 0 18px 18px !important;
+  background: #fff !important;
+  text-align: left !important;
+}
+
+.empty-appointments-dialog p {
+  margin: 0 !important;
+  color: #6b788b !important;
+  font-size: 11px !important;
+  line-height: 1.6 !important;
+}
+
+/* Reschedule dialog */
+.reschedule-appointment-dialog .MuiDialog-paper {
+  width: min(540px, calc(100vw - 32px)) !important;
+  max-width: 540px !important;
+}
+
+.reschedule-appointment-dialog .MuiDialogContent-root {
+  padding: 10px 26px 16px !important;
+}
+
+.reschedule-appointment-dialog .MuiTypography-root {
+  color: #536176 !important;
+  font-size: 10px !important;
+  font-weight: 750 !important;
+}
+
+/* Prescriptions */
+.prescriptions-toolbar {
+  min-height: 132px !important;
+}
+
+.prescriptions-toolbar .MuiToolbar-root {
+  padding: 20px 0 !important;
+}
+
+.prescriptions-filter-grid {
+  column-gap: 7px !important;
+  row-gap: 9px !important;
+}
+
+.prescriptions-page-heading {
+  min-width: 245px;
+}
+
+.prescriptions-page-heading > span {
+  display: block;
+  color: var(--clinic-blue);
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 850;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.prescriptions-page-heading .MuiTypography-h5 {
+  margin: 4px 0 3px !important;
+  color: var(--clinic-ink) !important;
+  font-size: 27px !important;
+  line-height: 1.1 !important;
+}
+
+.prescriptions-page-heading small {
+  color: #8490a1;
+  font-size: 10px;
+}
+
+.prescriptions-filled-filter {
+  padding: 7px 8px !important;
+  border: 1px solid #e0e7ef;
+  border-radius: 9px;
+  background: #f9fbfd;
+}
+
+.prescription-filter-field {
+  min-width: 165px !important;
+}
+
+.prescriptions-toolbar .prescription-filter-field .MuiOutlinedInput-root {
+  min-height: 44px !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+}
+
+.prescriptions-toolbar .prescription-filter-field .MuiOutlinedInput-notchedOutline {
+  border-color: #d8e1ea !important;
+}
+
+.prescriptions-toolbar .prescription-filter-field .MuiInputLabel-root {
+  color: #778497 !important;
+  font-size: 10px !important;
+}
+
+.prescriptions-toolbar .prescription-filter-field .MuiOutlinedInput-input {
+  color: #344258 !important;
+  font-size: 11px !important;
+}
+
+.prescriptions-toolbar .prescription-filter-field .MuiInputAdornment-root,
+.prescriptions-toolbar .prescription-filter-field .MuiSvgIcon-root {
+  color: #7a8798 !important;
+}
+
+.prescription-filter-reset {
+  min-height: 38px !important;
+  padding: 0 11px !important;
+  color: #637187 !important;
+  text-transform: none !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+.prescriptions-table-card {
+  margin-top: 24px !important;
+}
+
+.prescriptions-table-card table th {
+  padding: 15px 17px !important;
+  font-size: 10px !important;
+}
+
+.prescriptions-table-card table td {
+  padding: 14px 17px !important;
+  font-size: 11px !important;
+}
+
+.prescription-table-heading {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #59677b !important;
+}
+
+.prescription-table-cell {
+  font-size: 11px !important;
+  color: #344258 !important;
+}
+
+.prescription-view-dialog #pagetodownload {
+  padding: 0 26px 18px !important;
+}
+
+.prescription-view-dialog #pagetodownload > .MuiPaper-root {
+  margin: 0 !important;
+  border-radius: 12px !important;
+}
+
+.prescription-view-dialog .prescription-action-button,
+.prescription-view-dialog .prescription-action-secondary {
+  min-height: 40px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border-radius: 9px !important;
+  text-transform: none !important;
+  font-size: 10px !important;
+  font-weight: 750 !important;
+}
+
+.prescription-view-dialog .prescription-action-button {
+  background: var(--clinic-blue) !important;
+  color: #fff !important;
+}
+
+.prescription-view-dialog .prescription-action-secondary {
+  color: #59677b !important;
+  background: #f3f6f9 !important;
+}
+
+/* Family member form */
+.family-member-dialog .MuiDialogTitle-root {
+  padding-bottom: 7px !important;
+}
+
+.family-member-dialog-form {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 8px 26px 26px !important;
+}
+
+.family-member-dialog-form > div {
+  margin-bottom: 13px !important;
+}
+
+.family-member-dialog-form label {
+  display: block !important;
+  margin-bottom: 6px !important;
+  color: #536176 !important;
+  font-size: 10px !important;
+  font-weight: 750 !important;
+}
+
+.family-member-dialog-form input,
+.family-member-dialog-form select {
+  width: 100% !important;
+  min-height: 47px !important;
+  border: 1px solid #dbe2ea !important;
+  border-radius: 10px !important;
+  background: #fbfcfe !important;
+  color: #26354a !important;
+}
+
+.family-member-dialog-form input[type="submit"] {
+  width: 100% !important;
+  margin-top: 4px !important;
+}
+
+/* Keep the patient workflow aligned on smaller screens */
+@media (max-width: 900px) {
+  .appointments-toolbar-inner {
+    align-items: stretch !important;
+  }
+
+  .appointments-filters {
+    justify-content: flex-start;
+  }
+
+  .prescriptions-filter-grid {
+    align-items: stretch !important;
+  }
+
+  .prescriptions-page-heading {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .appointments-search,
+  .appointments-filters .MuiFormControl-root {
+    min-width: 100% !important;
+  }
+
+  .appointments-filters {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .appointments-add-button {
+    width: calc(100% - 24px) !important;
+  }
+
+  .prescription-filter-field {
+    min-width: 100% !important;
+  }
+
+  .medical-history-selected-file {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
