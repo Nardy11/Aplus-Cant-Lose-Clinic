@@ -150,3 +150,6 @@ function HealthRecords() {
   ) : (
     <Link to="/Login" className="login-fallback">Login</Link>
   );
+}
+
+export default HealthRecords;
