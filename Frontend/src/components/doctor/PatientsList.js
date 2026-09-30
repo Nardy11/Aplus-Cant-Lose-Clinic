@@ -1,22 +1,6 @@
-import ButtonBar from './ButtonBar'
-import Table from './Table'
-import SearchField from './SearchField'
-import Calendar from './Calendar';
+import React from "react";
+import PatientView from "./PatientView";
 
-function PatientList() {
-
-  return (
-    <div className="App" >
-
-      <ButtonBar/>
-      <div style={{ display :'flex',placeItems: 'flex-end'}}>
-      <SearchField/>
-      <Calendar/>
-      </div>
-      <Table/>
-
-    </div>
-  );
+export default function PatientsList() {
+  return <PatientView />;
 }
-
-export default PatientList;
