@@ -163,7 +163,7 @@ const App = () => {
           setSnackbarOpen(false);
         }}
       >
-        <Alert severity={snackbarSeverity}>{snackbarMessage}</Alert>
+        <Alert className="clinic-snackbar-alert" severity={snackbarSeverity}>{snackbarMessage}</Alert>
       </Snackbar>
     </div>
   );
