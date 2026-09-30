@@ -384,8 +384,24 @@ router.post("/payAppWithWallet", async (req, res) => {
         .json({ message: "Insufficient funds in the wallet" });
     }
 
-    // Deduct the amount from the patient's wallet
+    // Deduct the amount from the patient's wallet and credit the doctor.
     patient.wallet -= amount;
+    patient.walletTransactions.push({
+      amount: -Number(amount),
+      balanceAfter: patient.wallet,
+      direction: "debit",
+      type: "appointment_payment",
+      description: `Appointment payment to Dr. ${doctor.name}`,
+    });
+
+    doctor.wallet = Number(doctor.wallet || 0) + Number(amount);
+    doctor.walletTransactions.push({
+      amount: Number(amount),
+      balanceAfter: doctor.wallet,
+      direction: "credit",
+      type: "appointment_payment",
+      description: `Appointment payment from ${patient.name}`,
+    });
 
     // Update the appointment details
     appointment.pID = patientID;
