@@ -59,7 +59,8 @@ const AccountAvatar = () => {
 
   const patientNotifications = useSelector((state) => state.patient.notifications);
   const doctorNotifications = useSelector((state) => state.doctor.notifications);
-  const notifications = role === "doctor" ? doctorNotifications : patientNotifications;
+  const rawNotifications = role === "doctor" ? doctorNotifications : patientNotifications;
+  const notifications = Array.isArray(rawNotifications) ? rawNotifications.filter(Boolean) : [];
 
   const handleLogout = () => {
     dispatch(logout()).then(() => navigate("/Login")).catch(console.error);
