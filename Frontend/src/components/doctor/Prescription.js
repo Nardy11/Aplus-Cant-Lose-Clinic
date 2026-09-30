@@ -406,7 +406,7 @@ const Prescriptions = () => {
                     </Paper>
                 ) : null}
             </Dialog>
-            <><AccountAvatar /><main className="doctor-page">
+            <AccountAvatar /><main className="doctor-page">
               <div className="doctor-page-shell">
                 <section className="doctor-page-header">
                   <div className="doctor-page-header-copy">
@@ -467,3 +467,4 @@ const Prescriptions = () => {
                 </section>
               </div>
             </main></>
+        </div>
