@@ -21,13 +21,14 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { API_URL } from "../../Consts";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 function FreeAppointment() {
     const [open, setOpen] = React.useState(false);
     const [endDate, setEndDate] = useState("");
     const { id, role } = useSelector((state) => state.user);
-    const [startDate, setStartDate] = useState("");
-    var closes=false;
+    const [startDate, setStartDate] = useState(null);
+    const [confirmClose, setConfirmClose] = useState(false);
     async function addFreeTimeSlots() {
         try {
             const response = await axios.post(`${API_URL}/doctor/addAppointmentSlot/${id}`, {
@@ -40,20 +41,15 @@ function FreeAppointment() {
         }
     }
     
-    const handleClose = () => {
-        if (closes) {
-            closes = false;
-            setOpen(false);
-            addFreeTimeSlots();
-        } else {
-            if (endDate === "" || startDate === "") {
-                alert("Choose dates");
-            } else {
-                setOpen(false);
-                addFreeTimeSlots();
-            }
-        }
-    }
+    const reset = () => { setStartDate(null); setEndDate(null); };
+    const hasDraft = Boolean(startDate || endDate);
+    const requestClose = () => { if (hasDraft) setConfirmClose(true); else { setOpen(false); reset(); } };
+    const save = async () => {
+        if (!startDate || !endDate) { alert("Choose start and end dates."); return; }
+        await addFreeTimeSlots();
+        setOpen(false);
+        reset();
+    };
     
 
     const handleClickOpen = () => {
@@ -61,10 +57,10 @@ function FreeAppointment() {
     };
     return (
         <>
-            <Button variant="outlined" onClick={handleClickOpen}>
+            <Button className="doctor-secondary-button" variant="outlined" onClick={handleClickOpen}>
                 Add free Appointment SLots
             </Button>
-            <Dialog open={open} onClose={handleClose}>
+            <Dialog open={open} onClose={requestClose} className="doctor-dialog">
                 <DialogTitle>Add Free Time Slot</DialogTitle>
                 <DialogContent>
                     <Typography>Start Date</Typography>
@@ -78,7 +74,7 @@ function FreeAppointment() {
                                     minutes: renderTimeViewClock,
                                     seconds: renderTimeViewClock,
                                 }}
-                                value={startDate} // Add this line
+                                value={startDate}
                                 onChange={(date) => setStartDate(date)}
                             />
                         </DemoContainer>
@@ -99,7 +95,7 @@ function FreeAppointment() {
                                     minutes: renderTimeViewClock,
                                     seconds: renderTimeViewClock,
                                 }}
-                                value={endDate} // Add this line
+                                value={endDate}
                                 onChange={(date) => setEndDate(date)}
                             />
                         </DemoContainer>
@@ -111,8 +107,8 @@ function FreeAppointment() {
                     ></span>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose }>Add</Button>
-                    <Button onClick={closes=true && handleClose}>cancel</Button>
+                    <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button>
+                    <Button className="doctor-primary-button" onClick={save}>Add slot</Button>
                 </DialogActions>
             </Dialog>
         </>
