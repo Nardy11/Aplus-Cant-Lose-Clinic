@@ -408,7 +408,7 @@ router.post("/payAppWithWallet", async (req, res) => {
     appointment.status = "upcoming"; // Adjust the status accordingly
 
     // Save changes to the patient and appointment
-    await Promise.all([patient.save(), appointment.save()]);
+    await Promise.all([patient.save(), doctor.save(), appointment.save()]);
 
     res.json({ message: "Payment successful", newBalance: patient.wallet });
   } catch (error) {
