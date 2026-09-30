@@ -117,7 +117,7 @@ function RescheduleAppointment({  appointmentID }) {
                     ))}
                 </DialogContent>
                 <DialogActions>
-                    <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button className="doctor-primary-button" onClick={save}>Reschedule</Button>
+                    <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button disableRipple className="doctor-primary-button" onClick={save}>Reschedule</Button>
                 </DialogActions>
             </Dialog>
             <ConfirmDialog open={confirmClose} title="Discard reschedule?" message="You have selected a new appointment time. Closing now will discard the unsaved changes." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }} onCancel={() => setConfirmClose(false)} />
