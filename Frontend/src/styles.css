@@ -8080,3 +8080,20 @@ select option,
     width: 100%;
   }
 }
+
+
+.doctor-home-button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dbe4ee;
+  border-radius: 13px;
+  background: #fff;
+  color: #1769ff;
+  text-decoration: none;
+}
+.doctor-home-button:hover {
+  background: #eef4ff;
+  border-color: #c8d9ef;
+}
