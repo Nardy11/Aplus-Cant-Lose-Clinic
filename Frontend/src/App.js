@@ -71,6 +71,8 @@ import MedHistList from "./components/patient/MedHistList";
 import Vid from "./components/Vid.js";
 import SuccessAppoint from "./components/patient/SuccessAppoint";
 import DocPrescriptions from "./components/doctor/Prescription";
+import NotificationsPage from "./components/NotificationsPage";
+import WalletPage from "./components/WalletPage";
 const router = createBrowserRouter(
   createRoutesFromElements(
     
@@ -87,6 +89,8 @@ const router = createBrowserRouter(
       <Route path="/ResetPassword" element={<ResetPassword />} />
       <Route path="/RegisterAs" element={<RegisterAs />} />
       <Route path="/Home" element={<HomeDirect />} />
+      <Route path="/Notifications" element={<NotificationsPage />} />
+      <Route path="/Wallet" element={<WalletPage />} />
       <Route path="/upload" element={<Upload />} />
     <Route path="/RegisterAsPatient" element={<RegisterAsPatient />} />
     <Route path="/RegisterAsDoctor" element={<RegisterAsDoctor />} />
