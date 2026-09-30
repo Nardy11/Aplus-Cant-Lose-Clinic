@@ -13,7 +13,7 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
-import { MenuItem, Select, TextField } from "@mui/material";
+import { MenuItem, TextField, InputAdornment } from "@mui/material";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useDispatch, useSelector } from "react-redux";
@@ -37,6 +37,7 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import AccountAvatar from "../Authentication/AccountAvatar.js";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import ConfirmDialog from "../common/ConfirmDialog";
 
 
@@ -361,10 +362,17 @@ const navigate = useNavigate();
           <Box className="appointments-filters">
             <TextField
               className="appointments-search"
-              label="Search doctor or specialty"
+              placeholder="Search doctor or specialty"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon />
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               className="appointments-date-picker"
@@ -375,6 +383,20 @@ const navigate = useNavigate();
               InputLabelProps={{ shrink: true }}
               size="small"
             />
+            <TextField
+              select
+              className="appointments-status-filter"
+              label="Status"
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+              size="small"
+            >
+              <MenuItem value="Any">Any</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
+              <MenuItem value="upcoming">Upcoming</MenuItem>
+              <MenuItem value="cancelled">Cancelled</MenuItem>
+              <MenuItem value="rescheduled">Rescheduled</MenuItem>
+            </TextField>
             <Button
               type="button"
               className="appointments-reset-button"
@@ -387,21 +409,6 @@ const navigate = useNavigate();
               Reset
             </Button>
           </Box>
-
-          <TextField
-            select
-            className="appointments-status-filter"
-            label="Status"
-            value={status}
-            onChange={(event) => setStatus(event.target.value)}
-            size="small"
-          >
-            <MenuItem value="Any">Any</MenuItem>
-            <MenuItem value="completed">Completed</MenuItem>
-            <MenuItem value="upcoming">Upcoming</MenuItem>
-            <MenuItem value="cancelled">Cancelled</MenuItem>
-            <MenuItem value="rescheduled">Rescheduled</MenuItem>
-          </TextField>
         </Toolbar>
       </AppBar>
       <BasicTable
