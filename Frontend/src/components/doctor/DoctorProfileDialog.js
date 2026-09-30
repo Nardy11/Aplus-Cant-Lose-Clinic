@@ -45,7 +45,7 @@ export default function DoctorProfileDialog({ open, handleClose, onContractAccep
         </div>
         <div className="doctor-action-row"><Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button className="doctor-primary-button" onClick={save} disabled={saving}>{saving ? "Saving..." : "Save changes"}</Button></div>
       </section>
-      <div style={{ marginTop:12 }}><ContractDetails embedded /></div>
+      <div style={{ marginTop:12 }}><ContractDetails embedded onContractAccepted={onContractAccepted} /></div>
     </DialogContent>
     <DialogActions sx={{ display:"none" }} />
     <ConfirmDialog open={confirmClose} title="Discard credential changes?" message="You have edited your professional information. If you close now, those changes will be lost." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); handleClose(); }} onCancel={() => setConfirmClose(false)} />
