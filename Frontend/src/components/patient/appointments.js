@@ -371,21 +371,15 @@ const navigate = useNavigate();
               onChange={(event) => setSearchTerm(event.target.value)}
               size="small"
             />
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={["DateTimePicker"]}>
-                <DateTimePicker
-                  className="appointments-date-picker"
-                  label="Start date"
-                  viewRenderers={{
-                    hours: renderTimeViewClock,
-                    minutes: renderTimeViewClock,
-                    seconds: renderTimeViewClock,
-                  }}
-                  value={date}
-                  onChange={(date) => setDate(date)}
-                />
-              </DemoContainer>
-            </LocalizationProvider>
+            <TextField
+              className="appointments-date-picker"
+              label="Start date"
+              type="date"
+              value={date || ""}
+              onChange={(event) => setDate(event.target.value || null)}
+              InputLabelProps={{ shrink: true }}
+              size="small"
+            />
             <span
               onClick={() => {
                 setDate(null);
