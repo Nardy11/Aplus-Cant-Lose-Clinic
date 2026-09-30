@@ -6,8 +6,8 @@ import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneR
 import EventRoundedIcon from "@mui/icons-material/EventRounded";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import AccountAvatar from "../Authentication/AccountAvatar";
-import { API_URL } from "../../Consts";
+import AccountAvatar from "./Authentication/AccountAvatar";
+import { API_URL } from "../Consts";
 
 const iconFor = (type = "") => type.toLowerCase().includes("appointment") ? <EventRoundedIcon /> : <InfoOutlinedIcon />;
 
