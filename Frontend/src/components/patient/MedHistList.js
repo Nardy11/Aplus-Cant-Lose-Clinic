@@ -23,12 +23,14 @@ import Alert from "@mui/material/Alert";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import AccountAvatar from "../Authentication/AccountAvatar";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 const MedHistList = () => {
   const [filesList, setFilesList] = useState([]);
-  const [open,setOpen]= useState(false);
-const handleOpen=() => {setOpen(true);}
-const handleClose=() => {setOpen(false);}
+  const [open, setOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const [errorMsg, setErrorMsg] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -50,7 +52,7 @@ const handleClose=() => {setOpen(false);}
       }
     };
     getFilesList();
-  }, [filesList]);
+  }, [id]);
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -79,16 +81,14 @@ const handleClose=() => {setOpen(false);}
     }
   };
 
-  const deleteFile = async (fid, path, mimetype) => {
+  const deleteFile = async (fid, path) => {
     try {
       await axios.get(`${API_URL}/patient/delete/${fid}/${id}`);
-      const split = path.split("/");
-      const filename = split[split.length - 1];
+      const filename = path.split("/").pop();
       setErrorMsg("");
-      // Show Snackbar for deletion success
       setSnackbarMessage(`File ${filename} deleted successfully`);
       setSnackbarOpen(true);
-      // Refresh the files list after deletion
+      setFilesList((current) => current.filter((file) => file._id !== fid));
     } catch (error) {
       if (error.response && error.response.status === 404) {
         setErrorMsg("File not found");
@@ -96,6 +96,13 @@ const handleClose=() => {setOpen(false);}
         setErrorMsg("Error while deleting file. Try again later");
       }
     }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    await deleteFile(target._id, target.file_path);
   };
 
   return role === "patient" ? (
@@ -125,7 +132,7 @@ const handleClose=() => {setOpen(false);}
                 <IconButton aria-label="download" onClick={() => downloadFile(_id, file_path, file_mimetype)}>
                   <CloudDownloadIcon />
                 </IconButton>
-                <IconButton aria-label="delete" onClick={() => deleteFile(_id, file_path, file_mimetype)}>
+                <IconButton aria-label="delete" onClick={() => setDeleteTarget({ _id, title, file_path })}>
                   <DeleteIcon />
                 </IconButton>
               </div>
@@ -141,6 +148,17 @@ const handleClose=() => {setOpen(false);}
       )}
 
       <MedHist open={open} onClose={handleClose} />
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete this document?"
+        message={deleteTarget ? `“${deleteTarget.title}” will be permanently removed from your medical history.` : ""}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
 
       <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity="success">{snackbarMessage}</Alert>
