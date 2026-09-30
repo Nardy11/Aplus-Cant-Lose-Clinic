@@ -49,7 +49,7 @@ export default function WalletPage() {
         </section>
         <section className="clinic-wallet-page-summary">
           <div className="clinic-wallet-page-balance"><span>AVAILABLE BALANCE</span><strong>{balance.toLocaleString()}</strong><small>Clinic account credit</small></div>
-          <div className="clinic-wallet-stat"><span>Money added</span><strong>+{totalCredits.toLocaleString()}</strong></div>
+          <div className="clinic-wallet-stat"><span>Money added</span><strong className="wallet-positive">+{totalCredits.toLocaleString()}</strong></div>
           <div className="clinic-wallet-stat"><span>{role === "doctor" ? "Money withdrawn" : "Money spent"}</span><strong className="wallet-negative">-{totalDebits.toLocaleString()}</strong></div>
         </section>
         <section className="clinic-list-card">
