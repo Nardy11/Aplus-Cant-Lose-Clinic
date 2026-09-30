@@ -75,82 +75,75 @@ function HealthRecords() {
   }, [id]); // Add any dependencies that are used in the function, like 'id'
 
   return role === "patient" ? (
-    <div>
-      <div>
-        <AccountAvatar />
-      </div>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <div>
-          <div style={{ display: "flex", flexDirection: "row" }}>
-            {/* Image to the left of the Health Records accordion */}
-            <img
-              src={h}
-              alt="Left Image"
-              style={{ marginRight: "200px", width: "20%", height: "20%" }}
-            />
-            <Paper elevation={3} style={styles.paper}>
-              <h1 >
-                Health Records
-              </h1>
+    <div className="health-records-page">
+      <AccountAvatar />
+      <main className="health-records-shell">
+        <section className="health-records-heading">
+          <div>
+            <span>YOUR HEALTH</span>
+            <h1>Health records</h1>
+            <p>Review your clinical history and uploaded medical documents.</p>
+          </div>
+        </section>
 
-              {selectedHealthRecord.map((healthRecord) => (
-                <Accordion key={healthRecord._id} style={styles.accordion}>
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1a-content"
-                    id="panel1a-header"
-                    style={styles.accordionSummary}
-                  >
-                    <Typography sx={{ mr: "50%" }}>
-                      {new Date(healthRecord.date).toLocaleString()}
-                    </Typography>
-                    <Typography>{healthRecord.description}</Typography>
+        <section className="health-records-grid">
+          <div className="health-records-visual">
+            <img src={h} alt="Healthcare illustration" />
+            <div className="health-records-visual-copy">
+              <strong>Your records, organized.</strong>
+              <span>Keep important health information accessible in one place.</span>
+            </div>
+          </div>
+
+          <Paper className="health-records-card" elevation={0}>
+            <div className="health-records-card-header">
+              <div>
+                <span>CLINICAL TIMELINE</span>
+                <h2>Health records</h2>
+              </div>
+              <div className="health-records-count">{selectedHealthRecord.length}</div>
+            </div>
+
+            <div className="health-records-list">
+              {selectedHealthRecord.length ? selectedHealthRecord.map((healthRecord) => (
+                <Accordion key={healthRecord._id} className="health-record-item" disableGutters>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <div className="health-record-summary">
+                      <strong>{healthRecord.description || "Health record"}</strong>
+                      <span>{new Date(healthRecord.date).toLocaleString()}</span>
+                    </div>
                   </AccordionSummary>
                   <AccordionDetails>
-                    {/* Your existing Accordion content */}
+                    <div className="health-record-details">
+                      {healthRecord.labResults && <p><strong>Lab results:</strong> {healthRecord.labResults}</p>}
+                      {healthRecord.medicalInformation && <p><strong>Medical information:</strong> {healthRecord.medicalInformation}</p>}
+                      {healthRecord.primaryDiagnosis && <p><strong>Diagnosis:</strong> {healthRecord.primaryDiagnosis}</p>}
+                      {healthRecord.treatment && <p><strong>Treatment:</strong> {healthRecord.treatment}</p>}
+                    </div>
                   </AccordionDetails>
                 </Accordion>
-              ))}
-            </Paper>
-          </div>
-          {/* Image to the right of the Health Records accordion */}
-          <div style={{ display: "flex" }}>
-            <div style={{marginTop:"240px",marginLeft:"40px"}}>
-            <h1 >
-              Medical History
-              </h1>
+              )) : (
+                <div className="health-record-empty">
+                  <strong>No health records yet</strong>
+                  <span>Your clinical records will appear here when available.</span>
+                </div>
+              )}
+            </div>
+          </Paper>
+        </section>
 
-          <MedHistList />
+        <section className="medical-history-section">
+          <div className="medical-history-heading">
+            <div>
+              <span>DOCUMENTS</span>
+              <h2>Medical history</h2>
+              <p>Upload and manage supporting medical files.</p>
+            </div>
+            <img src={m} alt="Medical documents illustration" />
           </div>
-            <img
-              src={m}
-              alt="Left Image for MedHistList"
-              style={{ marginRight: "10px", width: "40%", height: "50%" }}
-            />
-            {/* Image to the left of the MedHistList component */}
+          <div className="medical-history-list-card">
+            <MedHistList />
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
-  ) : (
-    <>
-      <Link to="/Login" sx={{ left: "100%" }}>
-        <Typography
-          variant="h6"
-          noWrap
-          component="div"
-          sx={{
-            flexGrow: 1,
-            display: { xs: "none", sm: "flex" },
-            fontSize: "20px",
-            maragin: "auto",
-          }}
-        >
-          Login
-        </Typography>
-      </Link>
-    </>
-  );
-}
-
-export default HealthRecords;
