@@ -10,15 +10,17 @@ import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 
 export function ClinicSearchField({ value, onChange, placeholder = "Search...", className = "" }) {
   return (
-    <div className={`clinic-field clinic-search-field ${className}`}>
-      <SearchRoundedIcon className="clinic-field-leading-icon" />
-      <input
-        type="search"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        aria-label={placeholder}
-      />
+    <div className={`clinic-field clinic-search-field search-field search-field--secondary ${className}`}>
+      <div className="search-field__group">
+        <SearchRoundedIcon className="clinic-field-leading-icon search-field__search-icon" />
+        <input
+          className="search-field__input"
+          type="search"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          aria-label={placeholder}
+        />
       {value ? (
         <IconButton
           type="button"
@@ -54,7 +56,7 @@ export function ClinicSelectField({ value, onChange, options, placeholder, class
       value={value}
       onChange={(event) => onChange(event.target.value)}
       displayEmpty
-      className={`clinic-select-field ${className}`}
+      className={`clinic-select-field select ${className}`}
       aria-label={ariaLabel || placeholder || "Select"}
       MenuProps={{ PaperProps: { className: "clinic-select-menu" } }}
       renderValue={(selected) => {
