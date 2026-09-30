@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useState, useContext } from "react";
 import { addFamilyMember } from "../../features/patientSlice";
 import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 import { Link } from "react-router-dom";
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
@@ -167,20 +169,39 @@ const NewFamilyMemberForm = ({ open, onClose }) => {
           <label htmlFor="gender" style={labelStyle}>
             Gender:
           </label>
-          <select id="gender" name="gender" className="clinic-native-select">
-            <option value="male">male</option>
-            <option value="female">female</option>
-            <option value="none">none</option>
-          </select>
+          <TextField
+            select
+            fullWidth
+            size="small"
+            value={formRef.current?.elements.gender?.value || "male"}
+            onChange={(event) => {
+              if (formRef.current?.elements.gender) formRef.current.elements.gender.value = event.target.value;
+            }}
+            className="family-link-select"
+            SelectProps={{ native: false }}
+            inputProps={{ name: "gender" }}
+          >
+            <MenuItem value="male">male</MenuItem>
+            <MenuItem value="female">female</MenuItem>
+            <MenuItem value="none">none</MenuItem>
+          </TextField>
         </div>
         <div>
           <label htmlFor="relation" style={labelStyle}>
             Relation:
           </label>
-          <select id="relation" name="relation" className="clinic-native-select">
-            <option>spouse</option>
-            <option>child</option>
-          </select>
+          <TextField
+            select
+            fullWidth
+            size="small"
+            defaultValue="spouse"
+            className="family-link-select"
+            SelectProps={{ native: false }}
+            inputProps={{ name: "relation" }}
+          >
+            <MenuItem value="spouse">spouse</MenuItem>
+            <MenuItem value="child">child</MenuItem>
+          </TextField>
         </div>
         <input type="submit" value="Add Family Member" style={buttonStyle} />
       </form>
