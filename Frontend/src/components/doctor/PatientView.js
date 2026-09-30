@@ -1,522 +1,142 @@
-import React, { useState } from "react";
-import Paper from "@mui/material/Paper";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import download from "downloadjs";
-
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import download from "downloadjs";
+import { useDispatch, useSelector } from "react-redux";
 import { API_URL } from "../../Consts";
-import { Box } from "@mui/material";
-import { addHealthRecord } from "../../features/doctorSlice";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import { useNavigate } from "react-router-dom";
-import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import CloseIcon from "@mui/icons-material/Close";
-
-import { Link } from "react-router-dom";
+import { getPatients, addHealthRecord } from "../../features/doctorSlice";
 import AccountAvatar from "../Authentication/AccountAvatar";
-import GetAppIcon from "@mui/icons-material/GetApp";
-import {
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-} from "@mui/material";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Input,
-  TextareaAutosize,
-  Card,
-  CardContent,
-} from "@mui/material";
-
+import ConfirmDialog from "../common/ConfirmDialog";
+import { ClinicSearchField } from "../common/ClinicFields";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import MedicalInformationRoundedIcon from "@mui/icons-material/MedicalInformationRounded";
+import AddCircleOutlineRoundedIcon from "@mui/icons-material/AddCircleOutlineRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import HomeIcon from "@mui/icons-material/Home"; // Import the Home icon
-import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { getPatients } from "../../features/doctorSlice";
+import { SnackbarContext } from "../../App";
 
-const styles = {
-  paper: {
-    display: "flex",
-    gap: "40%",
-    padding: "20px",
-    paddingTop: "20px",
+const initials = (name = "") => name.split(" ").filter(Boolean).slice(0, 2).map((x) => x[0]).join("").toUpperCase() || "P";
 
-    // backgroundColor: 'pink',
-    backgroundColor: "#cfd8dc",
-    marginTop: "20px",
-    width: "60%",
-    marginLeft: "400px",
-  },
-  buttonGroup: {
-    paddingTop: "20px",
-
-    display: "flex",
-    flexDirection: "column",
-    gap: "40px",
-    width: "40%",
-  },
-  mainHeader: {
-    fontSize: "35px",
-    color: "#008080",
-  },
-  subHeader: {
-    fontSize: "30px",
-    color: "#3A6EA5",
-  },
-  text: {
-    fontSize: "16px",
-    color: "black",
-  },
-  button: {
-    backgroundColor: "#004E98",
-    color: "white",
-  },
-  card: {
-    maxWidth: 400, // Adjust the maximum width as needed
-    margin: "10px", // Add margin around each card
-    backgroundColor: "#01579b",
-    cursor: "pointer",
-  },
-};
-// Function to handle the download file action
-const handleDownloadFile = async (patientId, fileId, path, mimetype) => {
-  try {
-    console.log(patientId);
-    console.log(fileId);
-    const result = await axios.get(
-      `${API_URL}/patient/download/${fileId}/${patientId}`,
-      { responseType: "blob" }
-    );
-    const split = path.split("/");
-    const filename = split[split.length - 1];
-
-    download(result.data, filename, mimetype);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-function PatientDetails() {
-  // Dummy patient data (you can replace this with actual data)
-  const drId = useSelector((state) => state.user.id);
-  const role = useSelector((state) => state.user.role);
-
+export default function PatientView() {
   const dispatch = useDispatch();
-  useEffect(() => {
-    console.log(drId);
-    dispatch(getPatients(drId));
-  }, [dispatch]);
+  const notify = React.useContext(SnackbarContext);
+  const { id: doctorId, role } = useSelector((state) => state.user);
+  const { patientsList = [], loading } = useSelector((state) => state.doctor);
+  const [search, setSearch] = useState("");
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [healthDialog, setHealthDialog] = useState(false);
+  const [historyDialog, setHistoryDialog] = useState(false);
+  const [form, setForm] = useState({ date:"", description:"", labResults:"", medicalInformation:"", primaryDiagnosis:"", treatment:"" });
+  const [saving, setSaving] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
 
-  const rows = useSelector((state) => state.doctor.patientsList);
+  useEffect(() => { if (doctorId) dispatch(getPatients(doctorId)); }, [dispatch, doctorId]);
 
-  const [id, setPatientId] = useState(-1);
-  const [isOpen, setIsOpen] = useState(false);
+  const filteredPatients = useMemo(() => patientsList.filter((patient) => {
+    const q = search.trim().toLowerCase();
+    return !q || [patient.name, patient.email, patient.username, patient.mobile].filter(Boolean).some((value) => String(value).toLowerCase().includes(q));
+  }), [patientsList, search]);
 
-  const [selectedHealthRecord, setSelectedHealthRecord] = useState([]);
+  const resetForm = () => setForm({ date:"", description:"", labResults:"", medicalInformation:"", primaryDiagnosis:"", treatment:"" });
+  const hasDraft = Object.values(form).some(Boolean);
+  const closeHealth = () => { if (hasDraft) setConfirmClose(true); else { setHealthDialog(false); resetForm(); } };
 
-  // Function to open the dialog and set the selected health record
-
-  // Function to close the dialog
-  const handleCloseDialog = () => {
-    setSelectedHealthRecord(null);
-    setDialogHealthRecord(false);
-  };
-
-  const handleAddHealthRecord = (id) => {
-    setPatientId(id);
-    setIsOpen(true);
-    console.log(id);
-  };
-  const handleCancel = () => {
-    // Add your cancellation logic here
-    // For example, closing the dialog or resetting form data
-    setIsOpen(false);
-  };
-
-  const handleSubmitHealthRecord = async (event) => {
+  const saveHealthRecord = async (event) => {
     event.preventDefault();
-
-    const sampleData = {
-      date: event.target.elements.date.value,
-      description: event.target.elements.description.value,
-      labResults: event.target.elements.labResults.value,
-      medicalInformation: event.target.elements.medicalInformation.value,
-      primaryDiagnosis: event.target.elements.primaryDiagnosis.value,
-      treatment: event.target.elements.treatment.value,
-      doctorID: drId,
-    };
-
-    console.log("entered handleSubmitHealthRecord");
-    console.log("patient id: " + id);
-
-    const response = dispatch(
-      addHealthRecord({ patientID: id, healthRecordData: sampleData })
-    );
-
-    setIsOpen(false);
-    console.log(response);
+    if (!selectedPatient) return;
+    setSaving(true);
+    try {
+      await dispatch(addHealthRecord({ patientID: selectedPatient._id, healthRecordData: { ...form, doctorID: doctorId } })).unwrap();
+      notify?.("Health record added successfully.", "success");
+      setHealthDialog(false);
+      resetForm();
+      dispatch(getPatients(doctorId));
+    } catch (error) {
+      notify?.("Unable to add the health record.", "error");
+    } finally { setSaving(false); }
   };
 
-  const [dialogHealthRecord, setDialogHealthRecord] = useState(false);
-  const [dialogMedicalHistory, setOpenDialogMedicalHistory] = useState(false);
-
-  const [selectedMedicalHistory, setSelectedMedicalHistory] = useState(null);
-
-  // Function to open the health record dialog
-  const handleOpenHealthRecordDialog = (healthRecord) => {
-    setSelectedHealthRecord(healthRecord);
-    console.log(healthRecord);
-    setDialogHealthRecord(true);
+  const downloadFile = async (patientId, file) => {
+    try {
+      const response = await axios.get(`${API_URL}/patient/download/${file._id}/${patientId}`, { responseType:"blob" });
+      download(response.data, (file.file_path || file.title || "medical-document").split("/").pop(), file.file_mimetype);
+    } catch { notify?.("Unable to download this document.", "error"); }
   };
 
-  // Function to open the medical history dialog
-  const handleOpenMedicalHistoryDialog = (row) => {
-    setSelectedMedicalHistory(row.medHist);
-    setPatientId(row._id);
-    setOpenDialogMedicalHistory(true);
-  };
+  if (role !== "doctor") return null;
 
-  // Function to close the health record dialog
-  const handleCloseHealthRecordDialog = () => {
-    setSelectedHealthRecord(null);
-    setDialogHealthRecord(false);
-  };
+  return (
+    <main className="doctor-page">
+      <div className="doctor-page-shell">
+        <section className="doctor-page-header">
+          <div className="doctor-page-header-copy"><span>PATIENT CARE</span><h1>My patients</h1><p>Review the patients connected to your care, open their records, and add clinical information without leaving the portal.</p></div>
+          <div className="doctor-page-header-icon"><PersonRoundedIcon /></div>
+        </section>
 
-  // Function to close the medical history dialog
-  const handleCloseMedicalHistoryDialog = () => {
-    setSelectedMedicalHistory(null);
-    setOpenDialogMedicalHistory(false);
-  };
-  const navigate = useNavigate();
-  return role === "doctor" ? (
-    <div>
-      <div>
-        <AccountAvatar />
-      </div>
-      <div></div>
-      {rows.map((row, index) => (
-        <Paper elevation={3} style={styles.paper} key={index}>
-          <Box display="flex" justifyContent="space-between">
-            <div>
-              <Typography variant="h4" style={styles.mainHeader}>
-                {row.name}
-              </Typography>
-              <Typography variant="body1" style={styles.text}>
-                <span style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
-                  Email:
-                </span>{" "}
-                {row.email}
-              </Typography>
+        <section className="doctor-stats">
+          <div className="doctor-stat"><span>Total patients</span><strong>{patientsList.length}</strong><small>Patients currently returned by your account</small></div>
+          <div className="doctor-stat"><span>Showing</span><strong>{filteredPatients.length}</strong><small>Patients matching the current search</small></div>
+          <div className="doctor-stat"><span>Search</span><strong>{search ? "On" : "Off"}</strong><small>Filter by name, email, username or mobile</small></div>
+          <div className="doctor-stat"><span>Records</span><strong>{patientsList.filter((p) => (p.healthRecords || []).length).length}</strong><small>Patients with health records</small></div>
+        </section>
 
-              {(() => {
-                const today = new Date();
-                const birthDate = new Date(row.dBirth);
-                let calculatedAge =
-                  today.getFullYear() - birthDate.getFullYear();
-
-                // Adjust age if birthday hasn't occurred yet this year
-                if (
-                  today.getMonth() < birthDate.getMonth() ||
-                  (today.getMonth() === birthDate.getMonth() &&
-                    today.getDate() < birthDate.getDate())
-                ) {
-                  calculatedAge--;
-                }
-
-                // Display the calculated age
-                return (
-                  <Typography variant="body1" style={styles.text}>
-                    <span
-                      style={{
-                        fontSize: "1.1rem",
-                        fontWeight: "bold",
-                        marginRight: "4px",
-                      }}
-                    >
-                      Age:
-                    </span>
-                    {calculatedAge}
-                  </Typography>
-                );
-              })()}
-
-              <Typography variant="body1" style={styles.text}>
-                <span style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
-                  Gender:
-                </span>{" "}
-                {row.gender}
-              </Typography>
-            </div>
-          </Box>
-          <div style={styles.buttonGroup}>
-            <span>
-              <Button
-                variant="contained"
-                sx={{backgroundColor:"#004E98"}}
-                onClick={() => handleOpenHealthRecordDialog(row.healthRecords)}
-              >
-                Health Records
-              </Button>
-              <IconButton
-                sx={{width:"60px"}}
-                onClick={() => {
-                  handleAddHealthRecord(row._id);
-                }}
-              >
-                <AddCircleIcon />
-              </IconButton>
-            </span>
-            <Button
-              variant="contained"
-              sx={{backgroundColor:"#004E98"}}
-
-              onClick={() => handleOpenMedicalHistoryDialog(row)}
-            >
-              Medical History
-            </Button>
-          </div>
-        </Paper>
-      ))}
-      {/* dialogue */}
-      <Dialog open={isOpen} width="lg" >
-      <div style={{margin:"20px"}}><h4>Add health Record</h4></div>
-
-        <form
-          onSubmit={handleSubmitHealthRecord}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "auto 1fr", // Label takes auto width, input takes 1fr (remaining width)
-            columnGap: "10px", // Adjust the gap between label and input
-            margin: "4%",
-          }}
-        >
-          <div className="form-group">
-            <label htmlFor="date">Date</label>
-            <input
-              type="date"
-              id="date"
-              name="date"
-              defaultValue=""
-              style={{ width: "100%" }}
-              required
-            />
+        <section className="doctor-surface">
+          <div className="doctor-toolbar">
+            <div className="search-field"><span style={{ color:"#1769ff", fontSize:8, fontWeight:850, letterSpacing:".13em" }}>PATIENT DIRECTORY</span><div style={{ marginTop:5 }}><ClinicSearchField value={search} onChange={setSearch} placeholder="Search patients by name, email or mobile..." /></div></div>
+            <div className="doctor-toolbar-spacer" />
+            <span style={{ color:"#8995a5", fontSize:9 }}>{filteredPatients.length} result{filteredPatients.length === 1 ? "" : "s"}</span>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <input
-              type="text"
-              id="description"
-              name="description"
-              defaultValue=""
-              style={{ width: "90%" }}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="labResults">LAB RESULTS</label>
-            <input
-              type="text"
-              id="labResults"
-              name="labResults"
-              defaultValue=""
-              style={{ width: "100%" }}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="medicalInformation">Medical Information</label>
-            <input
-              type="text"
-              id="medicalInformation"
-              name="medicalInformation"
-              defaultValue=""
-              style={{ width: "90%" }}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="primaryDiagnosis">Primary Diagnosis</label>
-            <input
-              type="text"
-              id="primaryDiagnosis"
-              name="primaryDiagnosis"
-              defaultValue=""
-              style={{ width: "100%" }}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="treatment">Treatment</label>
-            <input
-              type="text"
-              id="treatment"
-              name="treatment"
-              defaultValue=""
-              style={{ width: "90%" }}
-              required
-            />
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: "1%",
-            }}
-          >
-            <div
-              className="button-group"
-              style={{ flex: 1, marginLeft: "40px" }}
-            >
-              <button type="submit" style={{ width: "100%" }}>
-                Save
-              </button>
-            </div>
-            <div
-              className="button-group"
-              style={{ flex: 1, marginLeft: "40px" }}
-            >
-              <button style={{ width: "100%" }} onClick={handleCancel}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
-      </Dialog>
-      <Dialog
-        open={dialogMedicalHistory}
-        onClose={handleCloseMedicalHistoryDialog}
-        fullWidth
-        maxWidth="md"
-        PaperProps={{ style: { minHeight: "70vh", maxHeight: "90vh" } }}
-      >
-        <CardContent>
-          <Typography variant="h5">Medical History</Typography>
-          {selectedMedicalHistory && (
-            // Display detailed medical history information here
-            <>
-              {selectedMedicalHistory.map((medicalHistory, idx) => (
-                <List key={idx}>
-                  <ListItem>
-                    <ListItemText
-                      primary={medicalHistory.title}
-                      secondary={medicalHistory.description}
-                    />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        edge="end"
-                        aria-label="close"
-                        onClick={() => {
-                          handleDownloadFile(
-                            id,
-                            medicalHistory._id,
-                            medicalHistory.file_path,
-                            medicalHistory.file_mimetype
-                          );
-                        }}
-                      >
-                        <GetAppIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                </List>
-              ))}
-            </>
-          )}
-        </CardContent>
-      </Dialog>
-      {/* Dialog Component for Health Records */}
-      <Dialog
-        open={dialogHealthRecord}
-        onClose={handleCloseHealthRecordDialog}
-        fullWidth
-        maxWidth="md"
-        PaperProps={{
-          style: {
-            minHeight: "70vh",
-            maxHeight: "90vh",
-            padding: "50px",
-            backgroundColor: "	#D3D3D3",
-          },
-        }}
-      >
-        {Array.isArray(selectedHealthRecord) ? (
-          // Display detailed health record information here
-          <>
-            {selectedHealthRecord.map((healthRecord, idx) => (
-              <Accordion key={idx} style={{ width: "100%" }}>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls={`health-record-${idx}-content`}
-                  id={`health-record-${idx}-header`}
-                >
-                  <div style={{ display: "flex", gap: "35px" }}>
-                    <Typography variant="h5">
-                      {new Date(healthRecord.date).toLocaleString()}
-                    </Typography>
-                    <Typography variant="h5">
-                      {healthRecord.description}
-                    </Typography>
+          {loading && !patientsList.length ? <div className="doctor-empty-state"><strong>Loading patients...</strong></div> : filteredPatients.length ? (
+            <div className="doctor-card-grid">
+              {filteredPatients.map((patient) => {
+                const records = patient.healthRecords || [];
+                const history = patient.medHist || [];
+                return <article className="doctor-patient-card" key={patient._id}>
+                  <div className="doctor-patient-card-head"><div className="doctor-person-avatar">{initials(patient.name)}</div><div><h3>{patient.name || "Unnamed patient"}</h3><p>{patient.email || patient.username || "Patient account"}</p></div></div>
+                  <div className="doctor-patient-card-details">
+                    <div className="doctor-detail"><span>Gender</span><strong>{patient.gender || "—"}</strong></div>
+                    <div className="doctor-detail"><span>Mobile</span><strong>{patient.mobile || "—"}</strong></div>
+                    <div className="doctor-detail"><span>Health records</span><strong>{records.length}</strong></div>
+                    <div className="doctor-detail"><span>Medical files</span><strong>{history.length}</strong></div>
                   </div>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <CardContent>
-                    {Object.keys(healthRecord).map(
-                      (key) =>
-                        key !== "_id" && (
-                          <div key={key}>
-                            <Typography
-                              variant="body1"
-                              style={{ wordWrap: "break-word" }}
-                            >
-                              <span style={{ fontWeight: "bold" }}>{key}:</span>{" "}
-                              {healthRecord[key]}
-                            </Typography>
-                          </div>
-                        )
-                    )}
-                  </CardContent>
-                </AccordionDetails>
-              </Accordion>
-            ))}
-          </>
-        ) : (
-          // Render a message or handle the case where health records is not an array
-          <Typography variant="body1">No health records available.</Typography>
-        )}
+                  <div className="doctor-row-actions" style={{ marginTop:14 }}>
+                    <button className="doctor-secondary-button" onClick={() => { setSelectedPatient(patient); setHistoryDialog(true); }}><VisibilityRoundedIcon sx={{ fontSize:15, mr:.5, verticalAlign:"middle" }} />Medical history</button>
+                    <button className="doctor-secondary-button" onClick={() => { setSelectedPatient(patient); setHealthDialog(true); }}><AddCircleOutlineRoundedIcon sx={{ fontSize:15, mr:.5, verticalAlign:"middle" }} />Add record</button>
+                  </div>
+                </article>;
+              })}
+            </div>
+          ) : <div className="doctor-empty-state"><div className="doctor-empty-icon"><PersonRoundedIcon /></div><h3>{search ? "No matching patients" : "No patients yet"}</h3><p>{search ? "Try a different name, email, username or mobile number." : "Patients connected to your doctor account will appear here."}</p></div>}
+        </section>
+      </div>
+
+      <Dialog open={healthDialog} onClose={closeHealth} fullWidth maxWidth="md" className="doctor-dialog">
+        <DialogTitle className="doctor-dialog-title"><div><span>CLINICAL RECORD</span><h2>Add health record</h2></div><IconButton className="doctor-dialog-close" onClick={closeHealth}><CloseRoundedIcon /></IconButton></DialogTitle>
+        <DialogContent className="doctor-dialog-content">
+          <div className="doctor-dialog-section"><h3>{selectedPatient?.name || "Patient"}</h3><p>Add a structured clinical note to this patient account.</p>
+            <form id="doctor-health-record-form" onSubmit={saveHealthRecord} className="doctor-form-grid">
+              {[[ "date","Date","date" ],["description","Description","text"],["labResults","Lab results","text"],["medicalInformation","Medical information","text"],["primaryDiagnosis","Primary diagnosis","text"],["treatment","Treatment","text"]].map(([key,label,type]) => <div className="doctor-form-field" key={key}><label htmlFor={"health-"+key}>{label}</label><input id={"health-"+key} type={type} value={form[key]} required onChange={(e) => setForm({ ...form, [key]:e.target.value })} /></div>)}
+            </form>
+          </div>
+        </DialogContent>
+        <DialogActions sx={{ px:3, pb:2.5 }}><Button className="doctor-secondary-button" onClick={closeHealth}>Cancel</Button><Button className="doctor-primary-button" type="submit" form="doctor-health-record-form" disabled={saving}>{saving ? "Saving..." : "Save record"}</Button></DialogActions>
       </Dialog>
-      {/* ... your existing code */}
-    </div>
-  ) : (
-    <>
-      <Link to="/Login" sx={{ left: "100%" }}>
-        <Typography
-          variant="h6"
-          noWrap
-          component="div"
-          sx={{
-            flexGrow: 1,
-            display: { xs: "none", sm: "flex" },
-            fontSize: "20px",
-            maragin: "auto",
-          }}
-        >
-          Login
-        </Typography>
-      </Link>
-    </>
+
+      <Dialog open={historyDialog} onClose={() => setHistoryDialog(false)} fullWidth maxWidth="md" className="doctor-dialog">
+        <DialogTitle className="doctor-dialog-title"><div><span>MEDICAL FILES</span><h2>{selectedPatient?.name || "Patient"} · Medical history</h2></div><IconButton className="doctor-dialog-close" onClick={() => setHistoryDialog(false)}><CloseRoundedIcon /></IconButton></DialogTitle>
+        <DialogContent className="doctor-dialog-content">
+          {(selectedPatient?.medHist || []).length ? (selectedPatient.medHist.map((file, index) => <div className="doctor-dialog-section" key={file._id || index}><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:12 }}><div><h3>{file.title || "Medical document"}</h3><p>{file.description || file.file_mimetype || "Medical file"}</p></div><Button className="doctor-secondary-button" onClick={() => downloadFile(selectedPatient._id, file)}><DownloadRoundedIcon sx={{ fontSize:15, mr:.5 }} />Download</Button></div></div>)) : <div className="doctor-empty-state"><div className="doctor-empty-icon"><MedicalInformationRoundedIcon /></div><h3>No medical files</h3><p>This patient does not have uploaded medical-history documents yet.</p></div>}
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog open={confirmClose} title="Discard health record?" message="You have entered clinical information. If you close this form now, the unsaved changes will be lost." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setHealthDialog(false); resetForm(); }} onCancel={() => setConfirmClose(false)} />
+    </main>
   );
 }
-
-export default PatientDetails;
