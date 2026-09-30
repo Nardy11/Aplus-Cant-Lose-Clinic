@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import AddIcon from "@mui/icons-material/Add";
 import HomeIcon from "@mui/icons-material/Home";
 import Alert from "@mui/material/Alert";
@@ -81,6 +82,27 @@ const MedHistList = () => {
     }
   };
 
+  const reviewFile = async (fid, mimetype) => {
+    const previewWindow = window.open("", "_blank", "noopener,noreferrer");
+    try {
+      const result = await axios.get(
+        `${API_URL}/patient/download/${fid}/${id}`,
+        { responseType: "blob" }
+      );
+      const url = URL.createObjectURL(new Blob([result.data], { type: mimetype }));
+      if (previewWindow) {
+        previewWindow.location.href = url;
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } else {
+        URL.revokeObjectURL(url);
+        setErrorMsg("Please allow pop-ups to review this document.");
+      }
+    } catch (error) {
+      if (previewWindow) previewWindow.close();
+      setErrorMsg("Unable to open this document.");
+    }
+  };
+
   const deleteFile = async (fid, path) => {
     try {
       await axios.get(`${API_URL}/patient/delete/${fid}/${id}`);
@@ -129,6 +151,15 @@ const MedHistList = () => {
                 <span>{description || "Medical document"}</span>
               </div>
               <div className="medical-history-file-actions">
+                <button
+                  type="button"
+                  className="medical-history-file-action"
+                  aria-label="Review document"
+                  onClick={() => reviewFile(_id, file_mimetype)}
+                >
+                  <VisibilityRoundedIcon />
+                  <span>Review</span>
+                </button>
                 <IconButton aria-label="download" onClick={() => downloadFile(_id, file_path, file_mimetype)}>
                   <CloudDownloadIcon />
                 </IconButton>
