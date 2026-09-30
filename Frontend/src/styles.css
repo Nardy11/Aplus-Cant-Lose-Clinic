@@ -8185,3 +8185,64 @@ select option,
 .chat-empty-list span, .chat-empty-list small { color:#69788c !important; font-size:10px !important; line-height:1.55 !important; }
 .chat-welcome-empty { align-items:center !important; justify-content:center !important; }
 .chat-welcome-copy { text-align:center !important; }
+
+/* ===== Doctor profile page ===== */
+.doctor-profile-page {
+  min-height:100vh;
+  background:radial-gradient(circle at 90% 0%, rgba(23,105,255,.07), transparent 28%), #f7f9fc;
+}
+.doctor-profile-shell { width:min(1120px, calc(100% - 40px)); margin:0 auto; padding:28px 0 70px; }
+.doctor-profile-back {
+  display:inline-flex; align-items:center; gap:7px; margin:0 0 16px; padding:8px 10px;
+  border:1px solid #dbe4ee; border-radius:10px; background:#fff; color:#68778c;
+  cursor:pointer; font:inherit; font-size:10px; font-weight:750; transition:none;
+}
+.doctor-profile-back:hover { color:#68778c !important; background:#fff !important; border-color:#dbe4ee !important; }
+.doctor-profile-back svg { font-size:17px; }
+.doctor-profile-hero {
+  display:flex; align-items:center; gap:16px; padding:24px;
+  border:1px solid #e1e8f0; border-radius:20px; background:#fff;
+  box-shadow:0 15px 40px rgba(27,45,69,.06);
+}
+.doctor-profile-avatar {
+  width:62px; height:62px; flex:0 0 62px; display:grid; place-items:center;
+  border-radius:18px; background:#eef4ff; color:#1769ff;
+}
+.doctor-profile-avatar svg { font-size:31px; }
+.doctor-profile-hero-copy { min-width:0; flex:1; }
+.doctor-profile-hero-copy > span { color:#1769ff; font-size:9px; font-weight:850; letter-spacing:.16em; }
+.doctor-profile-hero-copy h1 { margin:6px 0 6px; color:#26364d; font-size:30px; line-height:1.05; letter-spacing:-.04em; }
+.doctor-profile-hero-copy p { margin:0; color:#8794a6; font-size:10px; }
+.doctor-profile-edit {
+  min-height:40px; padding:0 14px; border:1px solid #dbe4ee; border-radius:10px;
+  background:#fff; color:#56657a; font:inherit; font-size:10px; font-weight:750; cursor:pointer;
+}
+.doctor-profile-edit:hover { background:#f7f9fc; color:#56657a; }
+.doctor-profile-grid {
+  display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:14px;
+}
+.doctor-profile-card {
+  display:flex; align-items:center; gap:12px; min-height:92px; padding:17px;
+  border:1px solid #e1e8f0; border-radius:17px; background:#fff;
+  box-shadow:0 8px 25px rgba(27,45,69,.035);
+}
+.doctor-profile-card-icon {
+  width:42px; height:42px; flex:0 0 42px; display:grid; place-items:center;
+  border-radius:13px; background:#eef4ff; color:#1769ff;
+}
+.doctor-profile-card-icon svg { font-size:21px; }
+.doctor-profile-card span { display:block; color:#8a97a8; font-size:8px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.doctor-profile-card strong { display:block; margin-top:6px; color:#344258; font-size:11px; overflow:hidden; text-overflow:ellipsis; }
+.doctor-profile-note {
+  display:flex; align-items:flex-start; gap:12px; margin-top:14px; padding:17px;
+  border:1px solid #dce8f7; border-radius:17px; background:#f8fbff;
+}
+.doctor-profile-note-icon { width:40px; height:40px; flex:0 0 40px; display:grid; place-items:center; border-radius:12px; background:#e7f0ff; color:#1769ff; }
+.doctor-profile-note strong { color:#3b4b61; font-size:10px; }
+.doctor-profile-note p { margin:5px 0 0; color:#7d8b9d; font-size:9px; line-height:1.55; }
+@media (max-width:700px) {
+  .doctor-profile-shell { width:min(100% - 28px,1120px); padding-top:20px; }
+  .doctor-profile-hero { align-items:flex-start; flex-wrap:wrap; }
+  .doctor-profile-grid { grid-template-columns:1fr; }
+  .doctor-profile-hero-copy h1 { font-size:25px; }
+}
