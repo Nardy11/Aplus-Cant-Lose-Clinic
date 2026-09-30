@@ -8119,6 +8119,7 @@ select option,
 .doctor-credentials-close:hover { color:#1769ff !important; background:#f5f8ff !important; border-color:#c9d9ef !important; }
 .doctor-credentials-close svg { font-size: 22px !important; }
 
+.clinic-wallet-stat strong.wallet-positive { color:#278a68 !important; }
 .clinic-wallet-stat strong.wallet-negative { color:#c95561 !important; }
 .clinic-wallet-row-amount.debit { color:#c95561 !important; }
 .clinic-wallet-row-icon.debit { color:#c95561 !important; background:#fff0f1 !important; }
