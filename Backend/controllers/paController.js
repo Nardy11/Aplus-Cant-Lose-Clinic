@@ -2217,6 +2217,7 @@ module.exports = {
   addPatientNotification,
   updatePatientNotifications,
   sendPatientEmail,
+  sendEmail,
   requestFollowUp,
   getID,
   payWithWalletF,
