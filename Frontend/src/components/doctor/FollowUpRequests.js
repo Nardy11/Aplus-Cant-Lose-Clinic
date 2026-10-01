@@ -4,10 +4,7 @@ import { useSelector } from "react-redux";
 import { API_URL } from "../../Consts";
 import { SnackbarContext } from "../../App";
 import AccountAvatar from "../Authentication/AccountAvatar";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs from "dayjs";
+import { ClinicDateTimeField } from "../common/ClinicFields";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
@@ -25,8 +22,8 @@ export default function FollowUpRequests() {
   const notify = useContext(SnackbarContext);
   const [requests, setRequests] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [start, setStart] = useState(null);
-  const [end, setEnd] = useState(null);
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
@@ -45,10 +42,10 @@ export default function FollowUpRequests() {
   const accept = async () => {
     if (!start || !end) { notify?.("Choose both start and end times.", "error"); return; }
     try {
-      const response = await axios.post(`${API_URL}/doctor/acceptFollowUp/${selected._id}`, { start: start.toDate(), end: end.toDate() });
+      const response = await axios.post(`${API_URL}/doctor/acceptFollowUp/${selected._id}`, { start, end });
       setRequests(Array.isArray(response.data) ? response.data : requests.filter((r) => r._id !== selected._id));
       notify?.("Follow-up scheduled successfully.", "success");
-      setSelected(null); setStart(null); setEnd(null);
+      setSelected(null); setStart(""); setEnd("");
     } catch { notify?.("Unable to schedule the follow-up.", "error"); }
   };
 
@@ -82,8 +79,8 @@ export default function FollowUpRequests() {
       <DialogContent className="doctor-dialog-content">
         <div className="doctor-dialog-section"><h3>Choose the next visit</h3><p>Set a start and end time for this follow-up request.</p>
           <div className="doctor-form-grid">
-            <div className="doctor-form-field"><label>Start time</label><LocalizationProvider dateAdapter={AdapterDayjs}><DateTimePicker value={start} onChange={setStart} minDateTime={dayjs()} slotProps={{ textField:{ fullWidth:true } }} /></LocalizationProvider></div>
-            <div className="doctor-form-field"><label>End time</label><LocalizationProvider dateAdapter={AdapterDayjs}><DateTimePicker value={end} onChange={setEnd} minDateTime={start || dayjs()} slotProps={{ textField:{ fullWidth:true } }} /></LocalizationProvider></div>
+            <ClinicDateTimeField value={start} onChange={setStart} label="Start time" minDateTime={new Date().toISOString().slice(0,16)} />
+            <ClinicDateTimeField value={end} onChange={setEnd} label="End time" minDateTime={start || new Date().toISOString().slice(0,16)} />
           </div>
         </div>
       </DialogContent>
