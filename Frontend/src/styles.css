@@ -10281,3 +10281,35 @@ select option,
   .clinic-notification-row.is-unseen::after { display: none !important; }
 }
 
+
+
+/* HeroUI v2 DatePicker: the base contains the DateInput and calendar trigger.
+   Keep those two siblings on the same row. */
+.clinic-heroui-date-field .clinic-heroui-picker {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+.clinic-heroui-date-field .clinic-heroui-picker [data-slot="input-wrapper"] {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+.clinic-heroui-date-field .clinic-heroui-picker [data-slot="selectorButton"] {
+  flex: 0 0 auto !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.clinic-heroui-date-field .clinic-heroui-picker [data-slot="selectorIcon"] {
+  display: block !important;
+  width: 18px !important;
+  height: 18px !important;
+}
