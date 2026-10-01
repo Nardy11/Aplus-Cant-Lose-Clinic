@@ -244,20 +244,31 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
               <ArrowBackRoundedIcon />
             </IconButton>
 
-            <div className="single-chat-person">
-              <div className="single-chat-avatar">
-                {(senderName || "C").charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <span>PRIVATE CONVERSATION</span>
-                <h2>{senderName || "Conversation"}</h2>
-                <small>{selectedChat.isGroupChat ? "Clinic group" : "Doctor / patient chat"}</small>
-              </div>
-            </div>
-
             {!selectedChat.isGroupChat && senderFull ? (
-              <ProfileModal user={senderFull} />
-            ) : null}
+              <ProfileModal user={senderFull}>
+                <div className="single-chat-person">
+                  <div className="single-chat-avatar">
+                    {(senderName || "C").charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <span>PRIVATE CONVERSATION</span>
+                    <h2>{senderName || "Conversation"}</h2>
+                    <small>Click to view profile</small>
+                  </div>
+                </div>
+              </ProfileModal>
+            ) : (
+              <div className="single-chat-person">
+                <div className="single-chat-avatar">
+                  {(senderName || "C").charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <span>PRIVATE CONVERSATION</span>
+                  <h2>{senderName || "Conversation"}</h2>
+                  <small>Clinic group</small>
+                </div>
+              </div>
+            )}
           </header>
 
           <div className="single-chat-body">
