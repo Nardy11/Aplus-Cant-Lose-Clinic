@@ -29,7 +29,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import CreditCardForm from './CreditCardForm';
 import { API_URL } from "../../Consts.js";
 import RescheduleAppointment from "./PatRescheduleAppointment";
@@ -58,12 +58,22 @@ function BasicTable({ status, date, searchTerm, onPayButtonClick }) {
   const dispatch = useDispatch();
   const pId = useSelector((state) => state.user.id);
   const [cancelledAppointments, setCancelledAppointments] = useState([]);
+  const location = useLocation();
+  const focusedAppointmentId = new URLSearchParams(location.search).get("appointmentId");
 
   useEffect(() => {
     dispatch(viewAppoints(pId));
   }, [dispatch]);
   const rows = useSelector((state) => state.patient.appoints);
-  console.log(rows);
+
+  useEffect(() => {
+    if (!focusedAppointmentId || !rows?.length) return;
+    const timer = window.setTimeout(() => {
+      const target = document.getElementById(`appointment-row-${focusedAppointmentId}`);
+      target?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 150);
+    return () => window.clearTimeout(timer);
+  }, [focusedAppointmentId, rows]);
 
 
   const handleCancelAppointment=async(appointment)=>
@@ -117,10 +127,7 @@ function BasicTable({ status, date, searchTerm, onPayButtonClick }) {
     <TableCell align="left">Doctor Speciality</TableCell>
     <TableCell align="left">Date</TableCell>
     <TableCell align="left">Status</TableCell>
-    <TableCell align="left">Reschedule Appointment</TableCell> {/* Add this line */}
-    <TableCell align="left">Cancel Appointment </TableCell>
-    <TableCell align="left">Request FollowUp </TableCell>
-
+    <TableCell align="left" className="appointment-actions-heading">Patient actions</TableCell>
   </TableRow>
 </TableHead>
 
@@ -137,7 +144,7 @@ function BasicTable({ status, date, searchTerm, onPayButtonClick }) {
       );
     })
     .map((row, index) => (
-      <TableRow key={index}>
+      <TableRow key={index} id={`appointment-row-${row._id}`} className={focusedAppointmentId === row._id ? "appointment-row-focused" : ""}>
         <TableCell component="th" scope="row">
           {row.drID?.name}
         </TableCell>
@@ -151,35 +158,34 @@ function BasicTable({ status, date, searchTerm, onPayButtonClick }) {
     <span className="appointment-followup-mark">+</span>
   )}
       </TableCell>
-        <TableCell align="left">
-          {row.status === "upcoming" && (
-            <RescheduleAppointment appointment={row} />
-          )}
+        <TableCell align="left" className="appointment-actions-cell">
+          <div className="appointment-actions">
+            {row.status === "upcoming" && (
+              <>
+                <RescheduleAppointment appointment={row} />
+                <Button
+                  className="appointment-action-button appointment-cancel-button"
+                  onClick={() => handleCancelAppointment(row)}
+                  disabled={cancelledAppointments.includes(row._id)}
+                >
+                  {cancelledAppointments.includes(row._id) ? "Done" : "Cancel"}
+                </Button>
+              </>
+            )}
+            {row.status === "completed" && (
+              <Button
+                className="appointment-action-button appointment-followup-button"
+                onClick={() => handleFollowUpRequest(row)}
+                disabled={followUpsRequests.includes(row._id)}
+              >
+                {followUpsRequests.includes(row._id) ? "Done" : "Request follow-up"}
+              </Button>
+            )}
+            {row.status !== "upcoming" && row.status !== "completed" && (
+              <span className="appointment-action-muted">No actions available</span>
+            )}
+          </div>
         </TableCell>
-        <TableCell align="left">
-  {row.status === "upcoming" && (
-    <Button
-      variant="contained"
-      color="secondary"
-      onClick={() => {handleCancelAppointment(row)}}
-      disabled={cancelledAppointments.includes(row._id)}
-    >
-      {cancelledAppointments.includes(row._id) ? "Done" : "Cancel"}
-    </Button>
-  )}
-</TableCell>
-<TableCell  align="left">
-                {row.status === "completed" && (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleFollowUpRequest(row)}
-                    disabled={followUpsRequests.includes(row._id)}
-                  >
-                    {followUpsRequests.includes(row._id) ? "Done" : "FollowUp"}
-                  </Button>
-                )}
-              </TableCell>
 
       </TableRow>
     ))}
