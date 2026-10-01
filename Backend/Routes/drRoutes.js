@@ -272,8 +272,6 @@ router.get('/download/:drid', async (req, res) => {
 // Get doctor notifications
 router.get('/:doctorId/notifications', getDoctorNotifications);
 router.patch('/:doctorId/notifications/seen-all', markAllDoctorNotificationsSeen);
-router.patch('/:doctorId/notifications/:notificationId/seen', markDoctorNotificationSeen);
-
 // Add a new notification for a doctor
 router.post('/:doctorId/notifications', addDoctorNotification);
 
