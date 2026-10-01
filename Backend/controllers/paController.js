@@ -421,10 +421,7 @@ const updateFamilyMember = async (req, res) => {
       relation,
     };
 
-    await Patient.collection.updateOne(
-      { _id: patient._id },
-      { $set: { family } }
-    );
+    await Patient.collection.updateOne({ _id: patient._id }, { $set: { family } });
 
     return res.json({
       message: "Family member updated successfully",
@@ -451,10 +448,7 @@ const deleteFamilyMember = async (req, res) => {
     const removed = family[index];
     family.splice(index, 1);
 
-    await Patient.collection.updateOne(
-      { _id: patient._id },
-      { $set: { family } }
-    );
+    await Patient.collection.updateOne({ _id: patient._id }, { $set: { family } });
 
     return res.json({
       message: "Family member removed successfully",
@@ -467,6 +461,1214 @@ const deleteFamilyMember = async (req, res) => {
   }
 };
 
+const viewFamilyMembers = async (req, res) => {
+  const { patientId } = req.params;
+
+  try {
+    // Find the patient by ID
+    const patient = await Patient.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    // Retrieve the family members of the patient
+    const familyMembers = patient.family;
+
+    return res.status(200).json({
+      message: "Family members retrieved successfully",
+      familyMembers,
+    });
+  } catch (error) {
+    console.error("Error retrieving family members:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const viewDoctors = async (req, res) => {
+  try {
+    const patientId = req.params.patientId;
+
+    // Find the patient by patientId
+    const patient = await Patient.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    // Find doctors with status "accepted"
+    const doctors = await Doctor.find({ status: "accepted" });
+
+    if (!doctors || doctors.length === 0) {
+      return res.status(404).json({ error: "No accepted doctors found" });
+    }
+
+    // Prepare an array to store doctor information
+    const doctorInfo = [];
+
+    // Iterate through each accepted doctor and include all doctor information
+    for (const doctor of doctors) {
+      // Find the health package associated with the patient
+      const healthPackage = await HPackages.findById(patient.hPackage);
+
+      // Calculate session price based on doctor's rate, health package, and fee
+      let sessionPrice = doctor.rate;
+
+      if (healthPackage) {
+        sessionPrice *= 1.1 * (1 - healthPackage.doctorDisc / 100);
+      } else {
+        sessionPrice *= 1.1;
+      }
+
+      // Include all doctor information and the session price
+      const doctorInfoItem = {
+        ...doctor.toObject(), // Include all doctor information
+        sessionPrice, // Include the session price
+      };
+
+      doctorInfo.push(doctorInfoItem);
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Accepted doctors information", doctors: doctorInfo });
+  } catch (error) {
+    console.error("Error retrieving accepted doctors information:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const freeAppiontmentSlot = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+
+    // Validate the 'patientId' parameter
+    if (!doctorId) {
+      return res.status(400).json({ error: "doctorId ID is required" });
+    }
+
+    // Find the patient by patientId
+    const doctor = await Doctor.findById(doctorId);
+
+    if (!doctor) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    // Fetch details about each free Appointment
+    const Appointments = await Appointment.find({
+      drID: doctorId,
+      status: "Not_Reserved",
+    }).populate("drID");
+    return res.status(200).json({
+      message: "Free Appointments retrieved successfully",
+      Appointments,
+    });
+  } catch (error) {
+    console.error("Error retrieving Appointments:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const reserveAppointmentSlot = async (req, res) => {
+  try {
+    const { AppointmentId } = req.params;
+    const { username, Description } = req.body;
+
+    // Validate AppointmentId, username, and Description
+    if (!AppointmentId || !username || !Description) {
+      return res.status(400).json({
+        error: "AppointmentId, username, and Description are required",
+      });
+    }
+
+    // Find the patient by username
+    const patient = await Patient.findOne({ username });
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    // Update the appointment with the patient information
+    await Appointment.findByIdAndUpdate(AppointmentId, {
+      Description,
+      pID: patient._id,
+      status: "upcoming",
+    });
+
+    res.status(200).json({ message: "Appointment updated successfully" });
+  } catch (error) {
+    console.error("Error updating appointment:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const searchDoctorsByNameOrspeciality = async (req, res) => {
+  try {
+    const { name, speciality } = req.query;
+
+    // Validate that at least one input is provided
+    if (!name && (!speciality || speciality.trim() === "")) {
+      return res
+        .status(400)
+        .json({ error: "At least one input (name or speciality) is required" });
+    }
+
+    const query = {};
+
+    // Build the query based on provided parameters
+    if (name && name.trim() !== "") {
+      query.name = { $regex: name, $options: "i" };
+    }
+
+    if (speciality && speciality.trim() !== "") {
+      query.speciality = { $regex: speciality, $options: "i" };
+    }
+
+    // Perform the doctor search with the constructed query
+    const doctors = await Doctor.find(query);
+
+    if (!doctors || doctors.length === 0) {
+      return res.status(404).json({ error: "No matching doctors found" });
+    }
+
+    // Prepare the response with the found doctors and consider the patient-specific health package
+    const doctorInfo = await Promise.all(
+      doctors.map(async (doctor) => {
+        const patientId = req.params.patientId;
+        const patient = await Patient.findById(patientId);
+
+        if (!patient) {
+          return {
+            name: doctor.name,
+            speciality: doctor.speciality,
+            sessionPrice: doctor.rate * 1.1, // Assuming no health package
+          };
+        }
+
+        const healthPackage = await HPackages.findById(patient.hPackage);
+
+        return {
+          name: doctor.name,
+          speciality: doctor.speciality,
+          sessionPrice:
+            doctor.rate * 1.1 * (1 - (healthPackage?.doctorDisc || 0) / 100),
+        };
+      })
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Doctors retrieved successfully", doctors: doctorInfo });
+  } catch (error) {
+    console.error("Error searching for doctors:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const searchDoctorsByspecialityOrAvailability = async (req, res) => {
+  try {
+    const { searchTime, speciality } = req.query;
+
+    // Check if neither 'searchTime' nor 'speciality' is provided
+    if (!searchTime && (!speciality || speciality.trim() === "")) {
+      return res.status(400).json({
+        error: "At least one input (searchTime or speciality) is required",
+      });
+    }
+
+    // Convert 'searchTime' to a Date object if provided
+    const searchDateTime = searchTime ? new Date(searchTime) : null;
+
+    // Find appointments that overlap with the specified time if 'searchTime' is provided
+    const overlappingAppointments = searchDateTime
+      ? await Appointment.find({
+          startDate: { $lt: searchDateTime },
+          endDate: { $gt: searchDateTime },
+        })
+      : [];
+
+    // Get the list of doctor IDs from the overlapping appointments
+    const doctorIds = overlappingAppointments.map(
+      (appointment) => appointment.drID
+    );
+
+    // Build the query to find available doctors based on speciality and/or availability
+    const query = {};
+    if (searchDateTime) {
+      query._id = { $nin: doctorIds };
+    }
+    if (speciality && speciality.trim() !== "") {
+      query.speciality = { $regex: speciality, $options: "i" };
+    }
+
+    // Find available doctors who match the specified criteria
+    const availableDoctors = await Doctor.find(query);
+
+    if (!availableDoctors || availableDoctors.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No available doctors found matching the criteria" });
+    }
+
+    // Prepare the response with the available doctors and consider the patient-specific health package
+    const doctorInfo = await Promise.all(
+      availableDoctors.map(async (doctor) => {
+        const patientId = req.params.patientId;
+        const patient = await Patient.findById(patientId);
+
+        if (!patient) {
+          return {
+            name: doctor.name,
+            speciality: doctor.speciality,
+            sessionPrice: doctor.rate * 1.1, // Assuming no health package
+          };
+        }
+
+        const healthPackage = await HPackages.findById(patient.hPackage);
+
+        return {
+          name: doctor.name,
+          speciality: doctor.speciality,
+          sessionPrice:
+            doctor.rate * 1.1 * (1 - (healthPackage?.doctorDisc || 0) / 100),
+        };
+      })
+    );
+
+    return res.status(200).json({
+      message: "Available doctors retrieved successfully",
+      doctors: doctorInfo,
+    });
+  } catch (error) {
+    console.error("Error searching for available doctors:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const viewAppoints = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    // Validate the 'patientId' parameter
+    if (!patientId) {
+      return res.status(400).json({ error: "Patient ID is required" });
+    }
+
+    // Find the patient by patientId
+    const patient = await Patient.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    // Fetch details about each prescription, including medicine and doctor
+    const Appointments = await Appointment.find({ pID: patient._id }).populate({
+      path: "drID",
+      model: "Doctor",
+    });
+
+    // if (!Appointments || Appointments.length === 0) {
+    //   return res
+    //     .status(404)
+    //     .json({ error: "No Appointments found for the patient" });
+    // }
+
+    // Prepare the response with the prescriptions, medicine, and doctor details
+    return res.status(200).json({
+      message: "Appointments retrieved successfully",
+      Appointments,
+    });
+  } catch (error) {
+    console.error("Error retrieving prescriptions:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const viewPrescriptions = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    if (!patientId) return res.status(400).json({ error: "Patient ID is required" });
+
+    const patient = await Patient.findById(patientId);
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
+
+    // Some legacy seed records use string IDs for medicines. Mongoose populate()
+    // cannot cast those IDs reliably, so resolve the references explicitly.
+    const prescriptionDocs = await Prescription.find({ patientID: patient._id }).lean();
+    if (!prescriptionDocs.length) {
+      return res.status(404).json({ error: "No prescriptions found for the patient" });
+    }
+
+    const doctorIds = prescriptionDocs.map((item) => item.doctorID).filter(Boolean);
+    const medicineIds = prescriptionDocs.flatMap((item) => item.meds || []).map((item) => item.medID).filter(Boolean);
+
+    const [doctors, medicines] = await Promise.all([
+      Doctor.find({ _id: { $in: doctorIds } }).lean(),
+      Medicine.collection.find({ _id: { $in: medicineIds } }).toArray(),
+    ]);
+
+    const doctorMap = new Map(doctors.map((doctor) => [String(doctor._id), doctor]));
+    const medicineMap = new Map(medicines.map((medicine) => [String(medicine._id), medicine]));
+
+    const prescriptions = prescriptionDocs.map((prescription) => ({
+      ...prescription,
+      doctorID: doctorMap.get(String(prescription.doctorID)) || prescription.doctorID,
+      meds: (prescription.meds || []).map((item) => ({
+        ...item,
+        medID: medicineMap.get(String(item.medID)) || item.medID,
+      })),
+    }));
+
+    return res.status(200).json({
+      message: "Prescriptions retrieved successfully",
+      prescriptions,
+    });
+  } catch (error) {
+    console.error("Error retrieving prescriptions:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const patientFilterAppointments = async (req, res) => {
+  const { patientId, startDate, endDate, status } = req.query;
+
+  // Check if at least one filter parameter is provided
+  if (!patientId && !startDate && !endDate && !status) {
+    return res
+      .status(400)
+      .json({ error: "At least one filter parameter is required" });
+  }
+
+  // Build the query object based on the provided parameters
+  const query = {
+    pID: patientId,
+  };
+
+  if (startDate) {
+    query.startDate = { $gte: new Date(startDate) };
+  }
+
+  if (endDate) {
+    query.endDate = { $lte: new Date(endDate) };
+  }
+
+  if (status) {
+    query.Description = status;
+  }
+
+  try {
+    // Find appointments that match the query
+    const appointments = await Appointment.find(query);
+
+    res
+      .status(200)
+      .json({ message: "Appointments filtered successfully", appointments });
+  } catch (error) {
+    console.error("Error filtering appointments:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const appointmentPatients = async (req, res) => {
+  try {
+    const doctorId = req.params.doctorId; // Assuming the doctor's ID is in the request params
+    if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+      return res.status(400).json({ error: "Invalid doctorId" });
+    }
+    // Use Mongoose to find all appointments for the specified doctor
+    const appointments = await Appointment.find({
+      drID: doctorId,
+      status: "Not_Reserved",
+    });
+    res.json(appointments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const filterPrescriptions = async (req, res) => {
+  try {
+    const { date, doctorNameInput, doctorspecialityInput, status } = req.query;
+    const patientId = req.params.patientId; // Retrieve patient ID from route parameter
+
+    if (!patientId) {
+      return res.status(400).json({ error: "Patient ID is required" });
+    }
+
+    // Check if no filters are provided
+    if (!date && !doctorNameInput && !doctorspecialityInput && !status) {
+      return res
+        .status(400)
+        .json({ error: "At least one filter input is required" });
+    }
+
+    // Build the query based on the provided filters
+    const query = {
+      patientID: patientId, // Use patientID instead of _id
+    };
+
+    if (date) {
+      query.datePrescribed = date;
+    }
+
+    if (status) {
+      query.status = status;
+    }
+
+    // Find prescriptions based on the query
+    const prescriptions = await Prescription.find(query).populate(
+      "medID doctorID"
+    );
+
+    if (!prescriptions || prescriptions.length === 0) {
+      return res.status(404).json({ error: "No prescriptions found" });
+    }
+
+    // Filter prescriptions based on the provided criteria
+    const filteredPrescriptions = prescriptions.filter((prescription) => {
+      let match = true;
+
+      // Check doctor name if doctorNameInput is provided
+      if (doctorNameInput) {
+        const doctorName = prescription.doctorID.name.toLowerCase();
+        const input = doctorNameInput.toLowerCase();
+
+        if (!doctorName.includes(input)) {
+          match = false;
+        }
+      }
+
+      // Check doctor speciality if doctorspecialityInput is provided
+      if (doctorspecialityInput) {
+        const doctorspeciality = prescription.doctorID.speciality.toLowerCase();
+        const input = doctorspecialityInput.toLowerCase();
+
+        if (!doctorspeciality.includes(input)) {
+          match = false;
+        }
+      }
+
+      return match;
+    });
+
+    res.status(200).json({
+      message: "Prescriptions filtered successfully",
+      prescriptions: filteredPrescriptions,
+    });
+  } catch (error) {
+    console.error("Error filtering prescriptions:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const viewSpecificPrescription = async (req, res) => {
+  try {
+    const prescriptionId = req.params.id;
+    if (!prescriptionId) return res.status(400).json({ error: "Prescription ID is required" });
+
+    const raw = await Prescription.collection.findOne({ _id: prescriptionId });
+    if (!raw) return res.status(404).json({ error: "Prescription not found" });
+
+    const [patient, doctor, medicines] = await Promise.all([
+      Patient.findById(raw.patientID).lean(),
+      Doctor.findById(raw.doctorID).lean(),
+      Medicine.collection.find({
+        _id: { $in: (raw.meds || []).map((item) => item.medID) },
+      }).toArray(),
+    ]);
+
+    const medicineMap = new Map(medicines.map((medicine) => [String(medicine._id), medicine]));
+    const prescription = {
+      ...raw,
+      patientID: patient || raw.patientID,
+      doctorID: doctor || raw.doctorID,
+      meds: (raw.meds || []).map((item) => ({
+        ...item,
+        medID: medicineMap.get(String(item.medID)) || item.medID,
+      })),
+    };
+
+    return res.status(200).json({
+      message: "Prescription and related data retrieved successfully",
+      prescription,
+    });
+  } catch (error) {
+    console.error("Error retrieving prescription:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Import your Doctor schema/model
+const getAlldoctors = async (req, res) => {
+  try {
+    // Use the Mongoose 'find' method to retrieve all doctors
+    const doctors = await Doctor.find();
+    res.json(doctors);
+  } catch (error) {
+    // Handle any errors that may occur during the database query
+    console.error("Error fetching doctors:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching doctors." });
+  }
+};
+
+const subscribeToHealthPackage = async (req, res) => {
+  const { patientId, healthPackageId } = req.query;
+
+  try {
+    // Validate input fields
+    if (!patientId || !healthPackageId) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Check if the patient exists by ID
+    const patient = await Patient.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    // Check if the health package exists by ID
+    const healthPackage = await HPackages.findById(healthPackageId);
+
+    if (!healthPackage) {
+      return res.status(404).json({ error: "Health Package not found" });
+    }
+
+    // Check if the patient is already subscribed to this health package
+    if (patient.hPackage && patient.hPackage.equals(healthPackage._id)) {
+      return res.status(400).json({
+        error: "Patient is already subscribed to this Health Package",
+      });
+    }
+
+    // Add the health package to the patient's array of health packages
+    patient.hPackage = healthPackage;
+
+    // Save the updated patient document
+    await patient.save();
+
+    return res.status(201).json({
+      message: "Subscribed to Health Package added successfully",
+      patient,
+    });
+  } catch (error) {
+    console.error("Error Subscribing to Health Package:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+//blabizozozozozo
+const unSubscribeToHealthPackage = async (req, res) => {
+  const { patientId, healthPackageId } = req.query;
+  console.log("entered unsubscribe to health package");
+  console.log(patientId);
+  console.log(healthPackageId);
+
+  try {
+    // Validate input fields
+    if (!patientId || !healthPackageId) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Check if the patient exists by ID
+    const patient = await Patient.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    // Check if the health package exists by ID
+    const healthPackage = patient.hPackage;
+
+    if (!healthPackage) {
+      return res
+        .status(404)
+        .json({ error: "Health Package is not subscribed to" });
+    }
+
+    // Unsubscribe by setting the health package to null
+    // patient.hPackage = null;
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      { $set: { hPStatus: "Cancelled" } }
+    );
+
+    // Now, call the viewHealthPackagesPatient function to retrieve the updated list
+    return await viewHealthPackagesPatient({ params: { patientId } }, res);
+  } catch (error) {
+    console.error("Error Unsubscribing from Health Package:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const payWithWallet = async (req, res) => {
+  const { amount } = req.body;
+  const { patientId, healthPackageId } = req.params;
+  try {
+    if (!patientId || !healthPackageId) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+    const patient = await Patient.findOne({ _id: patientId });
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found!" });
+    }
+
+    if (patient.wallet < amount) {
+      return res.status(400).json({ error: "Balance not Sufficient" });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    patient.wallet -= amount;
+    patient.walletTransactions.push({
+      amount: -Number(amount),
+      balanceAfter: patient.wallet,
+      direction: "debit",
+      type: "health_package",
+      description: "Health package payment",
+    });
+    patient.hPackage = healthPackageId;
+    patient.hPStatus = "Subscribed";
+    patient.SubDate = today;
+    await patient.save();
+
+    res
+      .status(200)
+      .json({ message: "Successfully subscribed to health package" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const viewHealthPackagesPatient = async (req, res) => {
+  try {
+    // Simulate patient data retrieval (replace with your actual method)
+    const patient = await Patient.findById(req.params.patientId);
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    const healthPackages = await HPackages.find();
+
+    // Check if the patient has a health package ID
+    const patientSubscribedPackage = patient.hPackage;
+
+    // Map the health packages and add the subscription status
+    const healthPackagesWithSubscriptions = healthPackages.map(
+      (healthPackage) => {
+        // const isSubscribed = patientSubscribedPackage ? patientSubscribedPackage.equals(healthPackage._id) : false;
+        const isSubscribed =
+          patientSubscribedPackage &&
+          patientSubscribedPackage.equals(healthPackage._id) &&
+          patient.hPStatus === "Subscribed";
+
+        return {
+          ...healthPackage.toObject(),
+          isSubscribed,
+        };
+      }
+    );
+
+    res.status(200).json({
+      message: "Health packages fetched successfully",
+      healthPackages: healthPackagesWithSubscriptions,
+    });
+  } catch (error) {
+    console.error("Error fetching health packages:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const viewWallet = async (req, res) => {
+  const { patientId } = req.params;
+  try {
+    const patient = await Patient.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    if (!patient.wallet) {
+      // If the patient doesn't have a wallet attribute, add it with a value of zero
+      patient.wallet = 0;
+      await patient.save();
+    }
+
+    const walletAmount = patient.wallet;
+    const transactions = [...(patient.walletTransactions || [])].sort(
+      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+    );
+
+    res.status(200).json({
+      message: " wallet amount is fetched successfully",
+      patient: patient,
+      wallet: walletAmount,
+      transactions,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const ccSubscriptionPayment = async (req, res) => {
+  const { patientId, healthPackageId } = req.params;
+  try {
+    if (!patientId || !healthPackageId) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+    const patient = await Patient.findOne({ _id: patientId });
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found!" });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    patient.hPackage = healthPackageId;
+    patient.hPStatus = "Subscribed";
+    patient.SubDate = today;
+    await patient.save();
+
+    res
+      .status(200)
+      .json({ message: "Successfully subscribed to health package" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const healthPackageInfo = async (req, res) => {
+  const { patientId, healthPackageId } = req.params;
+
+  try {
+    const patient = await Patient.findOne({
+      _id: patientId,
+      hPackage: healthPackageId,
+    }).populate("hPackage");
+
+    if (patient && patient.hPackage) {
+      const { hPStatus, SubDate, hPackage } = patient;
+      // const { RenewDate } = hPackage;
+
+      let endDate;
+
+      if (hPStatus === "Subscribed" || hPStatus === "Cancelled") {
+        // If subscribed, calculate end date as one month more than subscribed date
+        const endDateFormat = new Date(SubDate);
+        endDateFormat.setMonth(endDateFormat.getMonth() + 1);
+        endDate = endDateFormat.toISOString();
+      } else {
+        // If cancelled, use the EndDate directly
+        endDate = hPackage.EndDate;
+      }
+
+      //subscribed and cancelled both have same dates but they are called differently one is renewal date and one is endate
+      if (hPStatus === "Subscribed") {
+        return res.status(200).json({
+          // subscribed: true,
+          status: hPStatus,
+          subscribedDate: SubDate,
+          // renewedDate: RenewDate,
+          renewedDate: endDate,
+        });
+      } else if (hPStatus === "Cancelled") {
+        return res.status(200).json({
+          // subscribed: false,
+          status: hPStatus,
+          endDate: endDate,
+        });
+      } else {
+        return res.status(200).json({
+          // subscribed: false,
+          status: hPStatus,
+          message: "Health package not subscribed by the patient.",
+        });
+      }
+    } else {
+      return res.status(200).json({
+        // subscribed: false,
+        message: "Health package not subscribed by the patient.",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const createCheckoutSession = async (req, res) => {
+  try {
+    const { pid, id } = req.params;
+    const trimmedId = id.trim();
+
+    let healthPackage = null;
+
+    if (trimmedId.match(/^[0-9a-fA-F]{24}$/)) {
+      healthPackage = await HPackages.findById(trimmedId);
+    }
+
+    if (!healthPackage) {
+      return res.status(404).json({ error: "Health package not found" });
+    }
+
+    const { rate } = healthPackage;
+    if (isNaN(rate)) {
+      return res.status(500).json({ error: "Invalid rate value" });
+    }
+
+    const newRate = rate * 100;
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: healthPackage.type,
+            },
+            unit_amount: newRate,
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: `http://localhost:3000/Success/${pid}/${trimmedId}`,
+      cancel_url: "http://localhost:3000/ViewHealthPackage",
+    });
+
+    res.json({ url: session.url });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+};
+
+const viewPatientHealthRecords = async (req, res) => {
+  try {
+    const pId = req.params.patientid;
+
+    // Check if the prescription ID is provided in the query
+    if (!pId) {
+      return res
+        .status(400)
+        .json({ error: "Patient ID is required in the query" });
+    }
+    const createCheckoutSession = async (req, res) => {
+      try {
+        const { pid, id } = req.params;
+        const trimmedId = id.trim();
+
+        let healthPackage = null;
+
+        if (trimmedId.match(/^[0-9a-fA-F]{24}$/)) {
+          healthPackage = await HPackages.findById(trimmedId);
+        }
+
+        if (!healthPackage) {
+          return res.status(404).json({ error: "Health package not found" });
+        }
+
+        const { rate } = healthPackage;
+        const newRate = rate * 100;
+
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          mode: "payment",
+          line_items: [
+            {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: healthPackage.type,
+                },
+                unit_amount: newRate,
+              },
+              quantity: 1,
+            },
+          ],
+          success_url: `http://localhost:3000/Success/${pid}/${trimmedId}`,
+          cancel_url: "http://localhost:3000/ViewHealthPackage",
+        });
+
+        res.json({ url: session.url });
+      } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: e.message });
+      }
+    };
+
+    // Find the patient by its ID and populate related data
+    const HealthRecords = await Patient.findById(pId, {
+      name: 0,
+      email: 0,
+      username: 0,
+      dBirth: 0,
+      gender: 0,
+      mobile: 0,
+      emergencyContact: 0,
+      family: 0,
+      doctors: 0,
+      __v: 0,
+      cart: 0,
+      addresses: 0,
+      wallet: 0,
+      records: 0,
+    }).populate("healthRecords");
+
+    if (!HealthRecords) {
+      return res.status(404).json({ error: "HealthRecords not found" });
+    }
+    console.log("Reached HealthRecords");
+
+    return res.status(200).json({
+      message: "HealthRecords and related data retrieved successfully",
+      HealthRecords,
+    });
+  } catch (error) {
+    console.error("Error retrieving HealthRecords data:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const createAppointmentCheckoutSession = async (req, res) => {
+  try {
+    const { amount, appointmentId, patientId } = req.params;
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Appointment",
+            },
+            unit_amount: amount,
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: `http://localhost:3000/SuccessAppoint/${appointmentId}/${patientId}`,
+      cancel_url: `http://localhost:3000/ViewAppointments`,
+    });
+
+    res.json({ url: session.url });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+const rescheduleAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const { startDate, endDate } = req.body;
+
+    // Assuming you have a model named 'Appointment' for your appointments
+    const appointment = await Appointment.findById(appointmentId)
+      .populate("drID")
+      .populate("pID");
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    const doctor = appointment.drID;
+    const patient = appointment.pID;
+    const dId = doctor._id;
+    const pId = patient._id;
+
+    // console.log(appointment)
+
+    // Update the start and end dates
+    appointment.startDate = startDate;
+    appointment.endDate = endDate;
+
+    ///added start
+    patient.notifications.push({
+      //add notifiaction to patient
+      message: `APPOINTEMNT RESCHEULED WITH DOCTOR ${doctor.name}`,
+      type: "AppointmentRescheduled",
+      entityType: "Appointment",
+      entityId: appointment._id,
+    });
+    doctor.notifications.push({
+      //add notifiaction to doctor
+      message: `APPOINTEMNT RESCHEULED WITH PATIENT ${patient.name}`,
+      type: "AppointmentRescheduled",
+      entityType: "Appointment",
+      entityId: appointment._id,
+    });
+
+    //still will send to doctor
+    //added end
+
+    // Save the updated appointment
+
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      { $push: { notifications: patient.notifications[patient.notifications.length - 1] } }
+    );
+    await Doctor.collection.updateOne(
+      { _id: doctor._id },
+      { $push: { notifications: doctor.notifications[doctor.notifications.length - 1] } }
+    );
+    await appointment.save();
+
+    // Send email to the doctor
+    const emailSubject2 = "Appointment Reschedule";
+    const emailMessage2 = `Your appointment with patient ${patient.name} has been Reschedule.`;
+    await sendEmail(doctor.email, emailSubject2, emailMessage2);
+
+    // Send email to the patient
+    const emailSubject = "Appointment Reschedule";
+    const emailMessage = `Your appointment with Dr. ${doctor.name} has been Reschedule.`;
+    await sendEmail(patient.email, emailSubject, emailMessage);
+
+    res.json({
+      success: true,
+      message: "Appointment successfully rescheduled",
+    });
+  } catch (error) {
+    console.error("Error rescheduling appointment", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Error rescheduling appointment" });
+  }
+};
+
+const successCreditCardPayment = async (req, res) => {
+  try {
+    const { patientID, appointmentID } = req.params;
+
+    // Check if the patient and appointment exist
+    const patient = await Patient.findById(patientID);
+    const appointment = await Appointment.findById(appointmentID);
+    console.log(patientID);
+    console.log(appointmentID);
+
+    if (!patient || !appointment) {
+      return res
+        .status(404)
+        .json({ message: "Patient or Appointment not found" });
+    }
+
+    // Update the appointment status to 'completed' (or any other desired status)
+    appointment.status = "upcoming";
+    appointment.pID = patientID;
+
+    // Save changes to the appointment
+    await appointment.save();
+
+    res.json({
+      message: "Credit card payment successful, appointment scheduled",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const cancelAppointment = async (req, res) => {
+  try {
+    const { aid, did, pid } = req.params;
+    if (!aid || !did || !pid) {
+      return res.status(400).json({ message: "Invalid parameters" });
+    }
+    console.log("yyyyyyy", did);
+    const appointment = await Appointment.findById(aid);
+    const doctor = await Doctor.findById(did);
+    const patient = await Patient.findById(pid);
+    if (!appointment) {
+      res.status(500).json({ message: "Appointment not found!" });
+    }
+    if (!doctor) {
+      res.status(500).json({ message: "Doctor not found!" });
+    }
+    if (!patient) {
+      res.status(500).json({ message: "Patient not found!" });
+    }
+    appointment.status = "cancelled";
+
+    ///added start
+    patient.notifications.push({
+      //add notifiaction to patient
+      message: `APPOINTEMNT CANCELED WITH DOCTOR ${doctor.name}`,
+      type: "AppointmentCanceled",
+      entityType: "Appointment",
+      entityId: appointment._id,
+    });
+    doctor.notifications.push({
+      //add notifiaction to doctor
+      message: `APPOINTEMNT CANCELED WITH PATIENT ${patient.name}`,
+      type: "AppointmentCanceled",
+      entityType: "Appointment",
+      entityId: appointment._id,
+    });
+
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      { $push: { notifications: patient.notifications[patient.notifications.length - 1] } }
+    );
+    await Doctor.collection.updateOne(
+      { _id: doctor._id },
+      { $push: { notifications: doctor.notifications[doctor.notifications.length - 1] } }
+    );
+
+    // Send email to the doctor
+    const emailSubject2 = "Appointment Canceled";
+    const emailMessage2 = `Your appointment with patient ${patient.name} has been canceled.`;
+    await sendEmail(doctor.email, emailSubject2, emailMessage2);
+
+    // Send email to the patient
+    const emailSubject = "Appointment Canceled";
+    const emailMessage = `Your appointment with Dr. ${doctor.name} has been canceled.`;
+    await sendEmail(patient.email, emailSubject, emailMessage);
+
+    //added end
+    await appointment.save();
+
+    const today = new Date();
+    const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+    const timeDifference = Math.abs(today - appointment.startDate);
+    //const timeDifference = appointment.startDate-today;
+    if (timeDifference > oneDayInMilliseconds) {
+      console.log(timeDifference);
+      console.log(patient.wallet);
+      const refundAmount = Number(doctor.rate);
+      const newBalance = Number(patient.wallet || 0) + refundAmount;
+      const refundTransaction = {
+        amount: refundAmount,
+        balanceAfter: newBalance,
+        direction: "credit",
+        type: "appointment_refund",
+        description: `Appointment cancellation refund from Dr. ${doctor.name}`,
+        timestamp: new Date(),
+      };
+      await Patient.collection.updateOne(
+        { _id: patient._id },
+        { $set: { wallet: newBalance }, $push: { walletTransactions: refundTransaction } }
+      );
+    }
+    // const app = await Appointment.find();
+    // res.status(200).json(app)
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error Cancelling Appointment" });
+  }
+};
+
+// Function to get notifications of a patient
 const getNotificationTarget = async (req, res) => {
   const { patientId, entityType, entityId } = req.params;
   try {
