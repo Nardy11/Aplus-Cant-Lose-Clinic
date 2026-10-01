@@ -1075,7 +1075,7 @@ const unSubscribeToHealthPackage = async (req, res) => {
       ...healthPackage.toObject(),
       isSubscribed:
         String(patient.hPackage) === String(healthPackage._id) &&
-        "Cancelled" === "Subscribed",
+        patient.hPStatus === "Subscribed",
     }));
 
     return res.status(200).json({
@@ -1152,23 +1152,14 @@ const viewHealthPackagesPatient = async (req, res) => {
     const healthPackages = await HPackages.find();
 
     // Check if the patient has a health package ID
-    const patientSubscribedPackage = patient.hPackage;
+    const patientSubscribedPackage = patient.hPackage ? String(patient.hPackage) : "";
 
-    // Map the health packages and add the subscription status
-    const healthPackagesWithSubscriptions = healthPackages.map(
-      (healthPackage) => {
-        // const isSubscribed = patientSubscribedPackage ? patientSubscribedPackage.equals(healthPackage._id) : false;
-        const isSubscribed =
-          patientSubscribedPackage &&
-          patientSubscribedPackage.equals(healthPackage._id) &&
-          patient.hPStatus === "Subscribed";
-
-        return {
-          ...healthPackage.toObject(),
-          isSubscribed,
-        };
-      }
-    );
+    const healthPackagesWithSubscriptions = healthPackages.map((healthPackage) => ({
+      ...healthPackage.toObject(),
+      isSubscribed:
+        patientSubscribedPackage === String(healthPackage._id) &&
+        patient.hPStatus === "Subscribed",
+    }));
 
     res.status(200).json({
       message: "Health packages fetched successfully",
