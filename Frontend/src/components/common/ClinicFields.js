@@ -5,7 +5,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import { Input, Textarea } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
-import { CalendarDate, CalendarDateTime, parseDate, parseDateTime } from "@internationalized/date";
+import { parseDate, parseDateTime } from "@internationalized/date";
 export function ClinicSearchField({ value, onChange, placeholder = "Search...", className = "" }) {
   return (
     <div className={`clinic-field clinic-search-field search-field search-field--secondary ${className}`}>
