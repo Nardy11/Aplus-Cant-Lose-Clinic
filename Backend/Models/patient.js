@@ -153,6 +153,15 @@ const paSchema = new mongoose.Schema(
           type: Date,
           default: Date.now,
         },
+        entityType: {
+          type: String,
+          enum: ["Appointment", "Prescription", "FollowUp", "Doctor", "HealthPackage", "HealthRecord", "FamilyMember", "None"],
+          default: "None",
+        },
+        entityId: {
+          type: mongoose.Schema.Types.ObjectId,
+          default: null,
+        },
       },
     ],
   }
