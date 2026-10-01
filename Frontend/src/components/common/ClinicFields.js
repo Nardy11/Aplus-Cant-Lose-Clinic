@@ -114,9 +114,12 @@ export function ClinicDateField({ value, onChange, placeholder = "Select date", 
         size="sm"
         radius="lg"
         selectorIcon={<CalendarMonthRoundedIcon />}
+        selectorButtonPlacement="end"
+        selectorButtonProps={{"aria-label": "Open calendar"}}
         classNames={{
           base: "clinic-heroui-picker",
           selectorIcon: "clinic-heroui-picker-icon",
+          selectorButton: "clinic-heroui-picker-button",
           popoverContent: "clinic-heroui-calendar-popover",
           calendar: "clinic-heroui-calendar",
         }}
