@@ -139,6 +139,40 @@ export default function NotificationsPage() {
     }
   };
 
+  const markAllNotificationsSeen = async () => {
+    const unread = notifications.filter((item) => !item.seen);
+    if (!unread.length) return;
+
+    // Update immediately so the UI and badge respond without waiting for the API.
+    setNotifications((current) =>
+      current.map((item) => ({ ...item, seen: true }))
+    );
+
+    try {
+      await axios.patch(
+        role === "doctor"
+          ? `${API_URL}/doctor/${id}/notifications/seen-all`
+          : `${API_URL}/patient/${id}/notifications/seen-all`
+      );
+
+      if (role === "doctor") {
+        dispatch(getNotificationsd(id));
+      } else {
+        dispatch(getNotifications(id));
+      }
+    } catch (error) {
+      // Restore the previous unread state if persistence fails.
+      setNotifications((current) =>
+        current.map((item) =>
+          unread.some((unreadItem) => unreadItem._id === item._id)
+            ? { ...item, seen: false }
+            : item
+        )
+      );
+      console.error("Unable to mark all notifications as seen:", error);
+    }
+  };
+
   const openNotification = async (notification) => {
     await markNotificationSeen(notification);
     const destination = getNotificationDestination(notification);
