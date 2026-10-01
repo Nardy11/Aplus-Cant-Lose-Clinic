@@ -44,6 +44,10 @@ const {
   sendEmail,
   getID,
   payWithWalletF,
+  payPrescriptionWithWallet,
+  getNotificationTarget,
+  updateFamilyMember,
+  deleteFamilyMember,
   getPatientProfile,
   updatePatientProfile,
 } = require("../controllers/paController");
@@ -55,6 +59,8 @@ router.post("/createAppointment/:patientID", createAppointment);
 router.post("/addPatient", addPatient);
 router.post("/addFamilyMember/:patientId", addFamilyMember);
 router.get("/viewFamilyMembers/:patientId", viewFamilyMembers);
+router.patch("/familyMember/:patientId/:familyIndex", updateFamilyMember);
+router.delete("/familyMember/:patientId/:familyIndex", deleteFamilyMember);
 router.get("/viewDoctors/:patientId", viewDoctors);
 router.get(
   "/searchDoctorsByNameOrspeciality/:patientId",
@@ -256,6 +262,7 @@ router.patch("/unSubscribeToHealthPackage", unSubscribeToHealthPackage);
 
 router.get("/viewHealthPackagesPatient/:patientId", viewHealthPackagesPatient);
 router.get("/AddFromPrescToCart/:prescriptionId", AddFromPrescToCart);
+router.post("/payPrescriptionWithWallet/:prescriptionId/:patientId", payPrescriptionWithWallet);
 
 router.get("/viewWallet/:patientId", viewWallet);
 router.get("/healthPackageInfo/:patientId/:healthPackageId", healthPackageInfo);
@@ -563,6 +570,7 @@ router.patch("/CancelAppointment/:aid/:did/:pid", cancelAppointment);
 
 // Get patient notifications
 router.get("/:patientId/notifications", getPatientNotifications);
+router.get("/:patientId/notifications/target/:entityType/:entityId", getNotificationTarget);
 
 // Add a new notification for a patient
 router.post("/:patientId/notifications", addPatientNotification);
