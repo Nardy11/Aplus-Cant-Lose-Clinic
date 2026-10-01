@@ -9699,3 +9699,16 @@ select option,
     grid-column: auto !important;
   }
 }
+
+
+.patient-profile-date-field {
+  display: block !important;
+}
+.patient-profile-date-field .clinic-heroui-date-field {
+  width: 100% !important;
+}
+.patient-profile-date-field [data-slot="label"] {
+  font-size: 9px !important;
+  color: #6d7b8e !important;
+  font-weight: 800 !important;
+}
