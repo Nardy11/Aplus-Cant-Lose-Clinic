@@ -30,6 +30,8 @@ import { addFamilyMember } from "../../features/patientSlice";
 import CloseIcon from "@mui/icons-material/Close";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 import { Icon } from "@mui/material";
 import List from "@mui/material/List";
 import { API_URL } from "../../Consts";
