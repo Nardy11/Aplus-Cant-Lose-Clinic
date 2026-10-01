@@ -53,7 +53,12 @@ export default function NotificationsPage() {
         if (role === "patient") {
           try {
             const doctorResponse = await axios.get(`${API_URL}/patient/getAlldoctors`);
-            if (active) setDoctors(doctorResponse.data.doctors || []);
+            if (active) {
+              const doctorData = Array.isArray(doctorResponse.data)
+                ? doctorResponse.data
+                : doctorResponse.data?.doctors || [];
+              setDoctors(doctorData);
+            }
           } catch (doctorError) {
             console.error("Unable to load doctor details for notifications:", doctorError);
           }
