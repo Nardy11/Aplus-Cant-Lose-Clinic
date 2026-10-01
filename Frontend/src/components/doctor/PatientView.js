@@ -6,7 +6,7 @@ import { API_URL } from "../../Consts";
 import { getPatients, addHealthRecord } from "../../features/doctorSlice";
 import AccountAvatar from "../Authentication/AccountAvatar";
 import ConfirmDialog from "../common/ConfirmDialog";
-import { ClinicSearchField } from "../common/ClinicFields";
+import { ClinicSearchField, ClinicDateField } from "../common/ClinicFields";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import MedicalInformationRoundedIcon from "@mui/icons-material/MedicalInformationRounded";
 import AddCircleOutlineRoundedIcon from "@mui/icons-material/AddCircleOutlineRounded";
@@ -124,7 +124,16 @@ export default function PatientView() {
         <DialogContent className="doctor-dialog-content">
           <div className="doctor-dialog-section"><h3>{selectedPatient?.name || "Patient"}</h3><p>Add a structured clinical note to this patient account.</p>
             <form id="doctor-health-record-form" onSubmit={saveHealthRecord} className="doctor-form-grid">
-              {[[ "date","Date","date" ],["description","Description","text"],["labResults","Lab results","text"],["medicalInformation","Medical information","text"],["primaryDiagnosis","Primary diagnosis","text"],["treatment","Treatment","text"]].map(([key,label,type]) => <div className="doctor-form-field" key={key}><label htmlFor={"health-"+key}>{label}</label><input id={"health-"+key} type={type} value={form[key]} required onChange={(e) => setForm({ ...form, [key]:e.target.value })} /></div>)}
+              {[[ "date","Date","date" ],["description","Description","text"],["labResults","Lab results","text"],["medicalInformation","Medical information","text"],["primaryDiagnosis","Primary diagnosis","text"],["treatment","Treatment","text"]].map(([key,label,type]) => (
+                <div className="doctor-form-field" key={key}>
+                  <label htmlFor={"health-"+key}>{label}</label>
+                  {key === "date" ? (
+                    <ClinicDateField value={form[key]} onChange={(value) => setForm({ ...form, [key]: value })} placeholder="Select date" />
+                  ) : (
+                    <input id={"health-"+key} type={type} value={form[key]} required onChange={(e) => setForm({ ...form, [key]:e.target.value })} />
+                  )}
+                </div>
+              ))}
             </form>
           </div>
         </DialogContent>
