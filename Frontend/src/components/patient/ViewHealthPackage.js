@@ -45,15 +45,32 @@ export default function Hpackages() {
 
   const dummyData = useSelector((state) => state.patient.hpackages);
 
-  const handleUnSubscribe = (healthPackageIdd) => {
-    // Dispatch your unsubscribe logic here
+  const handleUnSubscribe = (healthPackage) => {
+    setUnsubscribeTarget(healthPackage);
+  };
 
-    dispatch(
-      unsubscribeHealthPackage({
-        Pid: id,
-        healthPackageId: healthPackageIdd,
-      })
-    );
+  const confirmUnsubscribe = async () => {
+    if (!unsubscribeTarget?._id) return;
+    setUnsubscribing(true);
+    try {
+      await dispatch(
+        unsubscribeHealthPackage({
+          Pid: id,
+          healthPackageId: unsubscribeTarget._id,
+        })
+      ).unwrap();
+
+      snackbarMessage("Health package unsubscribed successfully.", "success");
+      setUnsubscribeTarget(null);
+    } catch (error) {
+      console.error("Error unsubscribing from health package:", error);
+      snackbarMessage(
+        error?.error || error?.message || "Unable to unsubscribe from this health package.",
+        "error"
+      );
+    } finally {
+      setUnsubscribing(false);
+    }
   };
 
   //dialogiue component state
@@ -68,6 +85,8 @@ export default function Hpackages() {
   const[packageID,setPackageID]=useState("");
   const[amount,setAmount]=useState("");
   const [confirmFamilyClose, setConfirmFamilyClose] = useState(false);
+  const [unsubscribeTarget, setUnsubscribeTarget] = useState(null);
+  const [unsubscribing, setUnsubscribing] = useState(false);
 
   const navigate = useNavigate();
 
@@ -287,7 +306,7 @@ export default function Hpackages() {
                       sx={unsubscribeButtonStyle}
                       onClick={() => {
                         console.log(row.isSubscribed);
-                        handleUnSubscribe(row._id);
+                        handleUnSubscribe(row);
                       }}
                     >
                       <Typography>Unsubscribe</Typography>
@@ -372,6 +391,17 @@ export default function Hpackages() {
         <Button onClick={handleSubmitFamilyMember} className="clinic-dialog-primary">Continue</Button>
       </DialogActions>
     </Dialog>
+    <ConfirmDialog
+      open={Boolean(unsubscribeTarget)}
+      title="Unsubscribe from this health package?"
+      message={unsubscribeTarget ? `You will lose the benefits of “${unsubscribeTarget.type}” immediately. You can subscribe again later.` : ""}
+      confirmLabel={unsubscribing ? "Unsubscribing..." : "Confirm unsubscribe"}
+      cancelLabel="Keep package"
+      destructive
+      onConfirm={confirmUnsubscribe}
+      onCancel={() => !unsubscribing && setUnsubscribeTarget(null)}
+    />
+
     <ConfirmDialog
       open={confirmFamilyClose}
       title="Discard family member selection?"
