@@ -159,7 +159,7 @@ const paSchema = new mongoose.Schema(
           default: "None",
         },
         entityId: {
-          type: mongoose.Schema.Types.ObjectId,
+          type: String,
           default: null,
         },
       },
