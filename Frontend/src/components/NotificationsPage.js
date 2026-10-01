@@ -116,7 +116,28 @@ export default function NotificationsPage() {
     return null;
   };
 
-  const openNotification = (notification) => {
+  const markNotificationSeen = async (notification) => {
+    if (!notification?._id || notification.seen) return;
+
+    const endpoint =
+      role === "doctor"
+        ? `${API_URL}/doctor/${id}/notifications/${notification._id}/seen`
+        : `${API_URL}/patient/${id}/notifications/${notification._id}/seen`;
+
+    try {
+      await axios.patch(endpoint);
+      setNotifications((current) =>
+        current.map((item) =>
+          item._id === notification._id ? { ...item, seen: true } : item
+        )
+      );
+    } catch (error) {
+      console.error("Unable to mark notification as seen:", error);
+    }
+  };
+
+  const openNotification = async (notification) => {
+    await markNotificationSeen(notification);
     const destination = getNotificationDestination(notification);
     if (destination) {
       navigate(destination);
@@ -174,7 +195,7 @@ export default function NotificationsPage() {
                 return (
                   <button
                     type="button"
-                    className="clinic-notification-row"
+                    className={`clinic-notification-row ${notification.seen ? "is-seen" : "is-unseen"}`}
                     key={notification._id || index}
                     onClick={() => openNotification(notification)}
                     aria-label={`Open ${notification.message || "clinic notification"}`}
