@@ -1343,8 +1343,8 @@ const createCheckoutSession = async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `http://localhost:3000/Success/${pid}/${trimmedId}`,
-      cancel_url: "http://localhost:3000/ViewHealthPackage",
+      success_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/Success/${pid}/${trimmedId}`,
+      cancel_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/ViewHealthPackage`,
     });
 
     res.json({ url: session.url });
