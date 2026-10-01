@@ -59,6 +59,12 @@ export default function ButtonAppBar() {
   const [linkPopover, setLinkPopover] = React.useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDialogOpen2, setIsDialogOpen2] = useState(false);
+  const [selectedFamilyMember, setSelectedFamilyMember] = useState(null);
+  const [selectedFamilyIndex, setSelectedFamilyIndex] = useState(null);
+  const [familyEditOpen, setFamilyEditOpen] = useState(false);
+  const [familyEditForm, setFamilyEditForm] = useState({ fullName: "", NID: "", age: "", gender: "none", relation: "spouse" });
+  const [familyDeleteTarget, setFamilyDeleteTarget] = useState(null);
+  const [familySaving, setFamilySaving] = useState(false);
 
   const handleOpenDialog = () => {
     setIsDialogOpen(true);
@@ -89,6 +95,71 @@ export default function ButtonAppBar() {
     setEmailOrPhone("email");
     setRelation("spouse");
     handleCloseDialog2();
+  };
+
+  const openFamilyView = (member, index) => {
+    setSelectedFamilyMember(member);
+    setSelectedFamilyIndex(index);
+  };
+
+  const openFamilyEdit = (member, index) => {
+    setSelectedFamilyIndex(index);
+    setFamilyEditForm({
+      fullName: member.fullName || "",
+      NID: member.NID || "",
+      age: member.age ?? "",
+      gender: member.gender || "none",
+      relation: member.relation || "spouse",
+    });
+    setFamilyEditOpen(true);
+  };
+
+  const saveFamilyEdit = async () => {
+    if (!familyEditForm.fullName.trim() || !familyEditForm.NID || familyEditForm.age === "") {
+      snackbarMessage("Complete all family member fields.", "error");
+      return;
+    }
+
+    setFamilySaving(true);
+    try {
+      await axios.patch(
+        `${API_URL}/patient/familyMember/${patientId}/${selectedFamilyIndex}`,
+        {
+          fullName: familyEditForm.fullName.trim(),
+          NID: Number(familyEditForm.NID),
+          age: Number(familyEditForm.age),
+          gender: familyEditForm.gender,
+          relation: familyEditForm.relation,
+        }
+      );
+      snackbarMessage("Family member updated successfully.", "success");
+      setFamilyEditOpen(false);
+      dispatch(viewFamilyMembers({ patientId }));
+    } catch (error) {
+      console.error("Error updating family member:", error);
+      snackbarMessage(error.response?.data?.error || "Unable to update family member.", "error");
+    } finally {
+      setFamilySaving(false);
+    }
+  };
+
+  const deleteFamilyMember = async () => {
+    if (familyDeleteTarget?.index === undefined) return;
+    try {
+      await axios.delete(
+        `${API_URL}/patient/familyMember/${patientId}/${familyDeleteTarget.index}`
+      );
+      snackbarMessage("Family member removed successfully.", "success");
+      setFamilyDeleteTarget(null);
+      if (selectedFamilyIndex === familyDeleteTarget.index) {
+        setSelectedFamilyIndex(null);
+        setSelectedFamilyMember(null);
+      }
+      dispatch(viewFamilyMembers({ patientId }));
+    } catch (error) {
+      console.error("Error deleting family member:", error);
+      snackbarMessage(error.response?.data?.error || "Unable to remove family member.", "error");
+    }
   };
 
   const handleAddClick = (event) => {
@@ -431,7 +502,121 @@ handleCloseDialog();      }
           </Button>
         </div>
       </section>
-      <BasicTable />
+      <Dialog
+        open={Boolean(selectedFamilyMember)}
+        onClose={() => setSelectedFamilyMember(null)}
+        className="clinic-modern-dialog family-member-view-dialog"
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>HOUSEHOLD</span><h2>Family member details</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={() => setSelectedFamilyMember(null)} aria-label="Close"><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent className="family-member-detail-content">
+          {selectedFamilyMember ? (
+            <div className="family-member-detail-grid">
+              <div><span>Full name</span><strong>{selectedFamilyMember.fullName}</strong></div>
+              <div><span>Relation</span><strong>{selectedFamilyMember.relation}</strong></div>
+              <div><span>National ID</span><strong>{selectedFamilyMember.NID}</strong></div>
+              <div><span>Age</span><strong>{selectedFamilyMember.age}</strong></div>
+              <div><span>Gender</span><strong>{selectedFamilyMember.gender}</strong></div>
+              <div><span>Linked patient</span><strong>{selectedFamilyMember.pid || "Added as household-only member"}</strong></div>
+            </div>
+          ) : null}
+        </DialogContent>
+        <DialogActions className="clinic-dialog-actions">
+          <Button className="clinic-dialog-cancel" onClick={() => setSelectedFamilyMember(null)}>Close</Button>
+          <Button
+            className="clinic-dialog-primary"
+            onClick={() => {
+              openFamilyEdit(selectedFamilyMember, selectedFamilyIndex);
+              setSelectedFamilyMember(null);
+            }}
+          >
+            Edit member
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={familyEditOpen}
+        onClose={() => !familySaving && setFamilyEditOpen(false)}
+        className="clinic-modern-dialog family-member-edit-dialog"
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>HOUSEHOLD</span><h2>Edit family member</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={() => !familySaving && setFamilyEditOpen(false)} aria-label="Close"><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent className="family-member-edit-content">
+          <TextField
+            label="Full name"
+            fullWidth
+            value={familyEditForm.fullName}
+            onChange={(e) => setFamilyEditForm((current) => ({ ...current, fullName: e.target.value }))}
+          />
+          <TextField
+            label="National ID"
+            type="number"
+            fullWidth
+            value={familyEditForm.NID}
+            onChange={(e) => setFamilyEditForm((current) => ({ ...current, NID: e.target.value }))}
+          />
+          <TextField
+            label="Age"
+            type="number"
+            fullWidth
+            value={familyEditForm.age}
+            onChange={(e) => setFamilyEditForm((current) => ({ ...current, age: e.target.value }))}
+          />
+          <TextField
+            select
+            label="Gender"
+            fullWidth
+            value={familyEditForm.gender}
+            onChange={(e) => setFamilyEditForm((current) => ({ ...current, gender: e.target.value }))}
+          >
+            <MenuItem value="male">Male</MenuItem>
+            <MenuItem value="female">Female</MenuItem>
+            <MenuItem value="none">Not specified</MenuItem>
+          </TextField>
+          <TextField
+            select
+            label="Relation"
+            fullWidth
+            value={familyEditForm.relation}
+            onChange={(e) => setFamilyEditForm((current) => ({ ...current, relation: e.target.value }))}
+          >
+            <MenuItem value="spouse">Spouse</MenuItem>
+            <MenuItem value="child">Child</MenuItem>
+          </TextField>
+        </DialogContent>
+        <DialogActions className="clinic-dialog-actions">
+          <Button className="clinic-dialog-cancel" onClick={() => setFamilyEditOpen(false)} disabled={familySaving}>Cancel</Button>
+          <Button className="clinic-dialog-primary" onClick={saveFamilyEdit} disabled={familySaving}>
+            {familySaving ? "Saving..." : "Save changes"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <ConfirmDialog
+        open={Boolean(familyDeleteTarget)}
+        title="Remove this family member?"
+        message={familyDeleteTarget ? `${familyDeleteTarget.member.fullName} will be removed from your household list. The linked patient account itself will not be deleted.` : ""}
+        confirmLabel="Remove"
+        cancelLabel="Keep member"
+        destructive
+        onConfirm={deleteFamilyMember}
+        onCancel={() => setFamilyDeleteTarget(null)}
+      />
+
+      <BasicTable
+        onView={openFamilyView}
+        onEdit={openFamilyEdit}
+        onDelete={(member, index) => setFamilyDeleteTarget({ member, index })}
+      />
     </Box>
   ) : (
     <>
@@ -454,63 +639,57 @@ handleCloseDialog();      }
   );
 }
 
-function BasicTable() {
+function BasicTable({ onView, onEdit, onDelete }) {
   const rows = useSelector((state) => state.patient.fMembers);
-  const tableStyle = {
-    width: "80%",
-    marginLeft: "10%",
-    boxShadow: "5px 5px 5px 5px #8585854a",
-    marginTop: "30px",
-    marginBottom: "20px",
-  };
-
-  const cellStyle = {
-    fontSize: "20px",
-  };
 
   return (
-    <TableContainer component={Paper} className="modern-data-table" style={tableStyle}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+    <TableContainer component={Paper} className="modern-data-table family-members-table">
+      <Table sx={{ minWidth: 760 }} aria-label="family members">
         <TableHead>
           <TableRow>
-            <TableCell style={cellStyle}>Name</TableCell>
-            <TableCell align="left" style={cellStyle}>
-              NationalID
-            </TableCell>
-            <TableCell align="left" style={cellStyle}>
-              Age
-            </TableCell>
-            <TableCell align="left" style={cellStyle}>
-              Gender
-            </TableCell>
-            <TableCell align="left" style={cellStyle}>
-              Relation
-            </TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell align="left">National ID</TableCell>
+            <TableCell align="left">Age</TableCell>
+            <TableCell align="left">Gender</TableCell>
+            <TableCell align="left">Relation</TableCell>
+            <TableCell align="left" className="family-member-actions-heading">Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row, index) => (
+          {rows.length ? rows.map((row, index) => (
             <TableRow
-              key={index}
+              key={row.pid || `${row.fullName}-${index}`}
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
-              <TableCell component="th"  style={cellStyle} scope="row">
-                {row.fullName}
-              </TableCell>
-              <TableCell align="left" style={cellStyle}>
-                {row.NID}
-              </TableCell>
-              <TableCell align="left" style={cellStyle}>
-                {row.age}
-              </TableCell>
-              <TableCell align="left" style={cellStyle}>
-                {row.gender}
-              </TableCell>
-              <TableCell align="left" style={cellStyle}>
-                {row.relation}
+              <TableCell component="th" scope="row">{row.fullName}</TableCell>
+              <TableCell align="left">{row.NID}</TableCell>
+              <TableCell align="left">{row.age}</TableCell>
+              <TableCell align="left">{row.gender}</TableCell>
+              <TableCell align="left">{row.relation}</TableCell>
+              <TableCell align="left">
+                <div className="family-member-actions">
+                  <Button className="family-member-view-button" onClick={() => onView(row, index)}>
+                    View
+                  </Button>
+                  <Button className="family-member-edit-button" onClick={() => onEdit(row, index)}>
+                    Edit
+                  </Button>
+                  <Button className="family-member-delete-button" onClick={() => onDelete(row, index)}>
+                    Delete
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
-          ))}
+          )) : (
+            <TableRow>
+              <TableCell colSpan={6} align="center">
+                <div className="family-members-empty">
+                  <strong>No family members yet</strong>
+                  <span>Add or link someone to your household above.</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </TableContainer>
