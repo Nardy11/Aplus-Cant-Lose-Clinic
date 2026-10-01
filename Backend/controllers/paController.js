@@ -1717,6 +1717,50 @@ const getPatientNotifications = async (req, res) => {
   }
 };
 
+const markPatientNotificationSeen = async (req, res) => {
+  try {
+    const { patientId, notificationId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(patientId) || !mongoose.Types.ObjectId.isValid(notificationId)) {
+      return res.status(400).json({ error: "Invalid notification identifier." });
+    }
+
+    const result = await Patient.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(patientId), "notifications._id": new mongoose.Types.ObjectId(notificationId) },
+      { $set: { "notifications.$.seen": true } }
+    );
+
+    if (!result.matchedCount) {
+      return res.status(404).json({ error: "Notification not found." });
+    }
+
+    return res.status(200).json({ message: "Notification marked as seen." });
+  } catch (error) {
+    console.error("Error marking patient notification as seen:", error);
+    return res.status(500).json({ error: "Unable to mark notification as seen." });
+  }
+};
+
+const markAllPatientNotificationsSeen = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(patientId)) {
+      return res.status(400).json({ error: "Invalid patient identifier." });
+    }
+
+    await Patient.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(patientId) },
+      { $set: { "notifications.$[].seen": true } }
+    );
+
+    return res.status(200).json({ message: "Notifications marked as seen." });
+  } catch (error) {
+    console.error("Error marking patient notifications as seen:", error);
+    return res.status(500).json({ error: "Unable to mark notifications as seen." });
+  }
+};
+
 // Function to add a new notification for a patient
 const addPatientNotification = async (req, res) => {
   const patientId = req.params.patientId;
@@ -2204,6 +2248,8 @@ module.exports = {
   getPatientNotifications,
   addPatientNotification,
   updatePatientNotifications,
+  markPatientNotificationSeen,
+  markAllPatientNotificationsSeen,
   markPatientNotificationSeen,
   sendPatientEmail,
   sendEmail,
