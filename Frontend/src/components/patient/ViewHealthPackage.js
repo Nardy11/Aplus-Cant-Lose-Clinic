@@ -306,7 +306,7 @@ export default function Hpackages() {
                         }}
                       >
                         <Typography>Subscribe</Typography>
-                      </button>
+                      </Button>
                    
                   ) : (
                     <Button
@@ -317,7 +317,7 @@ export default function Hpackages() {
                       }}
                     >
                       <Typography>Unsubscribe</Typography>
-                    </button>
+                    </Button>
                   )}
                 </TableCell>
 
@@ -355,7 +355,7 @@ export default function Hpackages() {
         </div>
       </div>
       <DialogActions className="clinic-dialog-actions">
-        <Button onClick={()=>setfirstDialogue(false)} className="clinic-dialog-cancel">Cancel</button>
+        <Button onClick={()=>setfirstDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
       </DialogActions>
     </Dialog>
     <Dialog open={secondDialogue} onClose={()=>setSecondDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
@@ -372,7 +372,7 @@ export default function Hpackages() {
           <button type="button" className="package-choice-option" onClick={handleCreditCardButtonClick} disabled={creditCardLoading}>
             <strong>{creditCardLoading ? "Opening checkout…" : "Credit card"}</strong>
             <span>{creditCardLoading ? "Connecting to secure payment" : "Continue securely to card payment"}</span>
-          </Button>
+          </button>
         </div>
       </div>
       <DialogActions className="clinic-dialog-actions">
@@ -431,11 +431,11 @@ export default function Hpackages() {
         <div className="package-choice-grid">
           <button type="button" className="package-choice-option" onClick={handleWalletButtonClickFamily}>
             <strong>Wallet</strong><span>Use your clinic account balance</span>
-          </Button>
+          </button>
           <button type="button" className="package-choice-option" onClick={handleCreditCardButtonClick} disabled={creditCardLoading}>
             <strong>{creditCardLoading ? "Opening checkout…" : "Credit card"}</strong>
             <span>{creditCardLoading ? "Connecting to secure payment" : "Continue securely to card payment"}</span>
-          </Button>
+          </button>
         </div>
       </div>
       <DialogActions className="clinic-dialog-actions">
