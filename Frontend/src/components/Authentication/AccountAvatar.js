@@ -152,7 +152,9 @@ const AccountAvatar = () => {
     <header className="clinic-header">
       <div className="clinic-header-inner">
         <div className="clinic-identity">
-          <div className="clinic-brand-mark"><MedicalServicesRoundedIcon /><span className="clinic-brand-plus">+</span></div>
+          <div className="clinic-brand-mark">
+            <img src="/logo192.png" alt="El7a2ny Clinic" />
+          </div>
           <div className="clinic-brand-copy">
             <strong>El7a2ny Clinic</strong>
             <span>{role === "doctor" ? "Doctor portal" : role === "patient" ? "Patient portal" : "Clinic portal"}</span>
