@@ -86,7 +86,7 @@ const ProfileModal = ({ user, children }) => {
   return (
     <>
       {children ? (
-        <span className="chat-profile-trigger" onClick={handleOpen} role="button" tabIndex={0}
+        <div className="chat-profile-trigger" onClick={handleOpen} role="button" tabIndex={0}
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") handleOpen();
           }}>
