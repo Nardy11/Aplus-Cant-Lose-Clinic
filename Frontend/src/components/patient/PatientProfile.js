@@ -373,6 +373,18 @@ function ProfileField({ icon, label, value, editing, onChange, type = "text", fu
     );
   }
 
+  if (type === "date") {
+    return (
+      <div className={`patient-profile-edit-field patient-profile-date-field ${fullWidth ? "full-width" : ""}`}>
+        <ClinicDateField
+          value={value || ""}
+          onChange={onChange}
+          placeholder={label}
+        />
+      </div>
+    );
+  }
+
   return (
     <label className={`patient-profile-edit-field ${fullWidth ? "full-width" : ""}`}>
       <span className="patient-profile-edit-label">{label}</span>
