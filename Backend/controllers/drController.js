@@ -746,8 +746,14 @@ async function rescheduleAppointment(req, res) {
       
 
     // Save the updated appointment
-    await patient.save();
-    await doctor.save();
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      { $push: { notifications: patient.notifications[patient.notifications.length - 1] } }
+    );
+    await Doctor.collection.updateOne(
+      { _id: doctor._id },
+      { $push: { notifications: doctor.notifications[doctor.notifications.length - 1] } }
+    );
     await appointment.save();
 
       // Send email to the doctor
