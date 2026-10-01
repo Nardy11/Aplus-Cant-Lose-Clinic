@@ -50,7 +50,8 @@
     "socket.io-client": "^4.7.2",
     "styled-components": "^5.3.11",
     "web-vitals": "^2.1.4",
-    "@heroui/react": "2.6.11"
+    "@heroui/react": "2.6.11",
+    "html2canvas": "^1.4.1"
   },
   "scripts": {
     "start": "react-scripts start",
