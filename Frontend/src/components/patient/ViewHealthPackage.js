@@ -87,6 +87,7 @@ export default function Hpackages() {
   const [confirmFamilyClose, setConfirmFamilyClose] = useState(false);
   const [unsubscribeTarget, setUnsubscribeTarget] = useState(null);
   const [unsubscribing, setUnsubscribing] = useState(false);
+  const [creditCardLoading, setCreditCardLoading] = useState(false);
 
   const navigate = useNavigate();
 
