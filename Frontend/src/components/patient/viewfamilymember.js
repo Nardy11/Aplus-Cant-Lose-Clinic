@@ -554,28 +554,48 @@ handleCloseDialog();      }
         </DialogTitle>
         <DialogContent className="family-member-edit-content">
           <TextField
+            className="family-edit-text-field"
             label="Full name"
+            variant="outlined"
+            size="small"
+            margin="none"
+            InputLabelProps={{ shrink: true }}
             fullWidth
             value={familyEditForm.fullName}
             onChange={(e) => setFamilyEditForm((current) => ({ ...current, fullName: e.target.value }))}
           />
           <TextField
+            className="family-edit-text-field"
             label="National ID"
+            variant="outlined"
+            size="small"
+            margin="none"
+            InputLabelProps={{ shrink: true }}
             type="number"
             fullWidth
             value={familyEditForm.NID}
             onChange={(e) => setFamilyEditForm((current) => ({ ...current, NID: e.target.value }))}
           />
           <TextField
+            className="family-edit-text-field"
             label="Age"
+            variant="outlined"
+            size="small"
+            margin="none"
+            InputLabelProps={{ shrink: true }}
             type="number"
             fullWidth
             value={familyEditForm.age}
             onChange={(e) => setFamilyEditForm((current) => ({ ...current, age: e.target.value }))}
           />
           <TextField
+            className="family-edit-text-field"
             select
             label="Gender"
+            variant="outlined"
+            size="small"
+            margin="none"
+            InputLabelProps={{ shrink: true }}
             fullWidth
             value={familyEditForm.gender}
             onChange={(e) => setFamilyEditForm((current) => ({ ...current, gender: e.target.value }))}
@@ -585,8 +605,13 @@ handleCloseDialog();      }
             <MenuItem value="none">Not specified</MenuItem>
           </TextField>
           <TextField
+            className="family-edit-text-field"
             select
             label="Relation"
+            variant="outlined"
+            size="small"
+            margin="none"
+            InputLabelProps={{ shrink: true }}
             fullWidth
             value={familyEditForm.relation}
             onChange={(e) => setFamilyEditForm((current) => ({ ...current, relation: e.target.value }))}
