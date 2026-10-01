@@ -9911,3 +9911,64 @@ select option,
     grid-column: auto;
   }
 }
+
+
+/* ===== Final health-package dialog layout override ===== */
+.package-choice-dialog .MuiDialog-paper > .package-dialog-body {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 8px 26px 4px !important;
+}
+.package-choice-dialog .package-dialog-body p {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.package-choice-dialog .package-choice-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  width: 100% !important;
+  gap: 12px !important;
+}
+.package-choice-dialog .package-choice-option {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 112px !important;
+  box-sizing: border-box !important;
+  padding: 17px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  flex-direction: column !important;
+  border: 1px solid #d7e2ef !important;
+  border-radius: 14px !important;
+  background: #f9fbfe !important;
+  color: #344258 !important;
+  text-align: left !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+.package-choice-dialog .package-choice-option:hover {
+  border-color: #1769ff !important;
+  background: #f3f7ff !important;
+  box-shadow: 0 8px 20px rgba(23,105,255,.08) !important;
+}
+.package-choice-dialog .package-choice-option strong {
+  display: block !important;
+  color: #26364d !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 850 !important;
+}
+.package-choice-dialog .package-choice-option span {
+  display: block !important;
+  margin-top: 7px !important;
+  color: #7d8ba0 !important;
+  font-size: 9px !important;
+  line-height: 1.55 !important;
+}
+@media (max-width: 520px) {
+  .package-choice-dialog .package-choice-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
