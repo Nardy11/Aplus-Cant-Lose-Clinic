@@ -50,6 +50,20 @@ export default function NotificationsPage() {
 
         if (active) setNotifications(items);
 
+        // Opening the notifications center marks the current set as seen.
+        try {
+          await axios.patch(
+            role === "doctor"
+              ? API_URL + "/doctor/" + id + "/notifications/seen-all"
+              : API_URL + "/patient/" + id + "/notifications/seen-all"
+          );
+          if (active) {
+            setNotifications(items.map((item) => ({ ...item, seen: true })));
+          }
+        } catch (seenError) {
+          console.error("Unable to persist notification seen state:", seenError);
+        }
+
         if (role === "patient") {
           try {
             const doctorResponse = await axios.get(`${API_URL}/patient/getAlldoctors`);
