@@ -53,25 +53,6 @@ export default function NotificationsPage() {
 
         if (active) setNotifications(items);
 
-        // Opening the notifications center marks the current set as seen.
-        try {
-          await axios.patch(
-            role === "doctor"
-              ? API_URL + "/doctor/" + id + "/notifications/seen-all"
-              : API_URL + "/patient/" + id + "/notifications/seen-all"
-          );
-          if (active) {
-            setNotifications(items.map((item) => ({ ...item, seen: true })));
-            if (role === "doctor") {
-              dispatch(getNotificationsd(id));
-            } else {
-              dispatch(getNotifications(id));
-            }
-          }
-        } catch (seenError) {
-          console.error("Unable to persist notification seen state:", seenError);
-        }
-
         if (role === "patient") {
           try {
             const doctorResponse = await axios.get(`${API_URL}/patient/getAlldoctors`);
@@ -192,14 +173,19 @@ export default function NotificationsPage() {
           Back to home
         </button>
 
-        <section className="clinic-list-heading">
+        <section className="clinic-list-heading clinic-notifications-heading">
           <div>
             <span>UPDATES</span>
             <h1>Notifications</h1>
             <p>{subtitle}</p>
           </div>
-          <div className="clinic-list-heading-icon">
-            <NotificationsNoneRoundedIcon />
+          <div className="clinic-notifications-heading-actions">
+            <button type="button" className="clinic-mark-all-read" onClick={markAllNotificationsSeen} disabled={!notifications.some((item) => !item.seen)}>
+              Mark all as read
+            </button>
+            <div className="clinic-list-heading-icon">
+              <NotificationsNoneRoundedIcon />
+            </div>
           </div>
         </section>
 
