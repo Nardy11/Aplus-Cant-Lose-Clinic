@@ -369,8 +369,13 @@ export default function Hpackages() {
           <Button className="package-choice-option" onClick={handleWalletButtonClick}>
             <strong>Wallet</strong><span>Use your clinic account balance</span>
           </Button>
-          <Button className="package-choice-option" onClick={handleCreditCardButtonClick}>
-            <strong>Credit card</strong><span>Continue securely to card payment</span>
+          <Button
+            className="package-choice-option"
+            onClick={handleCreditCardButtonClick}
+            disabled={creditCardLoading}
+          >
+            <strong>{creditCardLoading ? "Opening checkout…" : "Credit card"}</strong>
+            <span>{creditCardLoading ? "Connecting to secure payment" : "Continue securely to card payment"}</span>
           </Button>
         </div>
       </div>
@@ -431,8 +436,13 @@ export default function Hpackages() {
           <Button className="package-choice-option" onClick={handleWalletButtonClickFamily}>
             <strong>Wallet</strong><span>Use your clinic account balance</span>
           </Button>
-          <Button className="package-choice-option" onClick={handleCreditCardButtonClick}>
-            <strong>Credit card</strong><span>Continue securely to card payment</span>
+          <Button
+            className="package-choice-option"
+            onClick={handleCreditCardButtonClick}
+            disabled={creditCardLoading}
+          >
+            <strong>{creditCardLoading ? "Opening checkout…" : "Credit card"}</strong>
+            <span>{creditCardLoading ? "Connecting to secure payment" : "Continue securely to card payment"}</span>
           </Button>
         </div>
       </div>
