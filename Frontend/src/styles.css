@@ -10086,3 +10086,43 @@ select option,
     align-items: flex-start !important;
   }
 }
+
+
+/* ===== Final health-package dialog polish ===== */
+.package-choice-dialog .package-choice-option {
+  min-height: 112px !important;
+  padding: 18px !important;
+  border: 1px solid #d7e2ef !important;
+  border-radius: 14px !important;
+  background: #f9fbfe !important;
+}
+.package-choice-dialog .package-choice-option strong {
+  color: #26364d !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+.package-choice-dialog .package-choice-option span {
+  margin-top: 7px !important;
+  color: #7d8ba0 !important;
+  font-size: 10px !important;
+  line-height: 1.45 !important;
+}
+.package-choice-dialog .package-dialog-body .MuiTextField-root {
+  width: 100% !important;
+}
+.package-choice-dialog .package-dialog-body .MuiOutlinedInput-root {
+  min-height: 52px !important;
+  border-radius: 12px !important;
+  background: #fbfcfe !important;
+}
+.package-choice-dialog .package-dialog-body .MuiOutlinedInput-notchedOutline {
+  border-color: #d7e2ef !important;
+}
+.package-choice-dialog .package-dialog-body .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+.package-choice-dialog .package-dialog-body .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1769ff !important;
+}
+.package-choice-dialog .package-dialog-body .MuiInputBase-input {
+  color: #344258 !important;
+  font-size: 13px !important;
+}
