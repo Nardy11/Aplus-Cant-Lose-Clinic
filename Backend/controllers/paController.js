@@ -203,14 +203,13 @@ const payPrescriptionWithWallet = async (req, res) => {
   const { prescriptionId, patientId } = req.params;
 
   try {
-    const prescription = await Prescription.findOne({
+    const patientObjectId = new mongoose.Types.ObjectId(patientId);
+    const prescription = await Prescription.collection.findOne({
       _id: prescriptionId,
-      patientID: patientId,
-    }).populate("meds.medID");
+      patientID: patientObjectId,
+    });
 
-    if (!prescription) {
-      return res.status(404).json({ error: "Prescription not found" });
-    }
+    if (!prescription) return res.status(404).json({ error: "Prescription not found" });
     if (prescription.status === "filled") {
       return res.status(400).json({ error: "Prescription has already been paid." });
     }
@@ -218,12 +217,17 @@ const payPrescriptionWithWallet = async (req, res) => {
     const patient = await Patient.findById(patientId);
     if (!patient) return res.status(404).json({ error: "Patient not found" });
 
-    const medicines = prescription.meds.map((item) => item.medID).filter(Boolean);
-    const total = medicines.reduce((sum, medicine) => sum + Number(medicine.price || 0), 0);
+    const medicineIds = (prescription.meds || []).map((item) => item.medID).filter(Boolean);
+    const medicines = await Medicine.collection.find({ _id: { $in: medicineIds } }).toArray();
+    const medicineMap = new Map(medicines.map((medicine) => [String(medicine._id), medicine]));
+    const resolvedMedicines = medicineIds.map((id) => medicineMap.get(String(id))).filter(Boolean);
 
-    if (total <= 0) {
-      return res.status(400).json({ error: "This prescription has no payable medicine prices." });
+    if (resolvedMedicines.length !== medicineIds.length) {
+      return res.status(404).json({ error: "One or more prescription medicines could not be found." });
     }
+
+    const total = resolvedMedicines.reduce((sum, medicine) => sum + Number(medicine.price || 0), 0);
+    if (total <= 0) return res.status(400).json({ error: "This prescription has no payable medicine prices." });
     if (Number(patient.wallet || 0) < total) {
       return res.status(400).json({
         error: "Insufficient wallet balance.",
@@ -232,10 +236,9 @@ const payPrescriptionWithWallet = async (req, res) => {
       });
     }
 
-    for (const medicine of medicines) {
-      if (Number(medicine.amount || 0) <= 0) {
-        return res.status(400).json({ error: `Medicine ${medicine.name} is out of stock.` });
-      }
+    const unavailable = resolvedMedicines.find((medicine) => Number(medicine.amount || 0) <= 0);
+    if (unavailable) {
+      return res.status(400).json({ error: `Medicine ${unavailable.name} is out of stock.` });
     }
 
     patient.wallet = Number(patient.wallet || 0) - total;
@@ -247,21 +250,43 @@ const payPrescriptionWithWallet = async (req, res) => {
       description: `Prescription payment ${prescription._id}`,
     });
 
-    for (const medicine of medicines) {
-      medicine.amount = Number(medicine.amount || 0) - 1;
-      medicine.sales = Number(medicine.sales || 0) + 1;
-      await medicine.save();
-    }
+    await Promise.all(
+      resolvedMedicines.map((medicine) =>
+        Medicine.collection.updateOne(
+          { _id: medicine._id, amount: { $gt: 0 } },
+          { $inc: { amount: -1, sales: 1 } }
+        )
+      )
+    );
 
-    prescription.status = "filled";
-    await patient.save();
-    await prescription.save();
+    await Patient.updateOne(
+      { _id: patient._id },
+      {
+        $set: { wallet: patient.wallet },
+        $push: { walletTransactions: patient.walletTransactions[patient.walletTransactions.length - 1] },
+      }
+    );
+    await Prescription.collection.updateOne(
+      { _id: prescription._id },
+      { $set: { status: "filled" } }
+    );
+
+    const doctor = await Doctor.findById(prescription.doctorID).lean();
+    const updatedPrescription = {
+      ...prescription,
+      status: "filled",
+      doctorID: doctor || prescription.doctorID,
+      meds: (prescription.meds || []).map((item) => ({
+        ...item,
+        medID: medicineMap.get(String(item.medID)) || item.medID,
+      })),
+    };
 
     return res.status(200).json({
       message: "Prescription paid successfully.",
       total,
       newBalance: patient.wallet,
-      prescription,
+      prescription: updatedPrescription,
     });
   } catch (error) {
     console.error("Error paying prescription:", error);
@@ -755,37 +780,38 @@ const viewAppoints = async (req, res) => {
 const viewPrescriptions = async (req, res) => {
   try {
     const { patientId } = req.params;
+    if (!patientId) return res.status(400).json({ error: "Patient ID is required" });
 
-    // Validate the 'patientId' parameter
-    if (!patientId) {
-      return res.status(400).json({ error: "Patient ID is required" });
-    }
-
-    // Find the patient by patientId
     const patient = await Patient.findById(patientId);
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
 
-    if (!patient) {
-      return res.status(404).json({ error: "Patient not found" });
+    // Some legacy seed records use string IDs for medicines. Mongoose populate()
+    // cannot cast those IDs reliably, so resolve the references explicitly.
+    const prescriptionDocs = await Prescription.find({ patientID: patient._id }).lean();
+    if (!prescriptionDocs.length) {
+      return res.status(404).json({ error: "No prescriptions found for the patient" });
     }
 
-    // Fetch details about each prescription, including medicine and doctor
-    const prescriptions = await Prescription.find({ patientID: patient._id })
-      .populate({
-        path: "doctorID",
-        model: "Doctor", // Reference to the Doctor model
-      })
-      .populate({
-        path: "meds.medID", // Update the path to access the nested medID in meds array
-        model: "Medicine", // Reference to the Medicine model
-      });
+    const doctorIds = prescriptionDocs.map((item) => item.doctorID).filter(Boolean);
+    const medicineIds = prescriptionDocs.flatMap((item) => item.meds || []).map((item) => item.medID).filter(Boolean);
 
-    if (!prescriptions || prescriptions.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "No prescriptions found for the patient" });
-    }
+    const [doctors, medicines] = await Promise.all([
+      Doctor.find({ _id: { $in: doctorIds } }).lean(),
+      Medicine.collection.find({ _id: { $in: medicineIds } }).toArray(),
+    ]);
 
-    // Prepare the response with the prescriptions, medicine, and doctor details
+    const doctorMap = new Map(doctors.map((doctor) => [String(doctor._id), doctor]));
+    const medicineMap = new Map(medicines.map((medicine) => [String(medicine._id), medicine]));
+
+    const prescriptions = prescriptionDocs.map((prescription) => ({
+      ...prescription,
+      doctorID: doctorMap.get(String(prescription.doctorID)) || prescription.doctorID,
+      meds: (prescription.meds || []).map((item) => ({
+        ...item,
+        medID: medicineMap.get(String(item.medID)) || item.medID,
+      })),
+    }));
+
     return res.status(200).json({
       message: "Prescriptions retrieved successfully",
       prescriptions,
@@ -931,27 +957,30 @@ const filterPrescriptions = async (req, res) => {
 
 const viewSpecificPrescription = async (req, res) => {
   try {
-    const prescriptionId = req.params.id; // Get the prescription ID from the query
+    const prescriptionId = req.params.id;
+    if (!prescriptionId) return res.status(400).json({ error: "Prescription ID is required" });
 
-    // Check if the prescription ID is provided in the query
-    if (!prescriptionId) {
-      return res
-        .status(400)
-        .json({ error: "Prescription ID is required in the query" });
-    }
+    const raw = await Prescription.collection.findOne({ _id: prescriptionId });
+    if (!raw) return res.status(404).json({ error: "Prescription not found" });
 
-    // Find the prescription by its ID and populate related data
-    const prescription = await Prescription.findById(prescriptionId)
-      .populate({
-        path: "meds.medID", // Update the path to access the nested medID in meds array
-        model: "Medicine", // Reference to the Medicine model
-      })
-      .populate("patientID") // Populate the Patient
-      .populate("doctorID"); // Populate the Doctor
+    const [patient, doctor, medicines] = await Promise.all([
+      Patient.findById(raw.patientID).lean(),
+      Doctor.findById(raw.doctorID).lean(),
+      Medicine.collection.find({
+        _id: { $in: (raw.meds || []).map((item) => item.medID) },
+      }).toArray(),
+    ]);
 
-    if (!prescription) {
-      return res.status(404).json({ error: "Prescription not found" });
-    }
+    const medicineMap = new Map(medicines.map((medicine) => [String(medicine._id), medicine]));
+    const prescription = {
+      ...raw,
+      patientID: patient || raw.patientID,
+      doctorID: doctor || raw.doctorID,
+      meds: (raw.meds || []).map((item) => ({
+        ...item,
+        medID: medicineMap.get(String(item.medID)) || item.medID,
+      })),
+    };
 
     return res.status(200).json({
       message: "Prescription and related data retrieved successfully",
