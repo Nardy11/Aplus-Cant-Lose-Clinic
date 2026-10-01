@@ -52,8 +52,7 @@
     "web-vitals": "^2.1.4",
     "@heroui/react": "2.6.11",
     "html2canvas": "^1.4.1",
-    "@internationalized/date": "^3.12.4",
-    "@heroui/date-picker": "^2.3.33"
+    "@internationalized/date": "^3.12.4"
   },
   "scripts": {
     "start": "react-scripts start",
