@@ -1767,6 +1767,33 @@ const updatePatientNotifications = async (req, res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 };
+const markPatientNotificationSeen = async (req, res) => {
+  try {
+    const { patientId, notificationId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(notificationId)) {
+      return res.status(400).json({ error: "Invalid notification id" });
+    }
+
+    const result = await Patient.collection.updateOne(
+      {
+        _id: patientId,
+        "notifications._id": new mongoose.Types.ObjectId(notificationId),
+      },
+      { $set: { "notifications.$.seen": true } }
+    );
+
+    if (!result.matchedCount) {
+      return res.status(404).json({ error: "Notification not found" });
+    }
+
+    return res.json({ message: "Notification marked as seen" });
+  } catch (error) {
+    console.error("Error marking patient notification as seen:", error);
+    return res.status(500).json({ error: "Unable to mark notification as seen" });
+  }
+};
+
 
 const sendPatientEmail = async (req, res) => {
   const { patientId } = req.params;
@@ -2177,6 +2204,7 @@ module.exports = {
   getPatientNotifications,
   addPatientNotification,
   updatePatientNotifications,
+  markPatientNotificationSeen,
   sendPatientEmail,
   sendEmail,
   requestFollowUp,
