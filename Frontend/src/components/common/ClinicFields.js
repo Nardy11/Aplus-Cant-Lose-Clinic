@@ -3,7 +3,7 @@ import { IconButton, MenuItem, Select } from "@mui/material";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import { Input } from "@heroui/react";
+import { Input, Textarea } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
 import { CalendarDate, CalendarDateTime, parseDate, parseDateTime } from "@internationalized/date";
 export function ClinicSearchField({ value, onChange, placeholder = "Search...", className = "" }) {
@@ -165,33 +165,58 @@ export function ClinicHeroTextField({
   type = "text",
   isRequired = false,
   isDisabled = false,
+  multiline = false,
   startContent,
   endContent,
 }) {
   return (
     <div className={`clinic-heroui-text-field ${className}`}>
-      <Input
-        label={label}
-        labelPlacement="outside-top"
-        value={value ?? ""}
-        onValueChange={onChange}
-        placeholder={placeholder}
-        type={type}
-        isRequired={isRequired}
-        isDisabled={isDisabled}
-        variant="bordered"
-        color="primary"
-        size="sm"
-        radius="lg"
-        startContent={startContent}
-        endContent={endContent}
-        classNames={{
-          base: "clinic-heroui-input-base",
-          label: "clinic-heroui-input-label",
-          inputWrapper: "clinic-heroui-input-wrapper",
-          input: "clinic-heroui-input",
-        }}
-      />
+      {multiline ? (
+        <Textarea
+          label={label}
+          labelPlacement="outside-top"
+          value={value ?? ""}
+          onValueChange={onChange}
+          placeholder={placeholder}
+          minRows={3}
+          maxRows={7}
+          isRequired={isRequired}
+          isDisabled={isDisabled}
+          variant="bordered"
+          color="primary"
+          size="sm"
+          radius="lg"
+          classNames={{
+            base: "clinic-heroui-input-base",
+            label: "clinic-heroui-input-label",
+            inputWrapper: "clinic-heroui-input-wrapper",
+            input: "clinic-heroui-input",
+          }}
+        />
+      ) : (
+        <Input
+          label={label}
+          labelPlacement="outside-top"
+          value={value ?? ""}
+          onValueChange={onChange}
+          placeholder={placeholder}
+          type={type}
+          isRequired={isRequired}
+          isDisabled={isDisabled}
+          variant="bordered"
+          color="primary"
+          size="sm"
+          radius="lg"
+          startContent={startContent}
+          endContent={endContent}
+          classNames={{
+            base: "clinic-heroui-input-base",
+            label: "clinic-heroui-input-label",
+            inputWrapper: "clinic-heroui-input-wrapper",
+            input: "clinic-heroui-input",
+          }}
+        />
+      )}
     </div>
   );
 }
