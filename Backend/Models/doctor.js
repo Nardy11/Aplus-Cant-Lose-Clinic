@@ -21,6 +21,7 @@ const drSchema = new mongoose.Schema(
       unique: true,
     },
     Dbirth: Date,
+    mobile: Number,
     gender: {
       type: String,
       enum: ["male", "female", "none"],
@@ -82,6 +83,15 @@ const drSchema = new mongoose.Schema(
         timestamp: {
           type: Date,
           default: Date.now,
+        },
+        entityType: {
+          type: String,
+          enum: ["Appointment", "Prescription", "FollowUp", "Patient", "None"],
+          default: "None",
+        },
+        entityId: {
+          type: mongoose.Schema.Types.ObjectId,
+          default: null,
         },
       },
     ],
