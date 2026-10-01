@@ -9238,3 +9238,213 @@ select option,
     justify-content: center;
   }
 }
+
+
+/* ===== Unified clinic picker + dialog polish ===== */
+.clinic-datetime-field {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 0 14px !important;
+}
+.clinic-datetime-field > span {
+  display: block !important;
+  margin: 0 0 6px !important;
+  color: #526176 !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+}
+.clinic-datetime-field .MuiFormControl-root {
+  width: 100% !important;
+}
+.clinic-datetime-field .MuiOutlinedInput-root {
+  min-height: 48px !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #344258 !important;
+}
+.clinic-datetime-field .MuiOutlinedInput-notchedOutline {
+  border-color: #dbe4ee !important;
+}
+.clinic-datetime-field .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+.clinic-datetime-field .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1769ff !important;
+  border-width: 1px !important;
+}
+.clinic-datetime-field .MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 0 0 0 3px rgba(23,105,255,.08) !important;
+}
+.clinic-datetime-field .MuiInputBase-input {
+  min-height: 46px !important;
+  box-sizing: border-box !important;
+  padding: 0 11px !important;
+  color: #344258 !important;
+  font-size: 10px !important;
+}
+.clinic-datetime-field .MuiInputAdornment-root .MuiIconButton-root {
+  color: #1769ff !important;
+}
+.clinic-datetime-field .MuiSvgIcon-root {
+  color: #1769ff !important;
+}
+.MuiPickersPopper-root .MuiPaper-root,
+.MuiPickersLayout-root {
+  border-radius: 16px !important;
+}
+.MuiPickersPopper-root .MuiPickersDay-root.Mui-selected,
+.MuiDateCalendar-root .MuiPickersDay-root.Mui-selected {
+  background: #1769ff !important;
+  color: #fff !important;
+}
+.MuiPickersPopper-root .MuiPickersDay-root:hover,
+.MuiDateCalendar-root .MuiPickersDay-root:hover {
+  background: #eef4ff !important;
+  color: #1769ff !important;
+}
+.MuiPickersPopper-root .MuiPickersDay-root.MuiPickersDay-today:not(.Mui-selected),
+.MuiDateCalendar-root .MuiPickersDay-root.MuiPickersDay-today:not(.Mui-selected) {
+  border-color: #1769ff !important;
+  color: #1769ff !important;
+}
+.MuiPickersPopper-root .MuiPickersCalendarHeader-label,
+.MuiPickersPopper-root .MuiPickersLayout-root {
+  color: #344258 !important;
+}
+.MuiPickersPopper-root .MuiIconButton-root {
+  color: #1769ff !important;
+}
+.MuiPickersPopper-root .MuiClock-pin,
+.MuiPickersPopper-root .MuiClockPointer-root,
+.MuiPickersPopper-root .MuiClockPointer-thumb {
+  background-color: #1769ff !important;
+  border-color: #1769ff !important;
+}
+.MuiPickersPopper-root .MuiClockNumber-root.Mui-selected {
+  color: #1769ff !important;
+}
+.MuiPickersPopper-root .MuiButtonBase-root.MuiPickersActionBar-action {
+  color: #1769ff !important;
+}
+
+/* Date-only clinic field uses the same blue calendar language. */
+.clinic-date-field .MuiSvgIcon-root {
+  color: #1769ff !important;
+}
+.clinic-date-field:focus-within {
+  border-color: #1769ff !important;
+  box-shadow: 0 0 0 3px rgba(23,105,255,.08) !important;
+}
+
+/* Doctor dialogs: compact close control and aligned title block. */
+.doctor-dialog .doctor-dialog-title,
+.clinic-modern-dialog .clinic-dialog-title {
+  align-items: flex-start !important;
+}
+.doctor-dialog-title > div,
+.clinic-dialog-title > div {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+.doctor-dialog-close,
+.clinic-dialog-close {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+  flex: 0 0 42px !important;
+}
+.doctor-dialog-close svg,
+.clinic-dialog-close svg {
+  font-size: 21px !important;
+}
+.doctor-dialog-title span,
+.clinic-dialog-title > div > span {
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+.doctor-dialog-title h2,
+.clinic-dialog-title h2 {
+  margin: 5px 0 0 !important;
+  line-height: 1.08 !important;
+}
+
+/* Doctor form calendar fields line up exactly with normal form fields. */
+.doctor-form-field .clinic-date-field {
+  width: 100%;
+}
+.doctor-form-field .clinic-date-field .MuiSvgIcon-root {
+  color: #1769ff !important;
+}
+
+/* Smaller patient appointment action controls. A lone action fills the cell. */
+.appointment-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: 100% !important;
+}
+.appointment-actions > .appointment-action-button,
+.appointment-actions > .doctor-secondary-button,
+.appointment-actions > .doctor-primary-button {
+  min-width: 118px !important;
+  width: auto !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  font-size: 9px !important;
+  box-shadow: none !important;
+}
+.appointment-actions > .appointment-action-button:only-child,
+.appointment-actions > .doctor-secondary-button:only-child,
+.appointment-actions > .doctor-primary-button:only-child {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+}
+.appointment-actions > .appointment-action-button:not(:only-child),
+.appointment-actions > .doctor-secondary-button:not(:only-child),
+.appointment-actions > .doctor-primary-button:not(:only-child) {
+  flex: 0 1 132px !important;
+}
+.appointments-table .appointment-actions-cell {
+  min-width: 285px !important;
+}
+
+/* Family edit fields match the compact clinic input system. */
+.family-member-edit-content .family-edit-text-field {
+  margin: 0 !important;
+}
+.family-member-edit-content .family-edit-text-field .MuiOutlinedInput-root {
+  min-height: 44px !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+}
+.family-member-edit-content .family-edit-text-field .MuiOutlinedInput-notchedOutline {
+  border-color: #dbe4ee !important;
+}
+.family-member-edit-content .family-edit-text-field .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+.family-member-edit-content .family-edit-text-field .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1769ff !important;
+}
+.family-member-edit-content .family-edit-text-field .MuiInputBase-input {
+  min-height: 42px !important;
+  box-sizing: border-box !important;
+  padding: 0 11px !important;
+  color: #344258 !important;
+  font-size: 10px !important;
+}
+.family-member-edit-content .family-edit-text-field .MuiInputLabel-root {
+  color: #68778c !important;
+  font-size: 10px !important;
+}
+.family-member-edit-content .family-edit-text-field .MuiInputLabel-root.Mui-focused {
+  color: #1769ff !important;
+}
+
+/* Keep the doctor medical-history dialog visually identical to the health-record dialog. */
+.doctor-dialog .doctor-dialog-content > .doctor-dialog-section {
+  margin-top: 0 !important;
+}
+.doctor-dialog .doctor-dialog-content {
+  padding-top: 0 !important;
+}
