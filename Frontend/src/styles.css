@@ -9448,3 +9448,36 @@ select option,
 .doctor-dialog .doctor-dialog-content {
   padding-top: 0 !important;
 }
+
+
+/* Global picker color contract for every MUI calendar used by the clinic. */
+.MuiPickersDay-root.Mui-selected,
+.MuiPickersDay-root.Mui-selected:hover {
+  background: #1769ff !important;
+  color: #fff !important;
+}
+.MuiPickersDay-root.MuiPickersDay-today:not(.Mui-selected) {
+  color: #1769ff !important;
+  border-color: #1769ff !important;
+}
+.MuiPickersCalendarHeader-label {
+  color: #344258 !important;
+}
+.MuiPickersCalendarHeader-switchViewButton,
+.MuiPickersArrowSwitcher-button {
+  color: #1769ff !important;
+}
+
+/* Any doctor/clinic dialog close control stays compact, including older dialogs. */
+.doctor-dialog .MuiDialogTitle-root > .MuiIconButton-root,
+.clinic-modern-dialog .MuiDialogTitle-root > .MuiIconButton-root {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+}
+.doctor-dialog .MuiDialogTitle-root > .MuiIconButton-root svg,
+.clinic-modern-dialog .MuiDialogTitle-root > .MuiIconButton-root svg {
+  font-size: 20px !important;
+}
