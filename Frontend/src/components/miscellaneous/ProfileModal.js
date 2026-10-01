@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Avatar,
   Button,
@@ -24,7 +23,6 @@ const ProfileModal = ({ user, children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [doctorProfile, setDoctorProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isOpen || !user?.username || user?.role !== "doctor") return;
@@ -156,12 +154,7 @@ const ProfileModal = ({ user, children }) => {
 
         <DialogActions className="clinic-dialog-actions">
           <Button
-            onClick={() => {
-              close();
-              if (profile?._id) {
-                navigate(`/Profile?doctorId=${encodeURIComponent(profile._id)}`);
-              }
-            }}
+            onClick={close}
             className="clinic-dialog-primary"
           >
             Close
