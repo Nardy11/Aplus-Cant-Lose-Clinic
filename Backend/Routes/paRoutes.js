@@ -40,6 +40,7 @@ const {
   addPatientNotification,
   updatePatientNotifications,
   markPatientNotificationSeen,
+  markAllPatientNotificationsSeen,
   sendPatientEmail,
   requestFollowUp,
   sendEmail,
@@ -572,6 +573,8 @@ router.patch("/CancelAppointment/:aid/:did/:pid", cancelAppointment);
 // Get patient notifications
 router.get("/:patientId/notifications", getPatientNotifications);
 router.get("/:patientId/notifications/target/:entityType/:entityId", getNotificationTarget);
+router.patch("/:patientId/notifications/seen-all", markAllPatientNotificationsSeen);
+router.patch("/:patientId/notifications/:notificationId/seen", markPatientNotificationSeen);
 
 // Add a new notification for a patient
 router.post("/:patientId/notifications", addPatientNotification);
