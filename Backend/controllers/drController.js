@@ -7,6 +7,7 @@ const Appointment = require("../Models/appointments");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const mongoose = require("mongoose");
 const FollowUp=require("../Models/followUps");
 const Medicine = require("../Models/medicine");
 function generateToken(data) {
@@ -808,6 +809,50 @@ const getDoctorNotifications = async (req, res) => {
 
 
 
+const markDoctorNotificationSeen = async (req, res) => {
+  try {
+    const { doctorId, notificationId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(doctorId) || !mongoose.Types.ObjectId.isValid(notificationId)) {
+      return res.status(400).json({ error: "Invalid notification identifier." });
+    }
+
+    const result = await Doctor.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(doctorId), "notifications._id": new mongoose.Types.ObjectId(notificationId) },
+      { $set: { "notifications.$.seen": true } }
+    );
+
+    if (!result.matchedCount) {
+      return res.status(404).json({ error: "Notification not found." });
+    }
+
+    return res.status(200).json({ message: "Notification marked as seen." });
+  } catch (error) {
+    console.error("Error marking doctor notification as seen:", error);
+    return res.status(500).json({ error: "Unable to mark notification as seen." });
+  }
+};
+
+const markAllDoctorNotificationsSeen = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+      return res.status(400).json({ error: "Invalid doctor identifier." });
+    }
+
+    await Doctor.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(doctorId) },
+      { $set: { "notifications.$[].seen": true } }
+    );
+
+    return res.status(200).json({ message: "Notifications marked as seen." });
+  } catch (error) {
+    console.error("Error marking doctor notifications as seen:", error);
+    return res.status(500).json({ error: "Unable to mark notifications as seen." });
+  }
+};
+
 // Function to add a new notification for a doctor
 const addDoctorNotification = async (req, res) => {
   const doctorId = req.params.doctorId;
@@ -1348,6 +1393,8 @@ module.exports = {
   getDoctorNotifications,
   addDoctorNotification,
   updateDoctorNotifications,
+  markDoctorNotificationSeen,
+  markAllDoctorNotificationsSeen,
   markDoctorNotificationSeen,
   sendDoctorEmail,
   updateDosageForMedicine,
