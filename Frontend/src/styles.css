@@ -9523,7 +9523,31 @@ select option,
   border-color: #1769ff !important;
   box-shadow: 0 0 0 3px rgba(23,105,255,.08) !important;
 }
-.clinic-heroui-date-field [data-slot="input"],
+/* HeroUI DatePicker uses segmented date/time children inside the input slot.
+   This app does not use Tailwind globally, so explicitly restore the flex layout
+   that HeroUI's segmented input expects. */
+.clinic-heroui-date-field [data-slot="input"] {
+  display: flex !important;
+  align-items: center !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  height: 100% !important;
+  gap: 2px !important;
+  color: #344258 !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+.clinic-heroui-date-field [data-slot="segment"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
 .clinic-heroui-text-field [data-slot="input"] {
   color: #344258 !important;
   font-size: 11px !important;
