@@ -8673,3 +8673,564 @@ select option,
     flex: 1 1 calc(50% - 4px) !important;
   }
 }
+
+
+/* ===== Patient interaction polish ===== */
+.reschedule-dialog-content {
+  padding: 8px 27px 12px !important;
+}
+.reschedule-dialog-content .clinic-datetime-field {
+  margin: 0 0 14px;
+}
+.reschedule-dialog-content .clinic-datetime-field > span {
+  color: #526176;
+  font-size: 10px;
+  font-weight: 800;
+}
+.reschedule-dialog-hint {
+  margin: 2px 0 4px;
+  color: #8b97a7;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.appointments-table .appointment-actions-heading {
+  min-width: 300px;
+}
+.appointment-actions-cell {
+  min-width: 300px;
+}
+.appointment-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 7px;
+  min-height: 42px;
+}
+.appointment-action-button {
+  min-height: 38px !important;
+  padding: 0 12px !important;
+  border-radius: 9px !important;
+  border: 1px solid #dbe4ee !important;
+  background: #fff !important;
+  color: #526176 !important;
+  text-transform: none !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+.appointment-reschedule-button {
+  color: #1769ff !important;
+  border-color: #bcd2f5 !important;
+}
+.appointment-cancel-button {
+  color: #b23a45 !important;
+  border-color: #f0c8cc !important;
+}
+.appointment-followup-button {
+  color: #fff !important;
+  border-color: #1769ff !important;
+  background: #1769ff !important;
+}
+.appointment-action-button:disabled {
+  opacity: .55 !important;
+}
+.appointment-action-muted {
+  color: #a0aaba;
+  font-size: 9px;
+}
+.appointment-row-focused {
+  background: #f0f6ff !important;
+  box-shadow: inset 3px 0 0 #1769ff;
+}
+.appointment-row-focused td {
+  border-bottom-color: #d7e5fa !important;
+}
+
+@media (max-width: 850px) {
+  .appointment-actions {
+    flex-wrap: wrap;
+  }
+  .appointment-actions-heading,
+  .appointment-actions-cell {
+    min-width: 240px;
+  }
+}
+
+/* Family member actions */
+.family-members-table .family-member-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.family-member-actions button {
+  min-height: 34px !important;
+  padding: 0 11px !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+}
+.family-member-view-button {
+  color: #1769ff !important;
+  border: 1px solid #c6d8f6 !important;
+  background: #f7faff !important;
+}
+.family-member-edit-button {
+  color: #53647a !important;
+  border: 1px solid #dbe4ee !important;
+  background: #fff !important;
+}
+.family-member-delete-button {
+  color: #b23a45 !important;
+  border: 1px solid #f0c8cc !important;
+  background: #fff8f8 !important;
+}
+.family-member-detail-content,
+.family-member-edit-content {
+  padding: 12px 27px 22px !important;
+}
+.family-member-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.family-member-detail-grid > div {
+  padding: 12px;
+  border: 1px solid #e5eaf0;
+  border-radius: 10px;
+  background: #fbfdff;
+}
+.family-member-detail-grid span,
+.family-member-detail-grid strong {
+  display: block;
+}
+.family-member-detail-grid span {
+  color: #8b97a7;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.family-member-detail-grid strong {
+  margin-top: 5px;
+  color: #344258;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.family-member-edit-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.family-member-edit-content .MuiTextField-root {
+  margin: 0 !important;
+}
+.family-members-empty {
+  padding: 28px 10px;
+}
+.family-members-empty strong,
+.family-members-empty span {
+  display: block;
+}
+.family-members-empty strong {
+  color: #526176;
+  font-size: 11px;
+}
+.family-members-empty span {
+  margin-top: 5px;
+  color: #96a1af;
+  font-size: 9px;
+}
+
+@media (max-width: 650px) {
+  .family-member-actions {
+    flex-wrap: wrap !important;
+  }
+  .family-member-detail-grid,
+  .family-member-edit-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Health package actions */
+.health-packages-table .MuiTableCell-root {
+  vertical-align: middle;
+}
+.health-packages-table button {
+  min-height: 38px !important;
+  border-radius: 9px !important;
+}
+.health-packages-table .MuiButton-root {
+  text-transform: none !important;
+  font-weight: 800 !important;
+}
+.health-packages-table .MuiButton-root.MuiButton-contained {
+  color: #fff !important;
+}
+
+/* Medical documents */
+.medical-history-add-button {
+  color: #fff !important;
+  background: #1769ff !important;
+  border-color: #1769ff !important;
+  box-shadow: 0 7px 16px rgba(23,105,255,.14);
+}
+.medical-history-add-button:hover {
+  color: #fff !important;
+  background: #1257d6 !important;
+}
+.medical-history-file-actions {
+  align-items: center !important;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+.medical-history-file-actions .medical-history-file-action {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 9px;
+  border: 1px solid #dbe4ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #66768b;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 800;
+}
+.medical-history-file-actions .medical-history-file-action svg {
+  position: static !important;
+  flex: 0 0 auto;
+  font-size: 16px;
+}
+.medical-history-file-actions .medical-history-file-action:hover {
+  color: #1769ff;
+  border-color: #c8d9ef;
+  background: #f6f9ff;
+}
+
+/* Prescription receipt */
+.prescription-receipt {
+  width: calc(100% - 32px);
+  margin: 0 auto 20px;
+  overflow: hidden;
+  border: 1px solid #dfe6ee;
+  border-radius: 16px;
+  background: #fff;
+}
+.prescription-receipt-header {
+  display: grid;
+  grid-template-columns: minmax(230px, 1.25fr) minmax(150px, .8fr) minmax(190px, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e9eef3;
+  background: #fbfdff;
+}
+.prescription-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.prescription-brand-image {
+  width: 68px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 11px;
+  background: linear-gradient(145deg, #1769ff, #0f4ec4 65%, #18b6a4);
+}
+.prescription-brand-image img {
+  width: 88px;
+  height: 68px;
+  object-fit: contain;
+}
+.prescription-brand strong,
+.prescription-brand span {
+  display: block;
+}
+.prescription-brand strong {
+  color: #1769ff;
+  font-size: 15px;
+  letter-spacing: .08em;
+}
+.prescription-brand span {
+  margin-top: 2px;
+  color: #18a99d;
+  font-size: 7px;
+  font-weight: 850;
+  letter-spacing: .18em;
+}
+.prescription-receipt-meta span,
+.prescription-receipt-meta strong,
+.prescription-receipt-meta small {
+  display: block;
+}
+.prescription-receipt-meta span {
+  color: #8b97a7;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.prescription-receipt-meta strong {
+  margin-top: 4px;
+  color: #3b4b61;
+  font-size: 11px;
+}
+.prescription-receipt-meta small {
+  margin-top: 3px;
+  color: #8b97a7;
+  font-size: 9px;
+}
+.prescription-receipt-body {
+  padding: 4px 20px;
+}
+.prescription-medicine {
+  padding: 15px 0;
+  border-bottom: 1px solid #edf1f5;
+}
+.prescription-medicine:last-child {
+  border-bottom: 0;
+}
+.prescription-medicine-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.prescription-medicine-title strong {
+  color: #344258;
+  font-size: 13px;
+}
+.prescription-medicine-title span {
+  color: #1769ff;
+  font-size: 10px;
+  font-weight: 800;
+}
+.prescription-medicine-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 9px;
+}
+.prescription-medicine-grid > div {
+  min-width: 0;
+  padding: 9px;
+  border-radius: 9px;
+  background: #f7f9fc;
+}
+.prescription-medicine-grid span,
+.prescription-medicine-grid strong {
+  display: block;
+}
+.prescription-medicine-grid span {
+  color: #909cab;
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.prescription-medicine-grid strong {
+  margin-top: 4px;
+  color: #526176;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+.prescription-receipt-footer {
+  min-height: 76px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-top: 1px solid #e9eef3;
+  background: #fbfdff;
+}
+.prescription-download-button {
+  justify-self: start;
+  min-height: 40px !important;
+  border: 1px solid #cbd9e9 !important;
+  border-radius: 9px !important;
+  color: #526176 !important;
+  background: #fff !important;
+  text-transform: none !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+}
+.prescription-total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  justify-self: center;
+}
+.prescription-total span {
+  color: #8b97a7;
+  font-size: 9px;
+}
+.prescription-total strong {
+  color: #1769ff;
+  font-size: 20px;
+}
+.prescription-paid-stamp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: center;
+}
+.prescription-paid-stamp img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+.prescription-paid-stamp span,
+.prescription-status-badge {
+  color: #16865f;
+  font-size: 9px;
+  font-weight: 850;
+}
+.prescription-status-badge {
+  justify-self: end;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #e9f8f1;
+  border: 1px solid #bce8d4;
+}
+.prescription-action-button {
+  justify-self: end;
+  min-height: 44px !important;
+  min-width: 145px !important;
+  padding: 0 18px !important;
+  border-radius: 10px !important;
+  background: #1769ff !important;
+  color: #fff !important;
+  text-transform: none !important;
+  font-size: 10px !important;
+  font-weight: 850 !important;
+  box-shadow: 0 8px 18px rgba(23,105,255,.16) !important;
+}
+.prescription-action-button:hover {
+  background: #1257d6 !important;
+}
+.prescription-checkout-body {
+  padding: 8px 27px 18px;
+}
+.prescription-checkout-body p {
+  margin: 0 0 14px;
+  color: #7f8c9e;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.prescription-checkout-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 14px;
+  border: 1px solid #dbe5f0;
+  border-radius: 10px;
+  background: #f7faff;
+}
+.prescription-checkout-total span {
+  color: #68778c;
+  font-size: 10px;
+  font-weight: 800;
+}
+.prescription-checkout-total strong {
+  color: #1769ff;
+  font-size: 18px;
+}
+
+.clinic-notification-row {
+  width: 100%;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  background: #fff;
+  color: inherit;
+}
+.clinic-notification-row:hover {
+  background: #f8fbff;
+}
+.clinic-notification-row-action {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 10px;
+  color: #1769ff;
+  font-size: 9px;
+  font-weight: 850;
+}
+.clinic-notification-row-action svg {
+  font-size: 16px;
+}
+.clinic-notification-doctor {
+  margin-top: 10px;
+  padding: 10px 11px;
+  border: 1px solid #dce7f4;
+  border-radius: 10px;
+  background: #f8fbff;
+}
+.clinic-notification-doctor-heading span,
+.clinic-notification-doctor-heading strong {
+  display: block;
+}
+.clinic-notification-doctor-heading span {
+  color: #1769ff;
+  font-size: 7px;
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+.clinic-notification-doctor-heading strong {
+  margin-top: 3px;
+  color: #344258;
+  font-size: 10px;
+}
+.clinic-notification-doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 7px 10px;
+  margin-top: 8px;
+}
+.clinic-notification-doctor-grid span,
+.clinic-notification-doctor-grid small,
+.clinic-notification-doctor-grid strong {
+  display: block;
+}
+.clinic-notification-doctor-grid small {
+  color: #909cab;
+  font-size: 7px;
+}
+.clinic-notification-doctor-grid strong {
+  margin-top: 2px;
+  color: #53647a;
+  font-size: 8px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .prescription-receipt-header {
+    grid-template-columns: 1fr;
+  }
+  .prescription-medicine-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .prescription-receipt-footer {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+  .prescription-download-button,
+  .prescription-action-button,
+  .prescription-total,
+  .prescription-paid-stamp,
+  .prescription-status-badge {
+    justify-self: stretch;
+  }
+  .prescription-total,
+  .prescription-paid-stamp {
+    justify-content: center;
+  }
+}
