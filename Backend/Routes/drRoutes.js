@@ -233,6 +233,23 @@ router.put("/rescheduleAppointment/:appointmentId", rescheduleAppointment);
 
 router.get("/getDoctor/:doctorId", getDoctor);
 
+router.get("/publicProfile/:username", async (req, res) => {
+  try {
+    const doctor = await Doctor.findOne({ username: req.params.username }).select(
+      "name username email speciality rate affilation affiliation pic status"
+    );
+
+    if (!doctor) {
+      return res.status(404).json({ error: "Doctor profile not found" });
+    }
+
+    return res.status(200).json({ doctor });
+  } catch (error) {
+    console.error("Error loading public doctor profile:", error);
+    return res.status(500).json({ error: "Unable to load doctor profile" });
+  }
+});
+
 router.put("/acceptContract/:doctorId", acceptContract);
 
 router.post("/addHealthRecord/:patientID", addHealthRecord);
