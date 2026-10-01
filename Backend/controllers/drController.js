@@ -255,7 +255,22 @@ const editDoctor = async (req, res) => {
     if (normalizedAffiliation !== undefined) doctorUpdate.affilation = normalizedAffiliation;
     if (normalizedBackground !== undefined) doctorUpdate.background = normalizedBackground;
     if (normalizedStatus !== undefined) doctorUpdate.status = normalizedStatus;
-    if (contractAccepted !== undefined) doctorUpdate["contract.accepted"] = Boolean(contractAccepted);\n    if (docs !== undefined) {\n      if (!Array.isArray(docs)) return res.status(400).json({ error: "Credential documents must be an array." });\n      doctorUpdate.docs = docs.map((doc) => ({ url: String(doc?.url || "").trim(), desc: String(doc?.desc || "").trim() })).filter((doc) => doc.url);\n    }
+    if (contractAccepted !== undefined) {
+      doctorUpdate["contract.accepted"] = Boolean(contractAccepted);
+    }
+
+    if (docs !== undefined) {
+      if (!Array.isArray(docs)) {
+        return res.status(400).json({ error: "Credential documents must be an array." });
+      }
+
+      doctorUpdate.docs = docs
+        .map((doc) => ({
+          url: String(doc?.url || "").trim(),
+          desc: String(doc?.desc || "").trim(),
+        }))
+        .filter((doc) => doc.url);
+    }
 
     const updatedDoctor = await Doctor.findByIdAndUpdate(id, { $set: doctorUpdate }, { new: true, runValidators: true });
     if (!updatedDoctor) return res.status(404).json({ error: "Doctor not found" });
