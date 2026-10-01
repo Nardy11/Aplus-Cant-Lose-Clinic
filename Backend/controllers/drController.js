@@ -560,47 +560,38 @@ const createFollowUpAppointment = async (req, res) => {
 
 const addHealthRecord = async (req, res) => {
   try {
-    const patientID  = req.params.patientID;
+    const patientID = req.params.patientID;
+    const { date, description, labResults, primaryDiagnosis, treatment, medicalInformation, doctorID } = req.body;
 
-    const {date,description,labResults,primaryDiagnosis,treatment,medicalInformation,doctorID}= req.body;
-    console.log(req.body);
-    console.log("entered post function addHealthRecord id of patient is :"+patientID)
-
-
-
-    // Validate inputs
     if (!patientID) {
-      return res.status(400).json({ error: "Missing required  input fields" });
+      return res.status(400).json({ error: "Missing required input fields" });
     }
 
-    //retrieve patient from the database
-    const patient = await Patient.findById(patientID);
+    const patient = await Patient.findById(patientID).lean();
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
 
-    
-    // Save the healthRecord in patient to the database
-     patient.healthRecords.push({
+    const healthRecord = {
       date,
       description,
       labResults,
       medicalInformation,
       primaryDiagnosis,
       treatment,
-    })
-    await patient.save();
+    };
 
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      { $push: { healthRecords: healthRecord } }
+    );
 
-    const patients = await Patient.find({ "doctors.doctorID": doctorID });    
-    console.log(doctorID)
+    const patients = doctorID
+      ? await Patient.find({ "doctors.doctorID": doctorID })
+      : [await Patient.findById(patient._id)];
 
-    res.status(201).json({
-      // message: "Health Record added successfully",
-      // healthRecord: healthRecord,
-      // patients:
-      patients
-    });
+    return res.status(201).json({ patients });
   } catch (error) {
     console.error("Error adding Health Record:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -1027,137 +1018,137 @@ const getFollowUpRequests=async(req,res)=>
   
 
 }
-const acceptFollowUpRequest=async (req,res)=>
-{
-  const {id}=req.params
-  //why can't i name them the same??
-  const {start,end}=req.body
-  console.log(start);
-  try{
-    const response =await FollowUp.findByIdAndDelete(id)
+const acceptFollowUpRequest = async (req, res) => {
+  const { id } = req.params;
+  const { start, end } = req.body;
+
+  try {
+    if (!id || !start || !end) {
+      return res.status(400).json({ message: "Start and end times are required." });
+    }
+
+    const request = await FollowUp.collection.findOne({ _id: id });
+    if (!request) {
+      return res.status(404).json({ message: "Follow-up request not found." });
+    }
+
     const appointment = await Appointment.create({
-      startDate:start,
-      endDate:end,
-      drID:response.drID,
-      pID:response.pID,
-      status:"upcoming",
+      startDate: start,
+      endDate: end,
+      drID: request.drID,
+      pID: request.pID,
+      status: "upcoming",
       Description: "follow up",
     });
-    
-    const followUps=await FollowUp.find({drID:response.drID})
-    res.status(200).json(followUps)
-  }catch(error)
-  {
-    console.error(error)
-    res.status(500).json({message:'Error accepting FollowUp'})
-  }
 
-}
-const rejectFollowUpRequest=async(req,res)=>
-{
-  const {id}=req.params
-  try{
-    
-    const response =await FollowUp.findByIdAndDelete(id)
-    const followUps=await FollowUp.find({drID:response.drID});
-    res.status(200).json(followUps)
-  }catch(error)
-  {
-    console.error(error)
-    res.status(500).json({message:'Error rejecting FollowUp'})
+    await FollowUp.collection.deleteOne({ _id: request._id });
+    const followUps = await FollowUp.find({ drID: request.drID });
+    return res.status(200).json(followUps);
+  } catch (error) {
+    console.error("Error accepting FollowUp:", error);
+    return res.status(500).json({ message: "Error accepting FollowUp" });
   }
-}
-const cancelAppointment=async (req,res)=>
-{
-  try
-  {
-    const {aid,did,pid}=req.params
-    console.log(aid,did,pid)
+};
+
+const rejectFollowUpRequest = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    if (!id) return res.status(400).json({ message: "Follow-up request id is required." });
+
+    const request = await FollowUp.collection.findOne({ _id: id });
+    if (!request) return res.status(404).json({ message: "Follow-up request not found." });
+
+    await FollowUp.collection.deleteOne({ _id: request._id });
+    const followUps = await FollowUp.find({ drID: request.drID });
+    return res.status(200).json(followUps);
+  } catch (error) {
+    console.error("Error rejecting FollowUp:", error);
+    return res.status(500).json({ message: "Error rejecting FollowUp" });
+  }
+};
+
+const cancelAppointment = async (req, res) => {
+  try {
+    const { aid, did, pid } = req.params;
     if (!aid || !did || !pid) {
       return res.status(400).json({ message: "Invalid parameters" });
     }
-    console.log("yyyyyyy",did)
-    const appointment=await Appointment.findById(aid)
-    const doctor=await Doctor.findById(did)
-    const patient=await Patient.findById(pid)
-    if(!appointment)
-    {
-      res.status(500).json({message:"Appointment not found!"})
+
+    const appointment = await Appointment.collection.findOne({ _id: aid });
+    const doctor = await Doctor.findById(did);
+    const patient = await Patient.findById(pid);
+
+    if (!appointment) return res.status(404).json({ message: "Appointment not found!" });
+    if (!doctor) return res.status(404).json({ message: "Doctor not found!" });
+    if (!patient) return res.status(404).json({ message: "Patient not found!" });
+
+    await Appointment.collection.updateOne(
+      { _id: appointment._id },
+      { $set: { status: "cancelled" } }
+    );
+
+    const patientNotification = {
+      message: `APPOINTMENT CANCELED WITH DOCTOR ${doctor.name}`,
+      type: "AppointmentCanceled",
+      entityType: "Appointment",
+      entityId: String(appointment._id),
+      timestamp: new Date(),
+    };
+    const doctorNotification = {
+      message: `APPOINTMENT CANCELED WITH PATIENT ${patient.name}`,
+      type: "AppointmentCanceled",
+      entityType: "Appointment",
+      entityId: String(appointment._id),
+      timestamp: new Date(),
+    };
+
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      { $push: { notifications: patientNotification } }
+    );
+    await Doctor.collection.updateOne(
+      { _id: doctor._id },
+      { $push: { notifications: doctorNotification } }
+    );
+
+    const refundAmount = Number(doctor.rate || 0);
+    if (refundAmount > 0 && new Date(appointment.startDate) - new Date() > 24 * 60 * 60 * 1000) {
+      const newBalance = Number(patient.wallet || 0) + refundAmount;
+      await Patient.collection.updateOne(
+        { _id: patient._id },
+        {
+          $set: { wallet: newBalance },
+          $push: {
+            walletTransactions: {
+              amount: refundAmount,
+              balanceAfter: newBalance,
+              direction: "credit",
+              type: "appointment_refund",
+              description: `Appointment cancellation refund from Dr. ${doctor.name}`,
+              timestamp: new Date(),
+            },
+          },
+        }
+      );
     }
-    if(!doctor)
-    {
-      res.status(500).json({message:"Doctor not found!"})
-    }
-    if(!patient)
-    {
-      res.status(500).json({message:"Patient not found!"})
-    }
-    appointment.status="cancelled";
-  
-    ///added start
-    patient.notifications.push({ //add notifiaction to patient
-      message:`APPOINTEMNT CANCELED WITH DOCTOR ${doctor.name}`,
-      type:"AppointmentCanceled",
-      entityType:"Appointment",
-      entityId:appointment._id,
+
+    // Email delivery must not block the cancellation itself.
+    await Promise.allSettled([
+      sendEmail(doctor.email, "Appointment Canceled", `Your appointment with patient ${patient.name} has been canceled.`),
+      sendEmail(patient.email, "Appointment Canceled", `Your appointment with Dr. ${doctor.name} has been canceled.`),
+    ]);
+
+    return res.status(200).json({
+      message: "Appointment canceled successfully",
+      appointmentId: String(appointment._id),
+      status: "cancelled",
     });
-    doctor.notifications.push({//add notifiaction to doctor
-      message:`APPOINTEMNT CANCELED WITH PATIENT ${patient.name}`,
-      type:"AppointmentCanceled",
-      entityType:"Appointment",
-      entityId:appointment._id,
-    });
-
-    await patient.save()     
-    await doctor.save();
-
-      // Send email to the doctor
-      const emailSubject2 = "Appointment Canceled";
-      const emailMessage2 = `Your appointment with patient ${patient.name} has been canceled.`;
-     await sendEmail( doctor.email , emailSubject2,emailMessage2 );
-
-
-     // Send email to the patient
-    const emailSubject = "Appointment Canceled";
-    const emailMessage = `Your appointment with Dr. ${doctor.name} has been canceled.`;
-    await sendEmail( patient.email,  emailSubject, emailMessage);
-
-
-    //added end
-    await appointment.save();
-
-    const today=new Date();
-    const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
-    const timeDifference = Math.abs(today - appointment.startDate);
-   //const timeDifference = appointment.startDate-today;
-    if (timeDifference > oneDayInMilliseconds) {
-      console.log(timeDifference)
-      console.log(patient.wallet)
-      patient.wallet+=doctor.rate;
-      patient.walletTransactions.push({
-        amount: Number(doctor.rate),
-        balanceAfter: patient.wallet,
-        direction: "credit",
-        type: "appointment_refund",
-        description: `Appointment cancellation refund from Dr. ${doctor.name}`,
-      });
-      await patient.save()
-      await doctor.save();
+  } catch (error) {
+    console.error("Error Cancelling Appointment:", error);
+    return res.status(500).json({ message: "Error Cancelling Appointment" });
   }
-   const app = await Appointment.find();
-   res.status(200).json(app)
-
-     
-
-  }
-  catch(error)
-  {
-    console.error(error);
-    res.status(500).json({message:"Error Cancelling Appointment"})
-
-  }
-
-}
+};
 
 
 
