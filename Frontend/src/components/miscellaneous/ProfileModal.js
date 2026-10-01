@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   Avatar,
   Button,
@@ -6,151 +6,132 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
 } from "@mui/material";
-import axios from "axios";
-import { API_URL } from "../../Consts";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
+import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
+import LocalHospitalRoundedIcon from "@mui/icons-material/LocalHospitalRounded";
 
-const calculateAge = (birthDate) => {
-  if (!birthDate) return null;
-  const age = Math.floor(
-    (Date.now() - new Date(birthDate).getTime()) /
-      (365.2425 * 24 * 60 * 60 * 1000)
-  );
-  return Number.isFinite(age) && age >= 0 ? age : null;
-};
-
-const displayValue = (value) =>
-  value === undefined || value === null || value === "" ? "Not provided" : value;
+const valueOrFallback = (value, fallback = "Not provided") =>
+  value === undefined || value === null || String(value).trim() === ""
+    ? fallback
+    : value;
 
 const ProfileModal = ({ user, children }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [profile, setProfile] = useState(user || null);
-  const [loading, setLoading] = useState(false);
 
-  const handleOpen = () => setIsOpen(true);
-  const handleClose = () => setIsOpen(false);
+  if (!children || !user) return null;
 
-  useEffect(() => {
-    if (!isOpen || !user?.username) return;
+  const roleLabel =
+    user.role === "doctor"
+      ? "Doctor"
+      : user.role === "patient"
+        ? "Patient"
+        : "Clinic member";
 
-    let active = true;
-
-    const loadProfile = async () => {
-      setLoading(true);
-      try {
-        if (user.role === "doctor") {
-          const response = await axios.get(`${API_URL}/patient/getAlldoctors`);
-          const doctors = Array.isArray(response.data)
-            ? response.data
-            : response.data?.doctors || [];
-          const match = doctors.find(
-            (doctor) =>
-              doctor.username === user.username ||
-              doctor.email === user.email
-          );
-          if (active) setProfile({ ...user, ...(match || {}) });
-        } else if (user.role === "patient") {
-          const idResponse = await axios.get(
-            `${API_URL}/patient/patientID/${encodeURIComponent(user.username)}`
-          );
-          const patientId = idResponse.data?._id || idResponse.data?.id;
-          if (patientId) {
-            const response = await axios.get(`${API_URL}/patient/profile/${patientId}`);
-            if (active) setProfile({ ...user, ...(response.data || {}) });
-          }
-        }
-      } catch (error) {
-        console.error("Unable to load chat profile:", error);
-        if (active) setProfile(user);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    loadProfile();
-    return () => {
-      active = false;
-    };
-  }, [isOpen, user]);
-
-  const age = useMemo(
-    () => calculateAge(profile?.Dbirth || profile?.dBirth),
-    [profile]
-  );
-
-  const address = Array.isArray(profile?.addresses)
-    ? profile.addresses.map((item) => item?.location).filter(Boolean).join(", ")
-    : profile?.address;
+  const specialty = user.speciality || user.specialty;
+  const phone = user.mobile || user.phone;
+  const affiliation = user.affilation || user.affiliation;
 
   return (
     <>
-      {children ? (
-        <div className="chat-profile-trigger" onClick={handleOpen} role="button" tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") handleOpen();
-          }}>
-          {children}
-        </div>
-      ) : null}
+      <button
+        type="button"
+        className="profile-modal-trigger"
+        onClick={() => setIsOpen(true)}
+        aria-label={`Open ${user.name || "member"} profile`}
+      >
+        {children}
+      </button>
 
       <Dialog
         open={isOpen}
-        onClose={handleClose}
+        onClose={() => setIsOpen(false)}
         fullWidth
         maxWidth="sm"
-        className="clinic-profile-dialog"
+        className="clinic-modern-dialog profile-modal-dialog"
       >
-        <DialogTitle className="clinic-profile-dialog-title">
+        <DialogTitle className="clinic-dialog-title">
           <div>
             <span>PROFILE</span>
-            <h2>{profile?.name || user?.name || "Profile"}</h2>
+            <h2>{user.name || "Clinic member"}</h2>
           </div>
+          <button
+            type="button"
+            className="clinic-dialog-close"
+            onClick={() => setIsOpen(false)}
+            aria-label="Close profile"
+          >
+            <CloseRoundedIcon />
+          </button>
         </DialogTitle>
 
-        <DialogContent className="clinic-profile-dialog-content">
-          {loading ? (
-            <div className="clinic-profile-loading">Loading profile…</div>
-          ) : (
-            <>
-              <div className="clinic-profile-hero">
-                <Avatar
-                  alt={profile?.name || user?.name || "Profile"}
-                  src={profile?.pic || user?.pic || undefined}
-                  className="clinic-profile-dialog-avatar"
-                />
+        <DialogContent className="clinic-dialog-content profile-modal-content">
+          <section className="profile-modal-hero">
+            <Avatar
+              alt={user.name || "Clinic member"}
+              src={user.pic || undefined}
+              className="profile-modal-avatar"
+            >
+              {(user.name || "C").charAt(0).toUpperCase()}
+            </Avatar>
+            <div>
+              <span>{roleLabel}</span>
+              <h3>{user.name || "Clinic member"}</h3>
+              <p>
+                {specialty
+                  ? valueOrFallback(specialty)
+                  : "Private clinic conversation profile"}
+              </p>
+            </div>
+          </section>
+
+          <section className="profile-modal-details">
+            <div className="profile-modal-detail">
+              <EmailRoundedIcon />
+              <div>
+                <small>Email</small>
+                <strong>{valueOrFallback(user.email)}</strong>
+              </div>
+            </div>
+
+            <div className="profile-modal-detail">
+              <PhoneRoundedIcon />
+              <div>
+                <small>Phone</small>
+                <strong>{valueOrFallback(phone)}</strong>
+              </div>
+            </div>
+
+            {specialty ? (
+              <div className="profile-modal-detail">
+                <LocalHospitalRoundedIcon />
                 <div>
-                  <strong>{profile?.name || user?.name || "Profile"}</strong>
-                  <span>{profile?.role === "doctor" ? "Doctor" : "Patient"}</span>
+                  <small>Specialty</small>
+                  <strong>{valueOrFallback(specialty)}</strong>
                 </div>
               </div>
+            ) : null}
 
-              <Divider />
-
-              <div className="clinic-profile-detail-grid">
-                <div><small>Age</small><strong>{displayValue(age)}</strong></div>
-                <div><small>Gender</small><strong>{displayValue(profile?.gender)}</strong></div>
-                <div><small>Email</small><strong>{displayValue(profile?.email || user?.email)}</strong></div>
-                <div><small>Phone / Mobile</small><strong>{displayValue(profile?.mobile)}</strong></div>
-                <div><small>Speciality</small><strong>{displayValue(profile?.speciality)}</strong></div>
-                <div><small>Hospital affiliation</small><strong>{displayValue(profile?.affilation)}</strong></div>
-                <div><small>Address</small><strong>{displayValue(address)}</strong></div>
-                {profile?.role === "doctor" && (
-                  <>
-                    <div><small>Rate</small><strong>{displayValue(profile?.rate)}</strong></div>
-                    <div className="clinic-profile-detail-wide">
-                      <small>Professional background</small>
-                      <strong>{displayValue(profile?.background)}</strong>
-                    </div>
-                  </>
-                )}
+            {affiliation ? (
+              <div className="profile-modal-detail">
+                <LocalHospitalRoundedIcon />
+                <div>
+                  <small>Hospital affiliation</small>
+                  <strong>{valueOrFallback(affiliation)}</strong>
+                </div>
               </div>
-            </>
-          )}
+            ) : null}
+          </section>
         </DialogContent>
 
         <DialogActions className="clinic-dialog-actions">
-          <Button onClick={handleClose} className="clinic-dialog-primary">Close</Button>
+          <Button
+            onClick={() => setIsOpen(false)}
+            className="clinic-dialog-primary"
+          >
+            Done
+          </Button>
         </DialogActions>
       </Dialog>
     </>
