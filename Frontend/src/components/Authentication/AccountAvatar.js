@@ -167,16 +167,8 @@ const AccountAvatar = () => {
               <Tooltip title="Notifications">
                 <IconButton
                   className="clinic-utility-button"
-                  onClick={async () => {
+                  onClick={() => {
                     setNotificationBadgeVisible(false);
-                    try {
-                      const notificationUrl = role === "doctor"
-                        ? API_URL + "/doctor/" + id + "/notifications"
-                        : API_URL + "/patient/" + id + "/notifications";
-                      await axios.patch(notificationUrl, { notifications: [] });
-                    } catch (error) {
-                      console.error("Unable to mark notifications as read:", error);
-                    }
                     navigate("/Notifications");
                   }}
                   aria-label="Notifications"
