@@ -1018,41 +1018,30 @@ const subscribeToHealthPackage = async (req, res) => {
   const { patientId, healthPackageId } = req.query;
 
   try {
-    // Validate input fields
     if (!patientId || !healthPackageId) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Check if the patient exists by ID
     const patient = await Patient.findById(patientId);
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
 
-    if (!patient) {
-      return res.status(404).json({ error: "Patient not found" });
-    }
-
-    // Check if the health package exists by ID
     const healthPackage = await HPackages.findById(healthPackageId);
+    if (!healthPackage) return res.status(404).json({ error: "Health Package not found" });
 
-    if (!healthPackage) {
-      return res.status(404).json({ error: "Health Package not found" });
+    const currentPackage = patient.hPackage ? String(patient.hPackage) : "";
+    if (currentPackage === String(healthPackage._id) && patient.hPStatus === "Subscribed") {
+      return res.status(400).json({ error: "Patient is already subscribed to this Health Package" });
     }
 
-    // Check if the patient is already subscribed to this health package
-    if (patient.hPackage && patient.hPackage.equals(healthPackage._id)) {
-      return res.status(400).json({
-        error: "Patient is already subscribed to this Health Package",
-      });
-    }
-
-    // Add the health package to the patient's array of health packages
-    patient.hPackage = healthPackage;
-
-    // Save the updated patient document
-    await patient.save();
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      { $set: { hPackage: healthPackage._id, hPStatus: "Subscribed", SubDate: new Date() } }
+    );
 
     return res.status(201).json({
-      message: "Subscribed to Health Package added successfully",
-      patient,
+      message: "Subscribed to Health Package successfully",
+      patientId: String(patient._id),
+      healthPackageId: String(healthPackage._id),
     });
   } catch (error) {
     console.error("Error Subscribing to Health Package:", error);
@@ -1060,44 +1049,39 @@ const subscribeToHealthPackage = async (req, res) => {
   }
 };
 
-//blabizozozozozo
+// Unsubscribe from a health package without requiring a full Patient document save.
 const unSubscribeToHealthPackage = async (req, res) => {
   const { patientId, healthPackageId } = req.query;
-  console.log("entered unsubscribe to health package");
-  console.log(patientId);
-  console.log(healthPackageId);
 
   try {
-    // Validate input fields
     if (!patientId || !healthPackageId) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Check if the patient exists by ID
     const patient = await Patient.findById(patientId);
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
 
-    if (!patient) {
-      return res.status(404).json({ error: "Patient not found" });
+    if (!patient.hPackage || String(patient.hPackage) !== String(healthPackageId)) {
+      return res.status(404).json({ error: "Health Package is not subscribed to" });
     }
 
-    // Check if the health package exists by ID
-    const healthPackage = patient.hPackage;
-
-    if (!healthPackage) {
-      return res
-        .status(404)
-        .json({ error: "Health Package is not subscribed to" });
-    }
-
-    // Unsubscribe by setting the health package to null
-    // patient.hPackage = null;
     await Patient.collection.updateOne(
       { _id: patient._id },
       { $set: { hPStatus: "Cancelled" } }
     );
 
-    // Now, call the viewHealthPackagesPatient function to retrieve the updated list
-    return await viewHealthPackagesPatient({ params: { patientId } }, res);
+    const healthPackages = await HPackages.find();
+    const healthPackagesWithSubscriptions = healthPackages.map((healthPackage) => ({
+      ...healthPackage.toObject(),
+      isSubscribed:
+        String(patient.hPackage) === String(healthPackage._id) &&
+        "Cancelled" === "Subscribed",
+    }));
+
+    return res.status(200).json({
+      message: "Health package unsubscribed successfully",
+      healthPackages: healthPackagesWithSubscriptions,
+    });
   } catch (error) {
     console.error("Error Unsubscribing from Health Package:", error);
     return res.status(500).json({ error: "Internal Server Error" });
