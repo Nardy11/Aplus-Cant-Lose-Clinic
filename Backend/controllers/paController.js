@@ -1132,10 +1132,20 @@ const payWithWallet = async (req, res) => {
       type: "health_package",
       description: "Health package payment",
     });
-    patient.hPackage = healthPackageId;
-    patient.hPStatus = "Subscribed";
-    patient.SubDate = today;
-    await patient.save();
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      {
+        $set: {
+          wallet: patient.wallet,
+          hPackage: healthPackageId,
+          hPStatus: "Subscribed",
+          SubDate: today,
+        },
+        $push: {
+          walletTransactions: patient.walletTransactions[patient.walletTransactions.length - 1],
+        },
+      }
+    );
 
     res
       .status(200)
@@ -1232,10 +1242,10 @@ const ccSubscriptionPayment = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    patient.hPackage = healthPackageId;
-    patient.hPStatus = "Subscribed";
-    patient.SubDate = today;
-    await patient.save();
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      { $set: { hPackage: healthPackageId, hPStatus: "Subscribed", SubDate: today } }
+    );
 
     res
       .status(200)
