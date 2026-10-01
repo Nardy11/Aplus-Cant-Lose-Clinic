@@ -1882,45 +1882,47 @@ const getID = async (req, res) => {
 const payWithWalletF = async (req, res) => {
   const { amount } = req.body;
   const { patientId, healthPackageId, id } = req.params;
+
   try {
     if (!patientId || !healthPackageId || !id) {
       return res.status(400).json({ error: "All fields are required" });
     }
-    const patient = await Patient.findOne({ _id: patientId });
-    //this is the family member that will pay
-    const familyMem = await Patient.findOne({ _id: id });
 
-    if (!patient || !familyMem) {
-      return res.status(404).json({ error: "Patient not found!" });
+    const patient = await Patient.findById(patientId);
+    const familyMem = await Patient.findById(id);
+    if (!patient || !familyMem) return res.status(404).json({ error: "Patient not found!" });
+
+    const paymentAmount = Number(amount);
+    if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+      return res.status(400).json({ error: "Invalid payment amount" });
     }
-
-    if (familyMem.wallet < amount) {
+    if (Number(familyMem.wallet || 0) < paymentAmount) {
       return res.status(400).json({ error: "Balance not Sufficient" });
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    familyMem.wallet -= amount;
-    familyMem.walletTransactions.push({
-      amount: -Number(amount),
-      balanceAfter: familyMem.wallet,
+    const newBalance = Number(familyMem.wallet || 0) - paymentAmount;
+    const transaction = {
+      amount: -paymentAmount,
+      balanceAfter: newBalance,
       direction: "debit",
       type: "health_package",
       description: "Health package payment for family member",
-    });
-    patient.hPackage = healthPackageId;
-    patient.hPStatus = "Subscribed";
-    patient.SubDate = today;
-    await patient.save();
-    await familyMem.save();
+      timestamp: new Date(),
+    };
 
-    res
-      .status(200)
-      .json({ message: "Successfully subscribed to health package" });
+    await Patient.collection.updateOne(
+      { _id: familyMem._id },
+      { $set: { wallet: newBalance }, $push: { walletTransactions: transaction } }
+    );
+    await Patient.collection.updateOne(
+      { _id: patient._id },
+      { $set: { hPackage: healthPackageId, hPStatus: "Subscribed", SubDate: new Date() } }
+    );
+
+    return res.status(200).json({ message: "Successfully subscribed to health package" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Error subscribing family member:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 const addMedicineToCart2 = async (userId, medicineId) => {
