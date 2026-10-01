@@ -91,7 +91,7 @@ const ProfileModal = ({ user, children }) => {
             if (event.key === "Enter" || event.key === " ") handleOpen();
           }}>
           {children}
-        </span>
+        </div>
       ) : null}
 
       <Dialog
