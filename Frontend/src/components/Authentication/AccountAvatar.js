@@ -23,7 +23,6 @@ import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineR
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import MedicalServicesRoundedIcon from "@mui/icons-material/MedicalServicesRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { SnackbarContext } from "../../App";
 import { getNotifications } from "../../features/patientSlice.js";
