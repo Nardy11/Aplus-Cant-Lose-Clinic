@@ -1461,11 +1461,15 @@ const rescheduleAppointment = async (req, res) => {
       //add notifiaction to patient
       message: `APPOINTEMNT RESCHEULED WITH DOCTOR ${doctor.name}`,
       type: "AppointmentRescheduled",
+      entityType: "Appointment",
+      entityId: appointment._id,
     });
     doctor.notifications.push({
       //add notifiaction to doctor
       message: `APPOINTEMNT RESCHEULED WITH PATIENT ${patient.name}`,
       type: "AppointmentRescheduled",
+      entityType: "Appointment",
+      entityId: appointment._id,
     });
 
     //still will send to doctor
@@ -1557,11 +1561,15 @@ const cancelAppointment = async (req, res) => {
       //add notifiaction to patient
       message: `APPOINTEMNT CANCELED WITH DOCTOR ${doctor.name}`,
       type: "AppointmentCanceled",
+      entityType: "Appointment",
+      entityId: appointment._id,
     });
     doctor.notifications.push({
       //add notifiaction to doctor
       message: `APPOINTEMNT CANCELED WITH PATIENT ${patient.name}`,
       type: "AppointmentCanceled",
+      entityType: "Appointment",
+      entityId: appointment._id,
     });
 
     await patient.save();
