@@ -5,6 +5,7 @@ import { API_URL } from "../../Consts";
 import { SnackbarContext } from "../../App";
 import AccountAvatar from "../Authentication/AccountAvatar";
 import { ClinicDateTimeField } from "../common/ClinicFields";
+import dayjs from "dayjs";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
@@ -79,7 +80,7 @@ export default function FollowUpRequests() {
       <DialogContent className="doctor-dialog-content">
         <div className="doctor-dialog-section"><h3>Choose the next visit</h3><p>Set a start and end time for this follow-up request.</p>
           <div className="doctor-form-grid">
-            <ClinicDateTimeField value={start} onChange={setStart} label="Start time" minDateTime={new Date().toISOString().slice(0,16)} />
+            <ClinicDateTimeField value={start} onChange={setStart} label="Start time" minDateTime={dayjs().format("YYYY-MM-DDTHH:mm")} />
             <ClinicDateTimeField value={end} onChange={setEnd} label="End time" minDateTime={start || new Date().toISOString().slice(0,16)} />
           </div>
         </div>
