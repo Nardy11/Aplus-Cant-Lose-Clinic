@@ -1484,76 +1484,54 @@ const rescheduleAppointment = async (req, res) => {
     const { appointmentId } = req.params;
     const { startDate, endDate } = req.body;
 
-    // Assuming you have a model named 'Appointment' for your appointments
-    const appointment = await Appointment.findById(appointmentId)
-      .populate("drID")
-      .populate("pID");
-
-    if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found" });
+    if (!appointmentId || !startDate || !endDate) {
+      return res.status(400).json({ message: "Appointment, start date and end date are required." });
     }
 
-    const doctor = appointment.drID;
-    const patient = appointment.pID;
-    const dId = doctor._id;
-    const pId = patient._id;
+    const appointment = await Appointment.collection.findOne({ _id: appointmentId });
+    if (!appointment) return res.status(404).json({ message: "Appointment not found" });
 
-    // console.log(appointment)
+    const doctor = await Doctor.findById(appointment.drID);
+    const patient = await Patient.findById(appointment.pID);
+    if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+    if (!patient) return res.status(404).json({ message: "Patient not found" });
 
-    // Update the start and end dates
-    appointment.startDate = startDate;
-    appointment.endDate = endDate;
+    if (new Date(startDate) >= new Date(endDate)) {
+      return res.status(400).json({ message: "End time must be after start time." });
+    }
 
-    ///added start
-    patient.notifications.push({
-      //add notifiaction to patient
-      message: `APPOINTEMNT RESCHEULED WITH DOCTOR ${doctor.name}`,
+    await Appointment.collection.updateOne(
+      { _id: appointment._id },
+      { $set: { startDate, endDate } }
+    );
+
+    const patientNotification = {
+      message: `APPOINTMENT RESCHEDULED WITH DOCTOR ${doctor.name}`,
       type: "AppointmentRescheduled",
       entityType: "Appointment",
-      entityId: appointment._id,
-    });
-    doctor.notifications.push({
-      //add notifiaction to doctor
-      message: `APPOINTEMNT RESCHEULED WITH PATIENT ${patient.name}`,
+      entityId: String(appointment._id),
+      timestamp: new Date(),
+    };
+    const doctorNotification = {
+      message: `APPOINTMENT RESCHEDULED WITH PATIENT ${patient.name}`,
       type: "AppointmentRescheduled",
       entityType: "Appointment",
-      entityId: appointment._id,
-    });
+      entityId: String(appointment._id),
+      timestamp: new Date(),
+    };
 
-    //still will send to doctor
-    //added end
+    await Patient.collection.updateOne({ _id: patient._id }, { $push: { notifications: patientNotification } });
+    await Doctor.collection.updateOne({ _id: doctor._id }, { $push: { notifications: doctorNotification } });
 
-    // Save the updated appointment
+    await Promise.allSettled([
+      sendEmail(doctor.email, "Appointment Reschedule", `Your appointment with patient ${patient.name} has been rescheduled.`),
+      sendEmail(patient.email, "Appointment Reschedule", `Your appointment with Dr. ${doctor.name} has been rescheduled.`),
+    ]);
 
-    await Patient.collection.updateOne(
-      { _id: patient._id },
-      { $push: { notifications: patient.notifications[patient.notifications.length - 1] } }
-    );
-    await Doctor.collection.updateOne(
-      { _id: doctor._id },
-      { $push: { notifications: doctor.notifications[doctor.notifications.length - 1] } }
-    );
-    await appointment.save();
-
-    // Send email to the doctor
-    const emailSubject2 = "Appointment Reschedule";
-    const emailMessage2 = `Your appointment with patient ${patient.name} has been Reschedule.`;
-    await sendEmail(doctor.email, emailSubject2, emailMessage2);
-
-    // Send email to the patient
-    const emailSubject = "Appointment Reschedule";
-    const emailMessage = `Your appointment with Dr. ${doctor.name} has been Reschedule.`;
-    await sendEmail(patient.email, emailSubject, emailMessage);
-
-    res.json({
-      success: true,
-      message: "Appointment successfully rescheduled",
-    });
+    return res.json({ success: true, message: "Appointment successfully rescheduled" });
   } catch (error) {
     console.error("Error rescheduling appointment", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Error rescheduling appointment" });
+    return res.status(500).json({ success: false, message: "Error rescheduling appointment" });
   }
 };
 
@@ -1592,89 +1570,69 @@ const successCreditCardPayment = async (req, res) => {
 const cancelAppointment = async (req, res) => {
   try {
     const { aid, did, pid } = req.params;
-    if (!aid || !did || !pid) {
-      return res.status(400).json({ message: "Invalid parameters" });
-    }
-    console.log("yyyyyyy", did);
-    const appointment = await Appointment.findById(aid);
+    if (!aid || !did || !pid) return res.status(400).json({ message: "Invalid parameters" });
+
+    const appointment = await Appointment.collection.findOne({ _id: aid });
     const doctor = await Doctor.findById(did);
     const patient = await Patient.findById(pid);
-    if (!appointment) {
-      res.status(500).json({ message: "Appointment not found!" });
-    }
-    if (!doctor) {
-      res.status(500).json({ message: "Doctor not found!" });
-    }
-    if (!patient) {
-      res.status(500).json({ message: "Patient not found!" });
-    }
-    appointment.status = "cancelled";
 
-    ///added start
-    patient.notifications.push({
-      //add notifiaction to patient
-      message: `APPOINTEMNT CANCELED WITH DOCTOR ${doctor.name}`,
-      type: "AppointmentCanceled",
-      entityType: "Appointment",
-      entityId: appointment._id,
-    });
-    doctor.notifications.push({
-      //add notifiaction to doctor
-      message: `APPOINTEMNT CANCELED WITH PATIENT ${patient.name}`,
-      type: "AppointmentCanceled",
-      entityType: "Appointment",
-      entityId: appointment._id,
-    });
+    if (!appointment) return res.status(404).json({ message: "Appointment not found!" });
+    if (!doctor) return res.status(404).json({ message: "Doctor not found!" });
+    if (!patient) return res.status(404).json({ message: "Patient not found!" });
 
-    await Patient.collection.updateOne(
-      { _id: patient._id },
-      { $push: { notifications: patient.notifications[patient.notifications.length - 1] } }
-    );
-    await Doctor.collection.updateOne(
-      { _id: doctor._id },
-      { $push: { notifications: doctor.notifications[doctor.notifications.length - 1] } }
+    await Appointment.collection.updateOne(
+      { _id: appointment._id },
+      { $set: { status: "cancelled" } }
     );
 
-    // Send email to the doctor
-    const emailSubject2 = "Appointment Canceled";
-    const emailMessage2 = `Your appointment with patient ${patient.name} has been canceled.`;
-    await sendEmail(doctor.email, emailSubject2, emailMessage2);
+    const patientNotification = {
+      message: `APPOINTMENT CANCELED WITH DOCTOR ${doctor.name}`,
+      type: "AppointmentCanceled",
+      entityType: "Appointment",
+      entityId: String(appointment._id),
+      timestamp: new Date(),
+    };
+    const doctorNotification = {
+      message: `APPOINTMENT CANCELED WITH PATIENT ${patient.name}`,
+      type: "AppointmentCanceled",
+      entityType: "Appointment",
+      entityId: String(appointment._id),
+      timestamp: new Date(),
+    };
 
-    // Send email to the patient
-    const emailSubject = "Appointment Canceled";
-    const emailMessage = `Your appointment with Dr. ${doctor.name} has been canceled.`;
-    await sendEmail(patient.email, emailSubject, emailMessage);
+    await Patient.collection.updateOne({ _id: patient._id }, { $push: { notifications: patientNotification } });
+    await Doctor.collection.updateOne({ _id: doctor._id }, { $push: { notifications: doctorNotification } });
 
-    //added end
-    await appointment.save();
-
-    const today = new Date();
-    const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
-    const timeDifference = Math.abs(today - appointment.startDate);
-    //const timeDifference = appointment.startDate-today;
-    if (timeDifference > oneDayInMilliseconds) {
-      console.log(timeDifference);
-      console.log(patient.wallet);
-      const refundAmount = Number(doctor.rate);
+    const refundAmount = Number(doctor.rate || 0);
+    if (refundAmount > 0 && new Date(appointment.startDate) - new Date() > 24 * 60 * 60 * 1000) {
       const newBalance = Number(patient.wallet || 0) + refundAmount;
-      const refundTransaction = {
-        amount: refundAmount,
-        balanceAfter: newBalance,
-        direction: "credit",
-        type: "appointment_refund",
-        description: `Appointment cancellation refund from Dr. ${doctor.name}`,
-        timestamp: new Date(),
-      };
       await Patient.collection.updateOne(
         { _id: patient._id },
-        { $set: { wallet: newBalance }, $push: { walletTransactions: refundTransaction } }
+        {
+          $set: { wallet: newBalance },
+          $push: {
+            walletTransactions: {
+              amount: refundAmount,
+              balanceAfter: newBalance,
+              direction: "credit",
+              type: "appointment_refund",
+              description: `Appointment cancellation refund from Dr. ${doctor.name}`,
+              timestamp: new Date(),
+            },
+          },
+        }
       );
     }
-    // const app = await Appointment.find();
-    // res.status(200).json(app)
+
+    await Promise.allSettled([
+      sendEmail(doctor.email, "Appointment Canceled", `Your appointment with patient ${patient.name} has been canceled.`),
+      sendEmail(patient.email, "Appointment Canceled", `Your appointment with Dr. ${doctor.name} has been canceled.`),
+    ]);
+
+    return res.status(200).json({ message: "Appointment canceled successfully", status: "cancelled" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error Cancelling Appointment" });
+    console.error("Error Cancelling Appointment:", error);
+    return res.status(500).json({ message: "Error Cancelling Appointment" });
   }
 };
 
