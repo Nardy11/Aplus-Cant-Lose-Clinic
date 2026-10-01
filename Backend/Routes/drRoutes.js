@@ -23,6 +23,7 @@ const {
   getDoctorNotifications,
   addDoctorNotification,
   updateDoctorNotifications,
+  markDoctorNotificationSeen,
   sendDoctorEmail,
   updateDosageForMedicine,
   addMedicineToPrescription,
@@ -275,6 +276,7 @@ router.post('/:doctorId/notifications', addDoctorNotification);
 
 // updated the notictaions array of a specific doctor
 router.patch('/:doctorId/notifications', updateDoctorNotifications);
+router.patch('/:doctorId/notifications/:notificationId/seen', markDoctorNotificationSeen);
 
 // send email to a doctor
 router.post('/:doctorId/send-email', sendDoctorEmail);
