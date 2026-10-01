@@ -438,17 +438,33 @@ const deleteFamilyMember = async (req, res) => {
   const index = Number(familyIndex);
 
   try {
-    const patient = await Patient.findById(patientId).lean();
+    if (!patientId || !Number.isInteger(index) || index < 0) {
+      return res.status(400).json({ error: "Invalid family member request" });
+    }
+
+    const patientObjectId = mongoose.Types.ObjectId.isValid(patientId)
+      ? new mongoose.Types.ObjectId(patientId)
+      : patientId;
+
+    const patient = await Patient.collection.findOne({ _id: patientObjectId });
     if (!patient) return res.status(404).json({ error: "Patient not found" });
-    if (!Number.isInteger(index) || index < 0 || index >= (patient.family || []).length) {
+
+    const family = Array.isArray(patient.family) ? [...patient.family] : [];
+    if (index >= family.length) {
       return res.status(404).json({ error: "Family member not found" });
     }
 
-    const family = [...patient.family];
     const removed = family[index];
     family.splice(index, 1);
 
-    await Patient.collection.updateOne({ _id: patient._id }, { $set: { family } });
+    const result = await Patient.collection.updateOne(
+      { _id: patientObjectId },
+      { $set: { family } }
+    );
+
+    if (!result.acknowledged || result.modifiedCount !== 1) {
+      return res.status(500).json({ error: "Family member could not be removed" });
+    }
 
     return res.json({
       message: "Family member removed successfully",
@@ -457,7 +473,7 @@ const deleteFamilyMember = async (req, res) => {
     });
   } catch (error) {
     console.error("Error deleting family member:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Unable to remove family member" });
   }
 };
 
