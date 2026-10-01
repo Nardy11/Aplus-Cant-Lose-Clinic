@@ -51,7 +51,9 @@
     "styled-components": "^5.3.11",
     "web-vitals": "^2.1.4",
     "@heroui/react": "2.6.11",
-    "html2canvas": "^1.4.1"
+    "html2canvas": "^1.4.1",
+    "@heroui/calendar": "^2.2.32",
+    "@internationalized/date": "^3.12.4"
   },
   "scripts": {
     "start": "react-scripts start",
