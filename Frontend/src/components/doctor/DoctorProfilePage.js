@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import { ClinicHeroTextField, ClinicDateField } from "../common/ClinicFields";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
@@ -28,7 +29,7 @@ import { editDoctorCredentials, getDr } from "../../features/doctorSlice";
 import { syncProfile } from "../../features/userSlice";
 import { SnackbarContext } from "../../App";
 
-const defaultAvatar = "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg";
+const defaultAvatar = "/logo192.png";
 
 const formatStatus = (value) => value ? value.charAt(0).toUpperCase() + value.slice(1) : "Not provided";
 const normalizeDocs = (docs) => Array.isArray(docs) ? docs.map((doc) => ({ url: doc?.url || "", desc: doc?.desc || "" })) : [];
@@ -158,26 +159,52 @@ const DoctorProfilePage = () => {
     }
   };
 
-  const field = (label, key, options = {}) => (
-    <div className="doctor-profile-edit-field">
-      <label>{label}</label>
-      <TextField
-        fullWidth
-        value={form[key]}
-        onChange={(event) => update(key, event.target.value)}
-        size="small"
-        variant="outlined"
-        type={options.type || "text"}
-        multiline={Boolean(options.multiline)}
-        minRows={options.minRows}
-        select={Boolean(options.select)}
-        placeholder={options.placeholder}
-        inputProps={options.inputProps}
-      >
-        {options.children}
-      </TextField>
-    </div>
-  );
+  const field = (label, key, options = {}) => {
+    if (options.date) {
+      return (
+        <div className="doctor-profile-edit-field" key={key}>
+          <ClinicDateField
+            value={form[key]}
+            onChange={(value) => update(key, value)}
+            placeholder={label}
+            className="doctor-profile-hero-ui-date"
+          />
+        </div>
+      );
+    }
+
+    if (options.select) {
+      return (
+        <div className="doctor-profile-edit-field" key={key}>
+          <label>{label}</label>
+          <TextField
+            fullWidth
+            value={form[key]}
+            onChange={(event) => update(key, event.target.value)}
+            size="small"
+            variant="outlined"
+            select
+            className="doctor-profile-legacy-select"
+          >
+            {options.children}
+          </TextField>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`doctor-profile-edit-field ${options.multiline ? "doctor-profile-field-wide" : ""}`} key={key}>
+        <ClinicHeroTextField
+          label={label}
+          value={form[key]}
+          onChange={(value) => update(key, value)}
+          placeholder={options.placeholder || ""}
+          type={options.type || "text"}
+          isRequired={options.required !== false}
+        />
+      </div>
+    );
+  };
 
   const profileFields = [
     { label: "Username", value: info.username || "Not provided", icon: BadgeRoundedIcon, key: "username" },
@@ -276,7 +303,7 @@ const DoctorProfilePage = () => {
             {field("Username", "username")}
             {field("Specialty", "speciality")}
             {field("Email", "email", { type: "email" })}
-            {field("Date of birth", "Dbirth", { type: "date", inputProps: { max: new Date().toISOString().slice(0, 10) } })}
+            {field("Date of birth", "Dbirth", { date: true })}
             {field("Gender", "gender", { select: true, children: [
               <MenuItem key="male" value="male">Male</MenuItem>,
               <MenuItem key="female" value="female">Female</MenuItem>,
@@ -300,23 +327,15 @@ const DoctorProfilePage = () => {
             </div>
             {field("Professional background", "background", { multiline: true, minRows: 4, placeholder: "Education, experience, certifications, and clinical focus." })}
 
-            <div className="doctor-profile-edit-field doctor-profile-photo-field">
-              <label>Profile photo</label>
-              <div className="doctor-profile-photo-editor">
-                <Avatar src={form.pic || defaultAvatar} className="doctor-profile-photo-preview" />
-                <div>
-                  <label className="doctor-profile-upload-button">
-                    <AddPhotoAlternateRoundedIcon sx={{ fontSize: 17 }} /> Upload new photo
-                    <input type="file" accept="image/*" onChange={handlePhoto} hidden />
-                  </label>
-                  <Button disableRipple type="button" className="doctor-profile-inline-action" onClick={() => update("pic", defaultAvatar)}>Use default avatar</Button>
-                </div>
-              </div>
-            </div>
-
             <div className="doctor-profile-edit-field doctor-profile-card-wide">
-              <label>Photo URL (optional)</label>
-              <TextField fullWidth value={form.pic.startsWith("data:") ? "" : form.pic} onChange={(event) => update("pic", event.target.value)} size="small" variant="outlined" placeholder="https://..." />
+              <ClinicHeroTextField
+                label="Photo URL (optional)"
+                value={form.pic.startsWith("data:") ? "" : form.pic}
+                onChange={(value) => update("pic", value)}
+                placeholder="https://..."
+                type="url"
+                isRequired={false}
+              />
             </div>
 
             <div className="doctor-profile-docs-editor doctor-profile-card-wide">
