@@ -39,6 +39,7 @@ const {
   getPatientNotifications,
   addPatientNotification,
   updatePatientNotifications,
+  markPatientNotificationSeen,
   sendPatientEmail,
   requestFollowUp,
   sendEmail,
@@ -577,6 +578,7 @@ router.post("/:patientId/notifications", addPatientNotification);
 
 // updated the notictaions array of a specific patient
 router.patch("/:patientId/notifications", updatePatientNotifications);
+router.patch("/:patientId/notifications/:notificationId/seen", markPatientNotificationSeen);
 
 // send email to a patient
 router.post("/:patientId/send-email", sendPatientEmail);
