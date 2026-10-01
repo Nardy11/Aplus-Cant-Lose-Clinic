@@ -61,9 +61,11 @@ const AccountAvatar = () => {
   const doctorNotifications = useSelector((state) => state.doctor.notifications);
   const rawNotifications = role === "doctor" ? doctorNotifications : patientNotifications;
   const notifications = Array.isArray(rawNotifications) ? rawNotifications.filter(Boolean) : [];
+  const unseenNotificationCount = notifications.filter((notification) => !notification?.seen).length;
+
   useEffect(() => {
-    setNotificationBadgeVisible(notifications.length > 0);
-  }, [notifications.length]);
+    setNotificationBadgeVisible(unseenNotificationCount > 0);
+  }, [unseenNotificationCount]);
 
   const handleLogout = () => {
     dispatch(logout()).then(() => navigate("/Login")).catch(console.error);
@@ -175,9 +177,9 @@ const AccountAvatar = () => {
                   aria-label="Notifications"
                 >
                   <NotificationsNoneRoundedIcon />
-                  {notificationBadgeVisible && notifications?.length > 0 && (
+                  {notificationBadgeVisible && unseenNotificationCount > 0 && (
                     <span className="clinic-notification-badge">
-                      {notifications.length > 9 ? "9+" : notifications.length}
+                      {unseenNotificationCount > 9 ? "9+" : unseenNotificationCount}
                     </span>
                   )}
                 </IconButton>
