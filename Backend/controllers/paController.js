@@ -199,6 +199,76 @@ const addPatient = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+const payPrescriptionWithWallet = async (req, res) => {
+  const { prescriptionId, patientId } = req.params;
+
+  try {
+    const prescription = await Prescription.findOne({
+      _id: prescriptionId,
+      patientID: patientId,
+    }).populate("meds.medID");
+
+    if (!prescription) {
+      return res.status(404).json({ error: "Prescription not found" });
+    }
+    if (prescription.status === "filled") {
+      return res.status(400).json({ error: "Prescription has already been paid." });
+    }
+
+    const patient = await Patient.findById(patientId);
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
+
+    const medicines = prescription.meds.map((item) => item.medID).filter(Boolean);
+    const total = medicines.reduce((sum, medicine) => sum + Number(medicine.price || 0), 0);
+
+    if (total <= 0) {
+      return res.status(400).json({ error: "This prescription has no payable medicine prices." });
+    }
+    if (Number(patient.wallet || 0) < total) {
+      return res.status(400).json({
+        error: "Insufficient wallet balance.",
+        total,
+        balance: Number(patient.wallet || 0),
+      });
+    }
+
+    for (const medicine of medicines) {
+      if (Number(medicine.amount || 0) <= 0) {
+        return res.status(400).json({ error: `Medicine ${medicine.name} is out of stock.` });
+      }
+    }
+
+    patient.wallet = Number(patient.wallet || 0) - total;
+    patient.walletTransactions.push({
+      amount: -total,
+      balanceAfter: patient.wallet,
+      direction: "debit",
+      type: "prescription_payment",
+      description: `Prescription payment ${prescription._id}`,
+    });
+
+    for (const medicine of medicines) {
+      medicine.amount = Number(medicine.amount || 0) - 1;
+      medicine.sales = Number(medicine.sales || 0) + 1;
+      await medicine.save();
+    }
+
+    prescription.status = "filled";
+    await patient.save();
+    await prescription.save();
+
+    return res.status(200).json({
+      message: "Prescription paid successfully.",
+      total,
+      newBalance: patient.wallet,
+      prescription,
+    });
+  } catch (error) {
+    console.error("Error paying prescription:", error);
+    return res.status(500).json({ error: "Unable to complete prescription payment." });
+  }
+};
+
 const AddFromPrescToCart = async (req, res) => {
   try {
     const { prescriptionId } = req.params;
@@ -291,6 +361,70 @@ const addFamilyMember = async (req, res) => {
       .json({ message: "Family member added successfully", patient });
   } catch (error) {
     console.error("Error adding family member:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const updateFamilyMember = async (req, res) => {
+  const { patientId, familyIndex } = req.params;
+  const index = Number(familyIndex);
+  const { fullName, NID, age, gender, relation } = req.body;
+
+  try {
+    const patient = await Patient.findById(patientId);
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
+    if (!Number.isInteger(index) || index < 0 || index >= patient.family.length) {
+      return res.status(404).json({ error: "Family member not found" });
+    }
+    if (!fullName?.trim() || !NID || age === undefined || !gender || !relation) {
+      return res.status(400).json({ error: "All family member fields are required" });
+    }
+    if (!["male", "female", "none"].includes(gender)) {
+      return res.status(400).json({ error: "Invalid gender" });
+    }
+    if (!["spouse", "child"].includes(relation)) {
+      return res.status(400).json({ error: "Invalid relation" });
+    }
+
+    patient.family[index].fullName = fullName.trim();
+    patient.family[index].NID = Number(NID);
+    patient.family[index].age = Number(age);
+    patient.family[index].gender = gender;
+    patient.family[index].relation = relation;
+    await patient.save();
+
+    return res.json({
+      message: "Family member updated successfully",
+      familyMember: patient.family[index],
+    });
+  } catch (error) {
+    console.error("Error updating family member:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const deleteFamilyMember = async (req, res) => {
+  const { patientId, familyIndex } = req.params;
+  const index = Number(familyIndex);
+
+  try {
+    const patient = await Patient.findById(patientId);
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
+    if (!Number.isInteger(index) || index < 0 || index >= patient.family.length) {
+      return res.status(404).json({ error: "Family member not found" });
+    }
+
+    const removed = patient.family[index];
+    patient.family.splice(index, 1);
+    await patient.save();
+
+    return res.json({
+      message: "Family member removed successfully",
+      removed,
+      familyMembers: patient.family,
+    });
+  } catch (error) {
+    console.error("Error deleting family member:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -1473,6 +1607,77 @@ const cancelAppointment = async (req, res) => {
 };
 
 // Function to get notifications of a patient
+const getNotificationTarget = async (req, res) => {
+  const { patientId, entityType, entityId } = req.params;
+  try {
+    if (entityType === "Doctor") {
+      const doctor = await Doctor.findById(entityId).lean();
+      if (!doctor) return res.status(404).json({ error: "Doctor not found" });
+      const age = doctor.Dbirth
+        ? Math.max(0, Math.floor((Date.now() - new Date(doctor.Dbirth).getTime()) / (365.2425 * 24 * 60 * 60 * 1000)))
+        : null;
+      return res.json({
+        type: "Doctor",
+        data: {
+          id: doctor._id,
+          name: doctor.name,
+          age,
+          email: doctor.email,
+          phone: doctor.mobile || null,
+          speciality: doctor.speciality,
+          gender: doctor.gender,
+        },
+      });
+    }
+
+    if (entityType === "Appointment") {
+      const appointment = await Appointment.findOne({
+        _id: entityId,
+        pID: patientId,
+      }).populate("drID", "name email mobile speciality Dbirth gender");
+      if (!appointment) return res.status(404).json({ error: "Appointment not found" });
+      const doctor = appointment.drID;
+      const age = doctor?.Dbirth
+        ? Math.max(0, Math.floor((Date.now() - new Date(doctor.Dbirth).getTime()) / (365.2425 * 24 * 60 * 60 * 1000)))
+        : null;
+      return res.json({
+        type: "Appointment",
+        data: {
+          appointment,
+          doctor: doctor ? {
+            id: doctor._id,
+            name: doctor.name,
+            age,
+            email: doctor.email,
+            phone: doctor.mobile || null,
+            speciality: doctor.speciality,
+            gender: doctor.gender,
+          } : null,
+        },
+      });
+    }
+
+    if (entityType === "Prescription") {
+      const prescription = await Prescription.findOne({ _id: entityId, patientID: patientId })
+        .populate("doctorID", "name email mobile speciality Dbirth gender")
+        .populate("meds.medID", "name activeElement use price");
+      if (!prescription) return res.status(404).json({ error: "Prescription not found" });
+      return res.json({ type: "Prescription", data: prescription });
+    }
+
+    if (entityType === "FollowUp") {
+      const followUp = await FollowUp.findOne({ _id: entityId, pID: patientId }).populate("drID", "name email mobile speciality Dbirth gender");
+      if (!followUp) return res.status(404).json({ error: "Follow-up not found" });
+      return res.json({ type: "FollowUp", data: followUp });
+    }
+
+    return res.status(400).json({ error: "Unsupported notification target" });
+  } catch (error) {
+    console.error("Error loading notification target:", error);
+    return res.status(500).json({ error: "Unable to load notification target" });
+  }
+};
+
 const getPatientNotifications = async (req, res) => {
   const patientId = req.params.patientId;
 
@@ -1523,23 +1728,21 @@ const addPatientNotification = async (req, res) => {
 const updatePatientNotifications = async (req, res) => {
   try {
     const patientId = req.params.patientId;
-    const updatedNotifications = req.body.notifications;
+    const updatedNotifications = Array.isArray(req.body.notifications) ? req.body.notifications : [];
 
-    const patient = await Patient.findById(patientId);
-
+    const patient = await Patient.findById(patientId).select("_id");
     if (!patient) {
       return res.status(404).json({ message: "Patient not found." });
     }
 
-    patient.notifications = updatedNotifications;
+    await Patient.updateOne(
+      { _id: patientId },
+      { $set: { notifications: updatedNotifications } }
+    );
 
-    await patient.save();
-
-    return res
-      .status(201)
-      .json({ message: "Notifications array updated successfully." });
+    return res.status(200).json({ message: "Notifications array updated successfully." });
   } catch (error) {
-    console.error(error);
+    console.error("Error updating patient notifications:", error);
     return res.status(500).json({ message: "Internal server error." });
   }
 };
@@ -1936,6 +2139,7 @@ module.exports = {
   unSubscribeToHealthPackage,
   payWithWallet,
   AddFromPrescToCart,
+  payPrescriptionWithWallet,
   viewHealthPackagesPatient,
   viewWallet,
   ccSubscriptionPayment,
@@ -1946,6 +2150,7 @@ module.exports = {
   rescheduleAppointment,
   successCreditCardPayment,
   cancelAppointment,
+  getNotificationTarget,
   getPatientNotifications,
   addPatientNotification,
   updatePatientNotifications,
@@ -1953,4 +2158,6 @@ module.exports = {
   requestFollowUp,
   getID,
   payWithWalletF,
+  updateFamilyMember,
+  deleteFamilyMember,
 };
