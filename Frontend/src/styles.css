@@ -3965,7 +3965,10 @@ textarea {
 }
 
 .package-choice-dialog .package-dialog-body {
-  padding: 8px 26px 4px;
+  display: block !important;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 26px 4px !important;
 }
 
 .package-choice-dialog .package-dialog-body p {
@@ -3982,8 +3985,10 @@ textarea {
 }
 
 .package-choice-dialog .package-choice-option {
-  min-height: 86px !important;
-  padding: 15px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 96px !important;
+  padding: 16px !important;
   display: flex !important;
   align-items: flex-start !important;
   justify-content: center !important;
@@ -4002,7 +4007,13 @@ textarea {
 }
 
 .package-choice-dialog .package-choice-option strong {
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.package-choice-dialog .package-choice-option:disabled {
+  opacity: 0.65 !important;
+  cursor: wait !important;
 }
 
 .package-choice-dialog .package-choice-option span {
