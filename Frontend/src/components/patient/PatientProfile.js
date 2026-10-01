@@ -5,6 +5,7 @@ import { API_URL } from "../../Consts";
 import { updateProfile } from "../../features/userSlice";
 import AccountAvatar from "../Authentication/AccountAvatar";
 import ConfirmDialog from "../common/ConfirmDialog";
+import { ClinicDateField } from "../common/ClinicFields";
 import {
   Avatar,
   Button,
