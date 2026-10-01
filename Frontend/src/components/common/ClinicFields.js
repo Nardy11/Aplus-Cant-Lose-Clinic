@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 
 export function ClinicSearchField({ value, onChange, placeholder = "Search...", className = "" }) {
   return (
@@ -143,19 +144,36 @@ export function ClinicDateField({ value, onChange, placeholder = "Select date", 
 }
 
 
-export function ClinicDateTimeField({ value, onChange, label }) {
+export function ClinicDateTimeField({ value, onChange, label, minDateTime }) {
+  const parsedValue = value ? dayjs(value) : null;
+  const parsedMin = minDateTime ? dayjs(minDateTime) : undefined;
+
   return (
-    <label className="clinic-datetime-field">
+    <div className="clinic-datetime-field">
       <span>{label}</span>
-      <div className="clinic-datetime-control">
-        <CalendarMonthRoundedIcon className="clinic-datetime-icon" />
-        <input
-          type="datetime-local"
-          value={value || ""}
-          onChange={(event) => onChange(event.target.value)}
-          aria-label={label}
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DateTimePicker
+          value={parsedValue && parsedValue.isValid() ? parsedValue : null}
+          onChange={(newValue) => {
+            if (newValue && newValue.isValid()) {
+              onChange(newValue.format("YYYY-MM-DDTHH:mm"));
+            } else {
+              onChange("");
+            }
+          }}
+          minDateTime={parsedMin}
+          format="MM/DD/YYYY hh:mm A"
+          ampm
+          slotProps={{
+            textField: {
+              fullWidth: true,
+              size: "small",
+              placeholder: "MM/DD/YYYY hh:mm AM",
+              "aria-label": label,
+            },
+          }}
         />
-      </div>
-    </label>
+      </LocalizationProvider>
+    </div>
   );
 }
