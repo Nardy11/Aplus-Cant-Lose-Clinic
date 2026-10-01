@@ -27,7 +27,7 @@
     "day": "^0.0.2",
     "dayjs": "^1.11.10",
     "downloadjs": "^1.4.7",
-    "framer-motion": "^10.16.5",
+    "framer-motion": "^11.18.2",
     "jspdf": "^2.5.1",
     "luxon": "^3.4.3",
     "moment": "^2.29.4",
