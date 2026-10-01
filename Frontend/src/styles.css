@@ -9481,3 +9481,221 @@ select option,
 .clinic-modern-dialog .MuiDialogTitle-root > .MuiIconButton-root svg {
   font-size: 20px !important;
 }
+
+
+/* ===== HeroUI form + calendar system ===== */
+.clinic-heroui-date-field,
+.clinic-heroui-text-field {
+  width: 100%;
+  min-width: 0;
+}
+.clinic-heroui-date-field .clinic-heroui-picker,
+.clinic-heroui-text-field .clinic-heroui-input-base {
+  width: 100%;
+}
+.clinic-heroui-date-field [data-slot="label"],
+.clinic-heroui-text-field [data-slot="label"] {
+  color: #526176 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  margin-bottom: 6px !important;
+}
+.clinic-heroui-date-field [data-slot="base"],
+.clinic-heroui-text-field [data-slot="base"] {
+  width: 100% !important;
+}
+.clinic-heroui-date-field [data-slot="input-wrapper"],
+.clinic-heroui-text-field [data-slot="input-wrapper"] {
+  min-height: 46px !important;
+  height: 46px !important;
+  border: 1px solid #dbe4ee !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+.clinic-heroui-date-field [data-slot="input-wrapper"]:hover,
+.clinic-heroui-text-field [data-slot="input-wrapper"]:hover {
+  border-color: #bfd1e8 !important;
+}
+.clinic-heroui-date-field [data-slot="input-wrapper"]:focus-within,
+.clinic-heroui-text-field [data-slot="input-wrapper"]:focus-within {
+  border-color: #1769ff !important;
+  box-shadow: 0 0 0 3px rgba(23,105,255,.08) !important;
+}
+.clinic-heroui-date-field [data-slot="input"],
+.clinic-heroui-text-field [data-slot="input"] {
+  color: #344258 !important;
+  font-size: 11px !important;
+}
+.clinic-heroui-date-field [data-slot="input"]::placeholder,
+.clinic-heroui-text-field [data-slot="input"]::placeholder {
+  color: #9aa6b5 !important;
+}
+.clinic-heroui-date-field [data-slot="selectorIcon"],
+.clinic-heroui-date-field svg {
+  color: #1769ff !important;
+}
+.clinic-heroui-date-field [data-slot="selectorButton"] {
+  color: #1769ff !important;
+  background: transparent !important;
+}
+.clinic-heroui-date-field [data-slot="popoverContent"] {
+  border: 1px solid #dce6f2 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 45px rgba(24,48,78,.14) !important;
+}
+.clinic-heroui-date-field [data-slot="calendar"] {
+  --heroui-primary: #1769ff !important;
+}
+.clinic-heroui-date-field [data-selected="true"] {
+  background: #1769ff !important;
+  color: #fff !important;
+}
+.clinic-heroui-date-field [data-today="true"] {
+  color: #1769ff !important;
+}
+.clinic-heroui-date-field [data-slot="timeInput"] {
+  border-top: 1px solid #edf1f5 !important;
+  padding-top: 8px !important;
+}
+.clinic-heroui-picker-icon {
+  color: #1769ff !important;
+}
+
+/* Doctor profile: circular logo avatar and balanced actions. */
+.doctor-profile-avatar {
+  width: 72px !important;
+  height: 72px !important;
+  flex: 0 0 72px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  background: #eef4ff !important;
+  border: 4px solid #fff !important;
+  box-shadow: 0 5px 18px rgba(23,105,255,.12) !important;
+}
+.doctor-profile-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  border-radius: 50% !important;
+  padding: 5px !important;
+  box-sizing: border-box !important;
+}
+.doctor-profile-edit-actions {
+  display: grid !important;
+  grid-template-columns: minmax(112px, 1fr) minmax(112px, 1fr) !important;
+  gap: 8px !important;
+  width: 232px !important;
+}
+.doctor-profile-save,
+.doctor-profile-cancel {
+  width: 112px !important;
+  min-width: 112px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+}
+.doctor-profile-edit-field {
+  min-width: 0;
+  width: 100%;
+}
+.doctor-profile-edit-field > label {
+  display: block;
+  margin: 0 0 6px;
+  color: #526176;
+  font-size: 10px;
+  font-weight: 800;
+}
+.doctor-profile-edit-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 18px 14px !important;
+  margin-top: 14px !important;
+  padding: 22px !important;
+  border: 1px solid #e1e8f0 !important;
+  border-radius: 18px !important;
+  background: #fff !important;
+  box-shadow: 0 8px 25px rgba(27,45,69,.035) !important;
+}
+.doctor-profile-card-wide,
+.doctor-profile-field-wide {
+  grid-column: 1 / -1 !important;
+}
+.doctor-profile-hero-ui-date {
+  margin: 0 !important;
+}
+.doctor-profile-legacy-select .MuiOutlinedInput-root {
+  min-height: 46px !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+}
+.doctor-profile-legacy-select .MuiOutlinedInput-notchedOutline {
+  border-color: #dbe4ee !important;
+}
+.doctor-profile-legacy-select .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+.doctor-profile-legacy-select .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1769ff !important;
+}
+.doctor-profile-legacy-select .MuiSelect-select {
+  min-height: 46px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  color: #344258 !important;
+  font-size: 11px !important;
+}
+.doctor-profile-photo-button {
+  min-height: 38px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 0 12px !important;
+  border: 1px solid #cbd9e9 !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  color: #1769ff !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+.clinic-brand-mark {
+  width: 46px !important;
+  height: 46px !important;
+  flex: 0 0 46px !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border-radius: 13px !important;
+  background: #fff !important;
+  border: 1px solid #dce7f4 !important;
+  box-shadow: 0 4px 14px rgba(23,105,255,.08) !important;
+}
+.clinic-brand-mark img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  padding: 3px !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 700px) {
+  .doctor-profile-edit-actions {
+    width: 100% !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .doctor-profile-save,
+  .doctor-profile-cancel {
+    width: 100% !important;
+  }
+  .doctor-profile-edit-grid {
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
+  }
+  .doctor-profile-card-wide,
+  .doctor-profile-field-wide {
+    grid-column: auto !important;
+  }
+}
