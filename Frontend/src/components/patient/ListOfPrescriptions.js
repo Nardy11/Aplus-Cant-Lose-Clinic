@@ -28,10 +28,11 @@ import { Link } from "react-router-dom";
 import { TextField } from "@mui/material";
 import axios from "axios";
 import {API_URL} from "../../Consts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DownloadPage from "./DownloadP";
 import AccountAvatar from "../Authentication/AccountAvatar";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { SnackbarContext } from "../../App";
 // ...
 import {
   viewPrescriptions,
@@ -40,23 +41,15 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import Dialog from "@mui/material/Dialog";
 
-const handlePay = async (prescriptionId) => {
-  try {
-    const response = await axios.get(`${API_URL}/patient/AddFromPrescToCart/${prescriptionId}`);
-    console.log(response.data);
-    if (response.status === 200) {
-      // Navigate to the Checkout page
-      window.location.href = 'http://localhost:3001/Checkout';
-    } 
-     // Handle the response as needed
-  } catch (error) {
-    console.error('Error during payment:', error);
-    // Handle the error as needed
-  }
+const handlePay = (prescription) => {
+  if (!prescription || prescription.status === "filled") return;
+  return prescription;
 };
 const App = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
+  const snackbarMessage = React.useContext(SnackbarContext);
   const [specialityFilter, setSpecialityFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
@@ -87,6 +80,9 @@ const App = () => {
   };
 
   const [prescriptionid, setPrescriptionid] = useState(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const focusedPrescriptionId = new URLSearchParams(location.search).get("prescriptionId");
 
   useEffect(() => {
     dispatch(viewPrescriptions(patientId));
@@ -95,6 +91,45 @@ const App = () => {
   const handleView = (id) => {
     setPrescriptionid(rows.find((row) => row._id === id));
     setOpen(true);
+  };
+
+  useEffect(() => {
+    if (!focusedPrescriptionId || !rows?.length) return;
+    const target = rows.find((row) => row._id === focusedPrescriptionId);
+    if (target) {
+      setPrescriptionid(target);
+      setOpen(true);
+    }
+  }, [focusedPrescriptionId, rows]);
+
+  const prescriptionTotal = prescriptionid?.meds?.reduce(
+    (total, medicine) => total + Number(medicine.medID?.price || 0),
+    0
+  ) || 0;
+
+  const confirmPrescriptionPayment = async () => {
+    if (!prescriptionid?._id || !patientId) return;
+    setPaying(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/patient/payPrescriptionWithWallet/${prescriptionid._id}/${patientId}`
+      );
+      setPrescriptionid(response.data.prescription);
+      setCheckoutOpen(false);
+      dispatch(viewPrescriptions(patientId));
+      snackbarMessage(
+        `Prescription paid successfully. Total: ${response.data.total}`,
+        "success"
+      );
+    } catch (error) {
+      console.error("Error during prescription payment:", error);
+      snackbarMessage(
+        error.response?.data?.error || "Unable to complete prescription payment.",
+        "error"
+      );
+    } finally {
+      setPaying(false);
+    }
   };
 
   return role === "patient" ? (
@@ -106,123 +141,106 @@ const App = () => {
           <IconButton className="clinic-dialog-close" onClick={() => setOpen(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
         </DialogTitle>
         {prescriptionid && prescriptionid.patientID ? (
-          <div id="pagetodownload">
-            <Paper
-              sx={{
-                width: "100%",
-                marginTop: "40px",
-                marginLeft: "2%",
-                boxShadow: "5px 5px 5px 5px #8585854a",
-              }}
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
-                  <Box style={Info}>
-                    <Typography sx={{ fontSize: "16px" }}>
-                      <strong>Date : </strong>
-                      {new Date(
-                        prescriptionid?.datePrescribed
-                      ).toLocaleString()}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <img
-                    src="/virtualclinic.png"
-                    alt="virtualclinic"
-                    width={"100%"}
-                    sx={{ marginBottom: "50px" }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ margin: "20px 20px 0px 80px" }}>
-                    <Typography sx={{ fontSize: "16px" }}>
-                      {prescriptionid.doctorID?.name}
-                    </Typography>
-                    <Typography sx={{ fontSize: "16px" }}>
-                      {prescriptionid.doctorID?.speciality}
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-              <Grid item xs={12} md={4} sx={{ pr: "10%" }}>
-                {prescriptionid.meds.map((medicine, index) => (
-                  <Box sx={{ margin: "20px 20px 0px 80px" }}>
-                    <Typography sx={{ fontSize: "20px", fontWeight: "bold" }}>
-                      Medicine Name :
-                      <span style={{ fontSize: "16px", fontWeight: "normal" }}>
-                        {medicine.medID?.name}
-                      </span>
-                    </Typography>
-                    <Typography sx={{ fontSize: "20px", fontWeight: "bold" }}>
-                      Medicine Active elements:
-                      <span style={{ fontSize: "16px", fontWeight: "normal" }}>
-                        {medicine.medID?.activeElement}
-                      </span>
-                    </Typography>
+          <div id="pagetodownload" className="prescription-receipt">
+            <div className="prescription-receipt-header">
+              <div className="prescription-brand">
+                <div className="prescription-brand-image">
+                  <img src="/virtualclinic.png" alt="El7a2ny Virtual Clinic" />
+                </div>
+                <div>
+                  <strong>EL7A2NY</strong>
+                  <span>VIRTUAL CLINIC</span>
+                </div>
+              </div>
+              <div className="prescription-receipt-meta">
+                <span>Date prescribed</span>
+                <strong>{new Date(prescriptionid.datePrescribed).toLocaleString()}</strong>
+              </div>
+              <div className="prescription-receipt-meta prescription-receipt-doctor">
+                <span>Doctor</span>
+                <strong>{prescriptionid.doctorID?.name || "Not provided"}</strong>
+                <small>{prescriptionid.doctorID?.speciality || "General care"}</small>
+              </div>
+            </div>
 
-                    <Typography sx={{ fontSize: "20px", fontWeight: "bold" }}>
-                      Medical Use :
-                      <span style={{ fontSize: "16px", fontWeight: "normal" }}>
-                        {medicine.medID?.use}
-                      </span>
-                    </Typography>
-                    <Typography sx={{ fontSize: "20px", fontWeight: "bold" }}>
-                      Medicine Frequency :
-                      <span style={{ fontSize: "16px", fontWeight: "normal" }}>
-                        {medicine.medID?.amount}
-                      </span>
-                    </Typography>
-                    <Typography sx={{ fontSize: "20px", fontWeight: "bold" }}>
-                      Medicine Dosage :
-                      <span style={{ fontSize: "16px", fontWeight: "normal" }}>
-                        {medicine?.dosage}
-                      </span>
-                    </Typography>
-                    <hr />
-                  </Box>
-                ))}
-              </Grid>
-              <Paper
-                sx={{
-                  width: "100px",
-                  marginTop: "40px",
-                  marginLeft: "40%",
-                  boxShadow: "none",
-                  display: "flex",
-                }}
-              >
-                {prescriptionid.status == "filled" ? (
-                  <img
-                    src="/Pharmacy Stamp.png"
-                    alt="hospital stamp"
-                    width={"100%"}
-                  />
-                ) : (
-                  ""
-                )}
-                <DownloadPage
-                  rootElementId="pagetodownload"
-                  downloadFileName="prescription"
-                />
+            <div className="prescription-receipt-body">
+              {prescriptionid.meds.map((medicine, index) => (
+                <div className="prescription-medicine" key={medicine.medID?._id || index}>
+                  <div className="prescription-medicine-title">
+                    <strong>{medicine.medID?.name || "Medicine"}</strong>
+                    <span>{medicine.medID?.price ? `${medicine.medID.price}` : "Price not set"}</span>
+                  </div>
+                  <div className="prescription-medicine-grid">
+                    <div><span>Active element</span><strong>{medicine.medID?.activeElement || "Not provided"}</strong></div>
+                    <div><span>Medical use</span><strong>{medicine.medID?.use || "Not provided"}</strong></div>
+                    <div><span>Frequency</span><strong>{medicine.medID?.amount || "Not provided"}</strong></div>
+                    <div><span>Dosage</span><strong>{medicine.dosage || "Not provided"}</strong></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="prescription-receipt-footer">
+              <DownloadPage
+                rootElementId="pagetodownload"
+                downloadFileName="prescription"
+              />
+
+              {prescriptionid.status === "filled" ? (
+                <div className="prescription-paid-stamp">
+                  <img src="/Pharmacy Stamp.png" alt="Pharmacy stamp" />
+                  <span>PAID</span>
+                </div>
+              ) : (
+                <div className="prescription-total">
+                  <span>Total</span>
+                  <strong>{prescriptionTotal > 0 ? prescriptionTotal : "—"}</strong>
+                </div>
+              )}
+
+              {prescriptionid.status === "filled" ? (
+                <div className="prescription-status-badge">Paid</div>
+              ) : (
                 <Button
                   className="prescription-action-button"
-                  onClick={() => handlePay(prescriptionid._id)}
+                  onClick={() => setCheckoutOpen(true)}
                   variant="contained"
                 >
                   Pay & checkout
                 </Button>
-                <Button
-                  className="prescription-action-secondary"
-                  onClick={() => setOpen(false)}
-                >
-                  Close
-                </Button>
-              </Paper>
-            </Paper>
+              )}
+            </div>
           </div>
         ) : null}
       </Dialog>
+      <Dialog
+        open={checkoutOpen}
+        onClose={() => !paying && setCheckoutOpen(false)}
+        className="clinic-modern-dialog prescription-checkout-dialog"
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>CHECKOUT</span><h2>Pay prescription</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={() => !paying && setCheckoutOpen(false)} aria-label="Close">
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
+        <div className="prescription-checkout-body">
+          <p>Pay for the medicines in this prescription using your clinic wallet.</p>
+          <div className="prescription-checkout-total">
+            <span>Total due</span>
+            <strong>{prescriptionTotal}</strong>
+          </div>
+        </div>
+        <div className="clinic-dialog-actions">
+          <Button className="clinic-dialog-cancel" onClick={() => setCheckoutOpen(false)} disabled={paying}>Cancel</Button>
+          <Button className="clinic-dialog-primary" onClick={confirmPrescriptionPayment} disabled={paying || prescriptionTotal <= 0}>
+            {paying ? "Processing..." : "Confirm & pay"}
+          </Button>
+        </div>
+      </Dialog>
+
       <AppBar position="static" className="prescriptions-toolbar" elevation={0}>
         <Toolbar>
           <Grid container className="prescriptions-filter-grid" alignItems="center" spacing={1.5}>
