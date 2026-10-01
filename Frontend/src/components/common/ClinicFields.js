@@ -1,14 +1,11 @@
 import React from "react";
-import { Popover, IconButton, MenuItem, Select } from "@mui/material";
+import { IconButton, MenuItem, Select } from "@mui/material";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import dayjs from "dayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-
+import { Input } from "@heroui/react";
+import { DatePicker } from "@heroui/date-picker";
+import { CalendarDate, CalendarDateTime, parseDate, parseDateTime } from "@internationalized/date";
 export function ClinicSearchField({ value, onChange, placeholder = "Search...", className = "" }) {
   return (
     <div className={`clinic-field clinic-search-field search-field search-field--secondary ${className}`}>
@@ -77,103 +74,125 @@ export function ClinicSelectField({ value, onChange, options, placeholder, class
   );
 }
 
+const toDateValue = (value) => {
+  if (!value) return null;
+  try {
+    return parseDate(String(value).slice(0, 10));
+  } catch {
+    return null;
+  }
+};
+
+const toDateTimeValue = (value) => {
+  if (!value) return null;
+  try {
+    return parseDateTime(String(value).slice(0, 16));
+  } catch {
+    return null;
+  }
+};
+
+const formatDateValue = (value) => {
+  if (!value) return "";
+  return value.toString();
+};
+
 export function ClinicDateField({ value, onChange, placeholder = "Select date", className = "", minDate }) {
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const parsedValue = value ? dayjs(value) : null;
-
-  const handleChange = (newValue) => {
-    if (newValue && newValue.isValid()) {
-      onChange(newValue.format("YYYY-MM-DD"));
-      setAnchorEl(null);
-    }
-  };
+  const parsedValue = toDateValue(value);
+  const parsedMin = toDateValue(minDate);
 
   return (
-    <>
-      <div
-        className={`clinic-field clinic-date-field ${className}`}
-        role="button"
-        tabIndex={0}
-        onClick={(event) => setAnchorEl(event.currentTarget)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            setAnchorEl(event.currentTarget);
-          }
+    <div className={`clinic-heroui-date-field ${className}`}>
+      <DatePicker
+        label={placeholder}
+        labelPlacement="outside-top"
+        value={parsedValue}
+        onChange={(nextValue) => onChange(formatDateValue(nextValue))}
+        minValue={parsedMin || undefined}
+        variant="bordered"
+        color="primary"
+        size="sm"
+        radius="lg"
+        selectorIcon={<CalendarMonthRoundedIcon />}
+        classNames={{
+          base: "clinic-heroui-picker",
+          selectorIcon: "clinic-heroui-picker-icon",
+          popoverContent: "clinic-heroui-calendar-popover",
+          calendar: "clinic-heroui-calendar",
         }}
-        aria-label={placeholder}
-      >
-        <CalendarMonthRoundedIcon className="clinic-field-leading-icon" />
-        <span className={parsedValue ? "clinic-date-value" : "clinic-date-placeholder"}>
-          {parsedValue ? parsedValue.format("MMM D, YYYY") : placeholder}
-        </span>
-        {value ? (
-          <IconButton
-            type="button"
-            size="small"
-            className="clinic-field-clear"
-            onClick={(event) => {
-              event.stopPropagation();
-              onChange("");
-            }}
-            aria-label="Clear date"
-          >
-            <CloseRoundedIcon />
-          </IconButton>
-        ) : null}
-      </div>
-      <Popover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        PaperProps={{ className: "clinic-calendar-popover" }}
-      >
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DateCalendar
-            value={parsedValue}
-            onChange={handleChange}
-            minDate={minDate ? dayjs(minDate) : undefined}
-            className="clinic-calendar"
-          />
-        </LocalizationProvider>
-      </Popover>
-    </>
-  );
-}
-
-
-export function ClinicDateTimeField({ value, onChange, label, minDateTime }) {
-  const parsedValue = value ? dayjs(value) : null;
-  const parsedMin = minDateTime ? dayjs(minDateTime) : undefined;
-
-  return (
-    <div className="clinic-datetime-field">
-      <span>{label}</span>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DateTimePicker
-          value={parsedValue && parsedValue.isValid() ? parsedValue : null}
-          onChange={(newValue) => {
-            if (newValue && newValue.isValid()) {
-              onChange(newValue.format("YYYY-MM-DDTHH:mm"));
-            } else {
-              onChange("");
-            }
-          }}
-          minDateTime={parsedMin}
-          format="MM/DD/YYYY hh:mm A"
-          ampm
-          slotProps={{
-            textField: {
-              fullWidth: true,
-              size: "small",
-              placeholder: "MM/DD/YYYY hh:mm AM",
-              "aria-label": label,
-            },
-          }}
-        />
-      </LocalizationProvider>
+      />
     </div>
   );
 }
+
+export function ClinicDateTimeField({ value, onChange, label, minDateTime }) {
+  const parsedValue = toDateTimeValue(value);
+  const parsedMin = toDateTimeValue(minDateTime);
+
+  return (
+    <div className="clinic-heroui-date-field clinic-heroui-datetime-field">
+      <DatePicker
+        label={label}
+        labelPlacement="outside-top"
+        value={parsedValue}
+        onChange={(nextValue) => onChange(formatDateValue(nextValue))}
+        minValue={parsedMin || undefined}
+        granularity="minute"
+        hourCycle={12}
+        variant="bordered"
+        color="primary"
+        size="sm"
+        radius="lg"
+        selectorIcon={<CalendarMonthRoundedIcon />}
+        classNames={{
+          base: "clinic-heroui-picker",
+          selectorIcon: "clinic-heroui-picker-icon",
+          popoverContent: "clinic-heroui-calendar-popover",
+          calendar: "clinic-heroui-calendar",
+          timeInput: "clinic-heroui-time-input",
+        }}
+      />
+    </div>
+  );
+}
+
+export function ClinicHeroTextField({
+  value,
+  onChange,
+  label,
+  placeholder = "",
+  className = "",
+  type = "text",
+  isRequired = false,
+  isDisabled = false,
+  startContent,
+  endContent,
+}) {
+  return (
+    <div className={`clinic-heroui-text-field ${className}`}>
+      <Input
+        label={label}
+        labelPlacement="outside-top"
+        value={value ?? ""}
+        onValueChange={onChange}
+        placeholder={placeholder}
+        type={type}
+        isRequired={isRequired}
+        isDisabled={isDisabled}
+        variant="bordered"
+        color="primary"
+        size="sm"
+        radius="lg"
+        startContent={startContent}
+        endContent={endContent}
+        classNames={{
+          base: "clinic-heroui-input-base",
+          label: "clinic-heroui-input-label",
+          inputWrapper: "clinic-heroui-input-wrapper",
+          input: "clinic-heroui-input",
+        }}
+      />
+    </div>
+  );
+}
+
