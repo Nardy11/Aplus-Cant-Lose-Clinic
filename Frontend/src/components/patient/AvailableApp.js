@@ -34,7 +34,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-import { useHistory, useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
 import CreditCardForm from "./CreditCardForm";
 import { API_URL } from "../../Consts.js";
 import { SnackbarContext } from "../../App";
