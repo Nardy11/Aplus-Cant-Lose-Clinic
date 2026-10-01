@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import EventRoundedIcon from "@mui/icons-material/EventRounded";
@@ -10,6 +10,8 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import AccountAvatar from "./Authentication/AccountAvatar";
 import { API_URL } from "../Consts";
+import { getNotifications } from "../features/patientSlice";
+import { getNotificationsd } from "../features/doctorSlice";
 
 const iconFor = (type = "") => {
   const normalized = type.toLowerCase();
@@ -26,6 +28,7 @@ const formatType = (type = "") =>
 
 export default function NotificationsPage() {
   const { id, role } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -59,6 +62,11 @@ export default function NotificationsPage() {
           );
           if (active) {
             setNotifications(items.map((item) => ({ ...item, seen: true })));
+            if (role === "doctor") {
+              dispatch(getNotificationsd(id));
+            } else {
+              dispatch(getNotifications(id));
+            }
           }
         } catch (seenError) {
           console.error("Unable to persist notification seen state:", seenError);
