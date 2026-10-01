@@ -194,20 +194,26 @@ export default function Hpackages() {
     
       };
     
-    const handleCreditCardButtonClick = async() => {
-      try{
-      const response = await axios.post(`${API_URL}/patient/createCheckoutSession/${subscribeID}/${packageID}`)
-     //should add await here?
-      const { url } = response.data;
-   
-         window.location = url;
-      
+  const handleCreditCardButtonClick = async () => {
+    if (creditCardLoading || !subscribeID || !packageID) return;
+
+    setCreditCardLoading(true);
+    try {
+      const response = await axios.get(
+        `${API_URL}/patient/createCheckoutSession/${subscribeID}/${packageID}`
+      );
+      const url = response.data?.url;
+      if (!url) throw new Error("Stripe did not return a checkout URL.");
+      window.location.assign(url);
+    } catch (error) {
+      console.error("Unable to start credit-card checkout:", error);
+      snackbarMessage(
+        error.response?.data?.error || error.message || "Unable to start card payment.",
+        "error"
+      );
+      setCreditCardLoading(false);
     }
-      catch (error) {
-        console.error(error.response.data.error);
-      }
-            
-    };
+  };;
     
 
   const tableStyle = {
