@@ -9166,6 +9166,30 @@ select option,
   background: #fff;
   color: inherit;
 }
+.clinic-notification-row.is-unseen {
+  background: #f8fbff;
+}
+
+.clinic-notification-row.is-unseen .clinic-notification-row-icon {
+  background: #eaf2ff;
+  color: #1769ff;
+}
+
+.clinic-notification-row.is-seen {
+  background: #fff;
+}
+
+.clinic-notification-row.is-seen .clinic-notification-row-icon {
+  background: #f1f4f8;
+  color: #7b8799;
+}
+
+.clinic-notification-row.is-seen .clinic-notification-row-copy strong,
+.clinic-notification-row.is-seen .clinic-notification-row-copy p {
+  font-weight: 600;
+  color: #65748a;
+}
+
 .clinic-notification-row:hover {
   background: #f8fbff;
 }
