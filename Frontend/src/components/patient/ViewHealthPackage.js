@@ -306,7 +306,7 @@ export default function Hpackages() {
                         }}
                       >
                         <Typography>Subscribe</Typography>
-                      </Button>
+                      </button>
                    
                   ) : (
                     <Button
@@ -317,7 +317,7 @@ export default function Hpackages() {
                       }}
                     >
                       <Typography>Unsubscribe</Typography>
-                    </Button>
+                    </button>
                   )}
                 </TableCell>
 
@@ -346,16 +346,16 @@ export default function Hpackages() {
       <div className="package-dialog-body">
         <p>Select who should receive this health package.</p>
         <div className="package-choice-grid">
-          <Button className="package-choice-option" onClick={handleSubscribeForMyself}>
+          <button type="button" className="package-choice-option" onClick={handleSubscribeForMyself}>
             <strong>Myself</strong><span>Apply the package to your account</span>
-          </Button>
-          <Button className="package-choice-option" onClick={handleSubscribeForFamilyMember}>
+          </button>
+          <button type="button" className="package-choice-option" onClick={handleSubscribeForFamilyMember}>
             <strong>Family member</strong><span>Apply it to a connected family member</span>
-          </Button>
+          </button>
         </div>
       </div>
       <DialogActions className="clinic-dialog-actions">
-        <Button onClick={()=>setfirstDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
+        <Button onClick={()=>setfirstDialogue(false)} className="clinic-dialog-cancel">Cancel</button>
       </DialogActions>
     </Dialog>
     <Dialog open={secondDialogue} onClose={()=>setSecondDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
@@ -366,14 +366,10 @@ export default function Hpackages() {
       <div className="package-dialog-body">
         <p>Choose how you want to pay for this health package.</p>
         <div className="package-choice-grid">
-          <Button className="package-choice-option" onClick={handleWalletButtonClick}>
+          <button type="button" className="package-choice-option" onClick={handleWalletButtonClick}>
             <strong>Wallet</strong><span>Use your clinic account balance</span>
-          </Button>
-          <Button
-            className="package-choice-option"
-            onClick={handleCreditCardButtonClick}
-            disabled={creditCardLoading}
-          >
+          </button>
+          <button type="button" className="package-choice-option" onClick={handleCreditCardButtonClick} disabled={creditCardLoading}>
             <strong>{creditCardLoading ? "Opening checkout…" : "Credit card"}</strong>
             <span>{creditCardLoading ? "Connecting to secure payment" : "Continue securely to card payment"}</span>
           </Button>
@@ -433,14 +429,10 @@ export default function Hpackages() {
       <div className="package-dialog-body">
         <p>Choose how you want to pay for your family member's package.</p>
         <div className="package-choice-grid">
-          <Button className="package-choice-option" onClick={handleWalletButtonClickFamily}>
+          <button type="button" className="package-choice-option" onClick={handleWalletButtonClickFamily}>
             <strong>Wallet</strong><span>Use your clinic account balance</span>
           </Button>
-          <Button
-            className="package-choice-option"
-            onClick={handleCreditCardButtonClick}
-            disabled={creditCardLoading}
-          >
+          <button type="button" className="package-choice-option" onClick={handleCreditCardButtonClick} disabled={creditCardLoading}>
             <strong>{creditCardLoading ? "Opening checkout…" : "Credit card"}</strong>
             <span>{creditCardLoading ? "Connecting to secure payment" : "Continue securely to card payment"}</span>
           </Button>
