@@ -3,8 +3,7 @@ import { IconButton, MenuItem, Select } from "@mui/material";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import { Input, Textarea } from "@heroui/react";
-import { DatePicker } from "@heroui/date-picker";
+import { DatePicker, Input, Textarea } from "@heroui/react";
 import { parseDate, parseDateTime } from "@internationalized/date";
 export function ClinicSearchField({ value, onChange, placeholder = "Search...", className = "" }) {
   return (
