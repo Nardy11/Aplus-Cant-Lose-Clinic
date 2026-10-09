@@ -16,8 +16,6 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-const MongoURI = process.env.MONGO_URI;
-
 // Connect to MongoDB before accepting requests.
 let server;
 
