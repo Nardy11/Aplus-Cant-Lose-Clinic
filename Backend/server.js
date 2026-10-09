@@ -18,19 +18,25 @@ app.use(cookieParser());
 
 const MongoURI = process.env.MONGO_URI;
 
-// configurations
-// Mongo DB
-connectDB()
-  .then(() => {
+// Connect to MongoDB before accepting requests.
+let server;
+
+const startServer = async () => {
+  try {
+    await connectDB();
     console.log("MongoDB is now connected!");
 
-    // Starting server
-  
-  })
-  .catch((err) => console.log(err));
-const server=  app.listen(port, () => {
-  console.log(`Listening to requests on http://localhost:${port}`);
-});
+    server = app.listen(port, () => {
+      console.log(`Listening to requests on http://localhost:${port}`);
+    });
+
+    io.attach(server);
+  } catch (error) {
+    console.error("Backend startup failed because MongoDB could not connect.");
+    console.error(error);
+    process.exitCode = 1;
+  }
+};
 
 // Routes
 // Importing the adRouter
@@ -80,7 +86,7 @@ app.use("/api/message", messageRoutes);
 // Error Handling middlewares
 
 
-const io = require("socket.io")(server, {
+const io = require("socket.io")({
   pingTimeout: 60000,
   cors: {
     origin: "http://localhost:3000",
@@ -130,6 +136,7 @@ io.on("connection", (socket) => {
 
   socket.off("setup", () => {
     console.log("USER DISCONNECTED");
-    socket.leave(userData._id);
   });
 });
+
+startServer();
