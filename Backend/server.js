@@ -8,29 +8,16 @@ const cookieParser = require('cookie-parser');
 const stripe=require('stripe')(process.env.STRIPE_PRIVATE_KEY);
 
 // App variables
-const app = express(); // Move this line to the top
-const port = "10000";
+const app = express();
+const port = process.env.PORT || 10000;
 app.use(cors());
 
 
 app.use(express.json());
 app.use(cookieParser());
 
-const MongoURI = process.env.MONGO_URI;
-
-// configurations
-// Mongo DB
-connectDB()
-  .then(() => {
-    console.log("MongoDB is now connected!");
-
-    // Starting server
-  
-  })
-  .catch((err) => console.log(err));
-const server=  app.listen(port, () => {
-  console.log(`Listening to requests on http://localhost:${port}`);
-});
+// Connect to MongoDB before accepting requests.
+let server;
 
 // Routes
 // Importing the adRouter
@@ -80,7 +67,7 @@ app.use("/api/message", messageRoutes);
 // Error Handling middlewares
 
 
-const io = require("socket.io")(server, {
+const io = require("socket.io")({
   pingTimeout: 60000,
   cors: {
     origin: "http://localhost:3000",
@@ -130,6 +117,24 @@ io.on("connection", (socket) => {
 
   socket.off("setup", () => {
     console.log("USER DISCONNECTED");
-    socket.leave(userData._id);
   });
 });
+
+const startServer = async () => {
+  try {
+    await connectDB();
+    console.log("MongoDB is now connected!");
+
+    server = app.listen(port, () => {
+      console.log(`Listening to requests on http://localhost:${port}`);
+    });
+
+    io.attach(server);
+  } catch (error) {
+    console.error("Backend startup failed because MongoDB could not connect.");
+    console.error(error);
+    process.exitCode = 1;
+  }
+};
+
+startServer();
