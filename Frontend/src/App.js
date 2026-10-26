@@ -71,7 +71,6 @@ import Contract from "./components/doctor/Contract.js";
 import Success from "./components/patient/Success.js";
 import HealthRecords from "./components/patient/HealthRecords.js";
 import AvailableApp from "./components/patient/AvailableApp";
-import MedHistList from "./components/patient/MedHistList";
 import Vid from "./components/Vid.js";
 import SuccessAppoint from "./components/patient/SuccessAppoint";
 import DocPrescriptions from "./components/doctor/Prescription";
@@ -103,7 +102,8 @@ const router = createBrowserRouter(
       <Route path="/upload" element={<Upload />} />
       <Route path='/Prescription' element={<DocPrescriptions/>} />
       <Route path="/MedHist" element={<MedHist />} />
-      <Route path="/MedHistList" element={<MedHistList />} />
+      {/* The document list lives inside Health records; this standalone route had no header. */}
+      <Route path="/MedHistList" element={<Navigate to="/HealthRecords" replace />} />
       <Route path="/Appointments" element={<Appointments />} />
       <Route path="/appointmentPatientss/:doctorId" element={<AvailableApp />} />
       <Route path="viewfamilymembers" element={<ViewFamilyMember />} />

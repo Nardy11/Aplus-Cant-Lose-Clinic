@@ -778,3 +778,50 @@ a.ui-row:hover { background: var(--surface-2); }
 /* Sign-up pages (legacy markup): headings align with the text under them. */
 .auth-page .auth-card h1,
 .auth-page .auth-card h2 { text-align: left; }
+
+/* Booking summary */
+.booking-summary { position: sticky; top: calc(var(--header-h) + 16px); }
+.booking-line { display: flex; justify-content: space-between; gap: 12px; font-size: 14.5px; }
+.booking-line span { color: var(--muted); }
+.booking-line strong { display: grid; justify-items: end; text-align: right; font-weight: 700; }
+.booking-line small { color: var(--ok); font-size: 12.5px; font-weight: 600; }
+.booking-reason { height: auto; padding: 10px 12px; resize: vertical; line-height: 1.45; }
+.booking-note { margin: -6px 0 0; color: var(--muted); font-size: 13px; text-align: center; }
+@media (max-width: 900px) { .booking-summary { position: static; } }
+
+/* styles.css forces a smaller size on every select with !important. */
+select.ui-input { font-size: 14.5px !important; padding: 0 12px !important; height: 42px !important; border-radius: var(--r-control) !important; }
+
+/* Visit extras */
+.ui-visit-note { color: var(--ink-2); font-size: 13.5px; font-style: italic; }
+.ui-focus-ring > .ui-visit { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.ui-plan-meta { margin: -4px 0 0; color: var(--muted); font-size: 13.5px; }
+
+/* Prescription cards */
+.rx-card { display: grid; grid-template-rows: auto 1fr auto; }
+.rx-card--focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.rx-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 6px; }
+.rx-head h3 { margin: 0; font-family: var(--font-body); font-size: 16px; font-weight: 700; letter-spacing: 0; }
+.rx-head p { margin: 3px 0 0; color: var(--muted); font-size: 13.5px; }
+.rx-meds { display: grid; gap: 10px; margin: 0; padding: 12px 20px 16px; list-style: none; }
+.rx-meds li { display: flex; gap: 10px; }
+.rx-meds li > svg { flex: 0 0 auto; margin-top: 2px; color: var(--accent); font-size: 18px; }
+.rx-meds li strong { display: block; font-size: 14.5px; font-weight: 650; }
+.rx-meds li span span { display: block; margin-top: 1px; color: var(--ink-2); font-size: 13.5px; }
+.rx-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-top: 1px solid var(--line); }
+
+/* Legacy page wrappers painted their own off-white backgrounds, leaving bands
+   where they ended. One canvas for every page. */
+.appointments-page,
+.chat-page,
+.clinic-list-page,
+.doctor-page,
+.doctor-profile-page,
+.family-page,
+.health-packages-page,
+.health-records-page,
+.patient-profile-page,
+.prescriptions-page {
+  background: transparent !important;
+}
+:root { --clinic-bg: var(--canvas); }

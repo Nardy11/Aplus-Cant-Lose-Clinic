@@ -8,6 +8,7 @@ import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import AccountAvatar from "./Authentication/AccountAvatar";
 import { API_URL } from "../Consts";
+import { formatMoney } from "../design/format";
 
 export default function WalletPage() {
   const { id, role } = useSelector((state) => state.user);
@@ -48,9 +49,9 @@ export default function WalletPage() {
           <div className="clinic-list-heading-icon"><AccountBalanceWalletRoundedIcon /></div>
         </section>
         <section className="clinic-wallet-page-summary">
-          <div className="clinic-wallet-page-balance"><span>AVAILABLE BALANCE</span><strong>{balance.toLocaleString()}</strong><small>Clinic account credit</small></div>
-          <div className="clinic-wallet-stat"><span>Money added</span><strong className="wallet-positive">+{totalCredits.toLocaleString()}</strong></div>
-          <div className="clinic-wallet-stat"><span>{role === "doctor" ? "Money withdrawn" : "Money spent"}</span><strong className="wallet-negative">-{totalDebits.toLocaleString()}</strong></div>
+          <div className="clinic-wallet-page-balance"><span>AVAILABLE BALANCE</span><strong>{formatMoney(balance)}</strong><small>Clinic account credit</small></div>
+          <div className="clinic-wallet-stat"><span>Money added</span><strong className="wallet-positive">+{formatMoney(totalCredits)}</strong></div>
+          <div className="clinic-wallet-stat"><span>{role === "doctor" ? "Money withdrawn" : "Money spent"}</span><strong className="wallet-negative">-{formatMoney(totalDebits)}</strong></div>
         </section>
         <section className="clinic-list-card">
           <div className="clinic-list-card-heading"><div><span>ACTIVITY</span><h2>Wallet history</h2></div><small>{transactions.length} transaction{transactions.length === 1 ? "" : "s"}</small></div>
@@ -61,7 +62,7 @@ export default function WalletPage() {
                 return <article className="clinic-wallet-row" key={transaction._id || index}>
                   <div className={`clinic-wallet-row-icon ${credit ? "credit" : "debit"}`}>{credit ? <AddRoundedIcon /> : <RemoveRoundedIcon />}</div>
                   <div className="clinic-wallet-row-copy"><strong>{transaction.description || "Wallet transaction"}</strong><span>{transaction.type?.replace(/_/g, " ") || "Other"} · {transaction.timestamp ? new Date(transaction.timestamp).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "Recent"}</span></div>
-                  <div className={`clinic-wallet-row-amount ${credit ? "credit" : "debit"}`}>{credit ? "+" : "-"}{Math.abs(Number(transaction.amount || 0)).toLocaleString()}<small>Balance {Number(transaction.balanceAfter || 0).toLocaleString()}</small></div>
+                  <div className={`clinic-wallet-row-amount ${credit ? "credit" : "debit"}`}>{credit ? "+" : "-"}{formatMoney(Math.abs(Number(transaction.amount || 0)))}<small>Balance {formatMoney(transaction.balanceAfter)}</small></div>
                 </article>;
               })}
             </div>

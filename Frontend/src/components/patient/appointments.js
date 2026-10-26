@@ -1,515 +1,190 @@
-/* package whatever; // don't place package name! */
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import AppBar from "@mui/material/AppBar";
-import axios from "axios";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import HomeIcon from "@mui/icons-material/Home";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import { TextField } from "@mui/material";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import Fab from "@mui/material/Fab";
-import AddIcon from "@mui/icons-material/Add";
-import { Link } from "react-router-dom";
+import axios from "axios";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import { viewAppoints } from "../../features/patientSlice";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import { useNavigate, useLocation } from "react-router-dom";
-import CreditCardForm from './CreditCardForm';
 import { API_URL } from "../../Consts.js";
-import RescheduleAppointment from "./PatRescheduleAppointment";
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
+import { SnackbarContext } from "../../App";
 import AccountAvatar from "../Authentication/AccountAvatar.js";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { ClinicSearchField, ClinicSelectField, ClinicDateField } from "../common/ClinicFields";
+import RescheduleAppointment from "./PatRescheduleAppointment";
 import ConfirmDialog from "../common/ConfirmDialog";
+import { Page, PageHead, VisitCard, EmptyState, Skeleton } from "../../design/ui";
+import { formatDate, formatDateTime, byStart } from "../../design/format";
 
+const STATUS_FILTERS = [
+  { value: "", label: "Any status" },
+  { value: "upcoming", label: "Upcoming" },
+  { value: "rescheduled", label: "Rescheduled" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
+];
 
-
-
-
-
-function BasicTable({ status, date, searchTerm, onPayButtonClick }) {
-  const tableContainerStyle = {
-    maxWidth: "80%",
-    margin: "0 auto",
-    marginTop: "20px",
-    boxShadow: "5px 5px 5px 5px #8585854a",
-  };
-  
-
-  const [followUpsRequests, setFollowUpsRequests] = useState([]);
+export default function Appointments() {
   const dispatch = useDispatch();
-  const pId = useSelector((state) => state.user.id);
-  const [cancelledAppointments, setCancelledAppointments] = useState([]);
+  const snackbarMessage = useContext(SnackbarContext);
   const location = useLocation();
-  const focusedAppointmentId = new URLSearchParams(location.search).get("appointmentId");
-
-  useEffect(() => {
-    dispatch(viewAppoints(pId));
-  }, [dispatch]);
+  const focusedId = new URLSearchParams(location.search).get("appointmentId");
+  const patientId = useSelector((state) => state.user.id);
   const rows = useSelector((state) => state.patient.appoints);
+  const loading = useSelector((state) => state.patient.loading);
+
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [toCancel, setToCancel] = useState(null);
+  const [requested, setRequested] = useState([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!focusedAppointmentId || !rows?.length) return;
-    const timer = window.setTimeout(() => {
-      const target = document.getElementById(`appointment-row-${focusedAppointmentId}`);
-      target?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (!patientId) return;
+    dispatch(viewAppoints(patientId)).finally(() => setLoaded(true));
+  }, [dispatch, patientId]);
+
+  useEffect(() => {
+    if (!focusedId || !rows?.length) return;
+    const t = window.setTimeout(() => {
+      document.getElementById(`appointment-${focusedId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 150);
-    return () => window.clearTimeout(timer);
-  }, [focusedAppointmentId, rows]);
+    return () => window.clearTimeout(t);
+  }, [focusedId, rows]);
 
+  const { upcoming, past } = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = (Array.isArray(rows) ? rows : [])
+      .filter((r) => !status || r.status === status)
+      .filter((r) => !q || r.drID?.name?.toLowerCase().includes(q) || r.drID?.speciality?.toLowerCase().includes(q));
+    const now = new Date();
+    const isAhead = (r) => (r.status === "upcoming" || r.status === "rescheduled") && new Date(r.startDate) >= now;
+    return {
+      upcoming: list.filter(isAhead).sort(byStart),
+      past: list.filter((r) => !isAhead(r)).sort((a, b) => byStart(b, a)),
+    };
+  }, [rows, search, status]);
 
-  const handleCancelAppointment=async(appointment)=>
-  {
-    setCancelledAppointments([...cancelledAppointments,appointment._id])
+  const cancelVisit = async () => {
+    const a = toCancel;
+    setToCancel(null);
     try {
-      
-      
-      const aid=appointment._id
-      const did=appointment.drID._id
-      const pid=appointment.pID
-
-      const response = await axios.patch(
-         `${API_URL}/patient/CancelAppointment/${aid}/${did}/${pid}`
-          );
-          window.location.reload();
-
-          
-         
-         // dispatch(viewAppoints(pId));
-          
-
-        } catch (error) {
-      console.error("Error cancelling appointment", error);
-    }
-  }
-  const handleFollowUpRequest = async (appointment) => {
-    if (!followUpsRequests.includes(appointment._id)) {
-      setFollowUpsRequests([...followUpsRequests, appointment._id]);
-      const did=appointment.drID._id
-      const pid=appointment.pID
-      try{
-      const response=await axios.post(`${API_URL}/patient/requestFollowUp/${pid}/${did}`)
-      console.log("Done")}
-      catch(error){
-        console.log("not okkkkk!!",error)}
-      
-   
-    } else {
-      console.log(`Button already clicked for appointment ${appointment._id}`);
+      await axios.patch(`${API_URL}/patient/CancelAppointment/${a._id}/${a.drID?._id}/${a.pID}`);
+      snackbarMessage(`Cancelled your visit with Dr. ${a.drID?.name || ""}`, "success");
+      dispatch(viewAppoints(patientId));
+    } catch (e) {
+      snackbarMessage(e.response?.data?.message || "The visit couldn't be cancelled. Try again.", "error");
     }
   };
+
+  const requestFollowUp = async (a) => {
+    setRequested((ids) => [...ids, a._id]);
+    try {
+      await axios.post(`${API_URL}/patient/requestFollowUp/${a.pID}/${a.drID?._id}`);
+      snackbarMessage(`Follow-up requested from Dr. ${a.drID?.name || ""}`, "success");
+    } catch (e) {
+      setRequested((ids) => ids.filter((id) => id !== a._id));
+      snackbarMessage("The follow-up request didn't go through. Try again.", "error");
+    }
+  };
+
+  const filtering = Boolean(search || status);
+  const ready = loaded || (Array.isArray(rows) && rows.length > 0);
+
+  const card = (a) => (
+    <div key={a._id} id={`appointment-${a._id}`} className={focusedId === a._id ? "ui-focus-ring" : undefined}>
+      <VisitCard
+        start={a.startDate}
+        title={`Dr. ${a.drID?.name || "Unknown doctor"}`}
+        subtitle={[a.drID?.speciality, formatDate(a.startDate)].filter(Boolean).join(", ")}
+        status={a.status}
+        muted={a.status === "cancelled"}
+        actions={
+          a.status === "upcoming" || a.status === "rescheduled" ? (
+            <>
+              <RescheduleAppointment appointment={a} buttonClassName="ui-btn ui-btn--sm" />
+              <button type="button" className="ui-btn ui-btn--sm ui-btn--danger" onClick={() => setToCancel(a)}>Cancel visit</button>
+            </>
+          ) : a.status === "completed" ? (
+            <button type="button" className="ui-btn ui-btn--sm ui-btn--soft" disabled={requested.includes(a._id)} onClick={() => requestFollowUp(a)}>
+              {requested.includes(a._id) ? "Follow-up requested" : "Request follow-up"}
+            </button>
+          ) : null
+        }
+      >
+        {a.Description && a.Description !== "Video visit" && <span className="ui-visit-note">{a.Description}</span>}
+      </VisitCard>
+    </div>
+  );
 
   return (
     <>
-      <TableContainer component={Paper} className="modern-data-table appointments-table" style={tableContainerStyle}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-  <TableRow>
-    <TableCell>Doctor Name</TableCell>
-    <TableCell align="left">Doctor Speciality</TableCell>
-    <TableCell align="left">Date</TableCell>
-    <TableCell align="left">Status</TableCell>
-    <TableCell align="left" className="appointment-actions-heading">Patient actions</TableCell>
-  </TableRow>
-</TableHead>
+      <AccountAvatar />
+      <Page>
+        <PageHead
+          title="Appointments"
+          lead="Your visits, soonest first. Reschedule or cancel upcoming ones here."
+          actions={<Link to="/DoctorsList" className="ui-btn ui-btn--primary">Book a visit</Link>}
+        />
 
-<TableBody>
-  {rows
-    .filter((row) => status === "Any" || status === row.status)
-    .filter((row) => !date || new Date(row.startDate) >= new Date(date))
-    .filter((row) => {
-      if (!searchTerm.trim()) return true;
-      const query = searchTerm.toLowerCase();
-      return (
-        row.drID?.name?.toLowerCase().includes(query) ||
-        row.drID?.speciality?.toLowerCase().includes(query)
-      );
-    })
-    .map((row, index) => (
-      <TableRow key={index} id={`appointment-row-${row._id}`} className={focusedAppointmentId === row._id ? "appointment-row-focused" : ""}>
-        <TableCell component="th" scope="row">
-          {row.drID?.name}
-        </TableCell>
-        <TableCell align="left">{row.drID?.speciality}</TableCell>
-        <TableCell align="left">
-          {row.startDate &&
-            new Date(row.startDate).toLocaleDateString()}
-        </TableCell>
-        <TableCell align="left">{row.status}
-        {row.Description?.toLowerCase().includes('follow up') && (
-    <span className="appointment-followup-mark">+</span>
-  )}
-      </TableCell>
-        <TableCell align="left" className="appointment-actions-cell">
-          <div className="appointment-actions">
-            {row.status === "upcoming" && (
-              <>
-                <RescheduleAppointment appointment={row} />
-                <Button
-                  className="appointment-action-button appointment-cancel-button"
-                  onClick={() => handleCancelAppointment(row)}
-                  disabled={cancelledAppointments.includes(row._id)}
-                >
-                  {cancelledAppointments.includes(row._id) ? "Done" : "Cancel"}
-                </Button>
-              </>
-            )}
-            {row.status === "completed" && (
-              <Button
-                className="appointment-action-button appointment-followup-button"
-                onClick={() => handleFollowUpRequest(row)}
-                disabled={followUpsRequests.includes(row._id)}
-              >
-                {followUpsRequests.includes(row._id) ? "Done" : "Request follow-up"}
-              </Button>
-            )}
-            {row.status !== "upcoming" && row.status !== "completed" && (
-              <span className="appointment-action-muted">No actions available</span>
-            )}
+        <section className="ui-card" style={{ marginBottom: 24 }}>
+          <div className="ui-toolbar" style={{ borderBottom: 0 }}>
+            <div className="ui-field">
+              <label htmlFor="appt-search">Doctor or specialty</label>
+              <div className="ui-input-wrap">
+                <SearchRoundedIcon />
+                <input id="appt-search" className="ui-input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search" />
+              </div>
+            </div>
+            <div className="ui-field" style={{ flex: "0 1 220px" }}>
+              <label htmlFor="appt-status">Status</label>
+              <select id="appt-status" className="ui-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                {STATUS_FILTERS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
+            {filtering && <button type="button" className="ui-btn ui-btn--ghost" onClick={() => { setSearch(""); setStatus(""); }}>Clear filters</button>}
           </div>
-        </TableCell>
+        </section>
 
-      </TableRow>
-    ))}
-</TableBody>
-
-
-        </Table>
-      </TableContainer>
-    </>
-  );
-}
-
-export default function SearchAppBar() {
-  const [status, setStatus] = useState("Any");
-  const [date, setDate] = useState(null);
-  const [open, setOpen] = React.useState(false);
-  const [pname, setPname] = useState("");
-  const [Appointments, setAppointments] = useState([]);
-  const [description, setDescription] = useState("");
-  const [currentAppointment, setCurrentAppointment] = useState(null);
-  const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [openCreditCardDialog, setOpenCreditCardDialog] = useState(false);
-  const [openWalletDialog, setOpenWalletDialog] = useState(false);
-  const [walletBalance, setWalletBalance] = useState(1000);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [confirmBookingClose, setConfirmBookingClose] = useState(false);
-
-
-  const { doctorId } = useParams();
-
-  const dispatch = useDispatch();
-  const pId = useSelector((state) => state.user.id);
-  const role = useSelector((state) => state.user.role);
-
-  const rows = useSelector((state) => state.patient.appoints);
-
-  const getAppointments = async () => {
-    try {
-      const response = await axios.get(
-         `${API_URL}/patient/freeAppiontmentSlot/${doctorId}`
-      );
-      const appointmentsData = response.data.Appointmentss;
-      setAppointments(appointmentsData);
-    } catch (error) {
-      console.error("Error fetching appointments:", error);
-    }
-  };
-
-  async function reserveAnAppointment() {
-    try {
-      console.log("appointmentId:", currentAppointment);
-      console.log("username:", pname);
-      console.log("Description:", description);
-
-      const response = await axios.patch(
-         `${API_URL}/patient/reserveAppointmentSlot/${currentAppointment}`,
-        {
-          username: pname,
-          Description: description,
-        }
-      );
-      console.log(response);
-    } catch (error) {
-      console.error("Error adding the slot", error);
-    }
-  }
-
-  const resetBookingForm = () => {
-    setPname("");
-    setDescription("");
-    setCurrentAppointment(null);
-    setConfirmBookingClose(false);
-  };
-
-  const handleClickOpen = () => {
-    resetBookingForm();
-    setOpen(true);
-    getAppointments();
-  };
-
-  const hasBookingDraft = Boolean(currentAppointment || pname.trim() || description.trim());
-
-  const requestBookingClose = () => {
-    if (hasBookingDraft) {
-      setConfirmBookingClose(true);
-    } else {
-      resetBookingForm();
-      setOpen(false);
-    }
-  };
-
-  const discardBooking = () => {
-    resetBookingForm();
-    setOpen(false);
-  };
-
-  const handleBookAppointment = async () => {
-    if (!currentAppointment || !pname.trim()) return;
-    await reserveAnAppointment();
-    resetBookingForm();
-    setOpen(false);
-  };
-
-  const handleOpenPaymentDialog = (appointment) => {
-    setSelectedAppointment(appointment);
-    setOpenPaymentDialog(true);
-  };
-
-  const handleClosePaymentDialog = () => {
-    setSelectedAppointment(null);
-    setOpenPaymentDialog(false);
-  };
-
-  const handlePaymentCreditCard = () => {
-    // Handle credit card payment logic here
-    console.log("Credit Card Payment processed for appointment:", selectedAppointment);
-    // You can add more logic here for credit card processing
-    setOpenCreditCardDialog(false);
-    handleOpenCreditCardDialog(); // Close the credit card dialog after processing
-  };
-
-  const handleOpenCreditCardDialog = () => {
-    setOpenCreditCardDialog(true);
-  };
-
-  const handleCloseCreditCardDialog = () => {
-    setOpenCreditCardDialog(false);
-  };
-
-  const handleOpenWalletDialog = () => {
-    setOpenWalletDialog(true);
-  };
-  
-  const handleCloseWalletDialog = () => {
-    setOpenWalletDialog(false);
-  };
-
-  const handlePaymentWallet = () => {
-    console.log("Wallet Payment processed for appointment:", selectedAppointment);
-    // You can add more logic here for credit card processing
-    setOpenWalletDialog(false);
-    handleOpenWalletDialog(); // Close the credit card dialog after processing
-
-  };
- 
-
-  function formatDateTimeToEnglish(dateTimeString) {
-    const date = new Date(dateTimeString);
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    };
-    const dateFormatter = new Intl.DateTimeFormat("en-US", options);
-    return dateFormatter.format(date);
-  }
-const navigate = useNavigate();
-  return (
-    role==="patient"?(
-    <Box className="appointments-page">
-        <div className="appointments-account"><AccountAvatar /></div>
-      <AppBar position="static" className="appointments-toolbar" elevation={0}>
-        <Toolbar className="appointments-toolbar-inner">
-          <Link to="/Home" style={{ color: "white" }}>
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
-              sx={{ mr: 2 }}
-            >
-            </IconButton>
-          </Link>
-          <div className="appointments-title"><span>CARE SCHEDULE</span><h1>Appointments</h1><p>Review, filter and manage your upcoming visits.</p></div>
-          <Box className="appointments-filters">
-            <ClinicSearchField
-              className="appointments-search"
-              placeholder="Search doctor or specialty"
-              value={searchTerm}
-              onChange={setSearchTerm}
+        {!ready || (loading && !rows?.length) ? (
+          <Skeleton height={86} count={3} />
+        ) : upcoming.length === 0 && past.length === 0 ? (
+          <div className="ui-card">
+            <EmptyState
+              icon={<CalendarMonthRoundedIcon />}
+              title={filtering ? "No visits match these filters" : "No visits yet"}
+              text={filtering ? "Clear the filters to see all your visits." : "Book a video visit with a doctor. It will appear here."}
+              action={filtering
+                ? <button type="button" className="ui-btn" onClick={() => { setSearch(""); setStatus(""); }}>Clear filters</button>
+                : <Link to="/DoctorsList" className="ui-btn ui-btn--primary">Find a doctor</Link>}
             />
-            <ClinicDateField
-              className="appointments-date-picker"
-              placeholder="Start date"
-              value={date || ""}
-              onChange={(value) => setDate(value || null)}
-            />
-            <ClinicSelectField
-              className="appointments-status-filter"
-              placeholder="Status"
-              value={status}
-              onChange={setStatus}
-              options={[
-                { value: "Any", label: "Any" },
-                { value: "completed", label: "Completed" },
-                { value: "upcoming", label: "Upcoming" },
-                { value: "cancelled", label: "Cancelled" },
-                { value: "rescheduled", label: "Rescheduled" },
-              ]}
-            />
-            <Button
-              type="button"
-              className="appointments-reset-button"
-              onClick={() => {
-                setDate(null);
-                setSearchTerm("");
-                setStatus("Any");
-              }}
-            >
-              Reset
-            </Button>
-          </Box>
-        </Toolbar>
-      </AppBar>
-      <BasicTable
-        status={status}
-        date={date}
-        searchTerm={searchTerm}
-        onPayButtonClick={handleOpenPaymentDialog}
-      />
-          <Button
-        className="appointments-add-button"
-        variant="contained"
-        startIcon={<AddIcon />}
-        onClick={handleClickOpen}
-      >
-        Book appointment
-      </Button>
-
-      <Dialog
-        open={open}
-        onClose={requestBookingClose}
-        className="clinic-modern-dialog appointment-book-dialog"
-      >
-        <DialogTitle className="clinic-dialog-title">
-          <div>
-            <span>CARE SCHEDULE</span>
-            <h2>{Appointments.length === 0 ? "No appointments available" : "Book an appointment"}</h2>
-          </div>
-          <IconButton className="clinic-dialog-close" onClick={requestBookingClose} aria-label="Close">
-            <CloseRoundedIcon />
-          </IconButton>
-        </DialogTitle>
-        {Appointments.length === 0 ? (
-          <div className="empty-appointments-dialog">
-            <p>There are no available appointment slots for this doctor right now. Please try again later.</p>
           </div>
         ) : (
-          <>
-            <DialogContent className="clinic-dialog-content">
-              <Typography className="appointment-dialog-label">Choose a date and time</Typography>
-              <div className="appointment-slots">
-                {Appointments.map((appointment) => (
-                  <ListItem disableGutters key={appointment._id}>
-                    <ListItemButton
-                      className="appointment-slot"
-                      selected={currentAppointment === appointment._id}
-                      onClick={() => setCurrentAppointment(appointment._id)}
-                    >
-                      <ListItemText primary={formatDateTimeToEnglish(appointment.startDate)} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </div>
-              <div className="appointment-form-field">
-                <Typography>Patient username</Typography>
-                <TextField fullWidth onChange={(event) => setPname(event.target.value)} />
-              </div>
-              <div className="appointment-form-field">
-                <Typography>Description</Typography>
-                <TextField fullWidth onChange={(event) => setDescription(event.target.value)} />
-              </div>
-            </DialogContent>
-            <DialogActions className="clinic-dialog-actions">
-              <Button onClick={requestBookingClose} className="clinic-dialog-cancel">Cancel</Button>
-              <Button onClick={handleBookAppointment} className="clinic-dialog-primary">Book appointment</Button>
-            </DialogActions>
-          </>
+          <div style={{ display: "grid", gap: 28 }}>
+            {upcoming.length > 0 && (
+              <section style={{ display: "grid", gap: 12 }}>
+                <h2 className="ui-section-title">Upcoming</h2>
+                <div className="ui-visits">{upcoming.map(card)}</div>
+              </section>
+            )}
+            {past.length > 0 && (
+              <section style={{ display: "grid", gap: 12 }}>
+                <h2 className="ui-section-title">Past and cancelled</h2>
+                <div className="ui-visits">{past.map(card)}</div>
+              </section>
+            )}
+          </div>
         )}
-      </Dialog>
+      </Page>
 
-     
       <ConfirmDialog
-        open={confirmBookingClose}
-        title="Discard this appointment?"
-        message="You have selected or entered appointment details. If you leave now, those unsaved details will be lost."
-        confirmLabel="Discard"
-        cancelLabel="Keep editing"
+        open={Boolean(toCancel)}
+        kicker="CANCEL VISIT"
+        title="Cancel this visit?"
+        message={toCancel ? `Your visit with Dr. ${toCancel.drID?.name || ""} on ${formatDateTime(toCancel.startDate)} will be cancelled and the time freed for other patients.` : ""}
+        confirmLabel="Cancel visit"
+        cancelLabel="Keep visit"
         destructive
-        onConfirm={discardBooking}
-        onCancel={() => setConfirmBookingClose(false)}
+        onConfirm={cancelVisit}
+        onCancel={() => setToCancel(null)}
       />
-
-      <Snackbar open={false} anchorOrigin={{ vertical: 'top', horizontal: 'left' }}>
-      <MuiAlert elevation={6} variant="filled" severity="info">
-        appointement is resuchudeled!!
-      </MuiAlert>
-    </Snackbar>
-     
-     
-
-    </Box>):(
-    <>
-      <Link to="/Login" sx={{ left: "100%" }}>
-        <Typography
-          variant="h6"
-          noWrap
-          component="div"
-          sx={{
-            flexGrow: 1,
-            display: { xs: "none", sm: "flex" },
-            fontSize: "20px",
-            maragin: "auto",
-          }}
-        >
-          Login
-        </Typography>
-      </Link>
     </>
-  ));
-  
+  );
 }

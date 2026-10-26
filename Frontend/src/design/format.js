@@ -95,7 +95,19 @@ const NOTIFICATION_TITLES = {
   info: "Update",
 };
 
-export const notificationTitle = (type) => NOTIFICATION_TITLES[type] || "Update";
+const ENTITY_TITLES = {
+  Prescription: "New prescription",
+  HealthPackage: "Plan update",
+  HealthRecord: "Health record added",
+  FollowUp: "Follow-up",
+  FamilyMember: "Family update",
+  Patient: "Patient update",
+  Doctor: "Doctor update",
+};
+
+// Specific types win; generic "info" falls back to what the notification is about.
+export const notificationTitle = (type, entityType) =>
+  (type && type !== "info" && NOTIFICATION_TITLES[type]) || ENTITY_TITLES[entityType] || NOTIFICATION_TITLES[type] || "Update";
 
 export const initials = (name) =>
   String(name || "")

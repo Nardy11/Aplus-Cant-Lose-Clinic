@@ -15,6 +15,7 @@ export default function ConfirmDialog({
   confirmLabel = "Confirm",
   cancelLabel = "Keep editing",
   destructive = false,
+  kicker,
   onConfirm,
   onCancel,
 }) {
@@ -27,7 +28,7 @@ export default function ConfirmDialog({
     >
       <DialogTitle className="clinic-dialog-title" id="clinic-confirm-title">
         <div>
-          <span>{destructive ? "CONFIRM DELETE" : "UNSAVED CHANGES"}</span>
+          <span>{kicker || (destructive ? "CONFIRM DELETE" : "UNSAVED CHANGES")}</span>
           <h2>{title}</h2>
         </div>
         <IconButton

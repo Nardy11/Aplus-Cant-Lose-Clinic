@@ -1,405 +1,223 @@
-import React, { useEffect, useState } from "react";
-import {
-  AppBar,
-  Box,
-  Toolbar,
-  Button,
-  IconButton,
-  InputBase,
-  styled,
-  Typography,
-  Checkbox,
-  FormControlLabel,
-  Grid,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  DialogTitle,
-} from "@mui/material";
-import HomeIcon from "@mui/icons-material/Home";
-import { ClinicSearchField, ClinicTextField, ClinicDateField } from "../common/ClinicFields";
-import InputAdornment from "@mui/material/InputAdornment";
-import VaccinesIcon from "@mui/icons-material/Vaccines";
-import { Link } from "react-router-dom";
-import { TextField } from "@mui/material";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
-import {API_URL} from "../../Consts";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Button, IconButton, DialogTitle } from "@mui/material";
+import Dialog from "@mui/material/Dialog";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import MedicationRoundedIcon from "@mui/icons-material/MedicationRounded";
+import { API_URL } from "../../Consts";
 import DownloadPage from "./DownloadP";
 import AccountAvatar from "../Authentication/AccountAvatar";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { SnackbarContext } from "../../App";
-// ...
-import {
-  viewPrescriptions,
-  viewPrescription,
-} from "../../features/patientSlice";
-import { useDispatch, useSelector } from "react-redux";
-import Dialog from "@mui/material/Dialog";
+import { viewPrescriptions } from "../../features/patientSlice";
+import { Page, PageHead, StatusChip, EmptyState, Skeleton } from "../../design/ui";
+import { formatDate, formatMoney } from "../../design/format";
 
-const handlePay = (prescription) => {
-  if (!prescription || prescription.status === "filled") return;
-  return prescription;
-};
-const App = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+const totalOf = (p) => (p?.meds || []).reduce((sum, m) => sum + Number(m.medID?.price || 0), 0);
+
+export default function ListOfPrescriptions() {
   const dispatch = useDispatch();
-  const snackbarMessage = React.useContext(SnackbarContext);
-  const [specialityFilter, setSpecialityFilter] = useState("");
-  const [nameFilter, setNameFilter] = useState("");
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [isFilled, setIsFilled] = useState(false);
-  const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const snackbarMessage = useContext(SnackbarContext);
   const patientId = useSelector((state) => state.user.id);
-  const role = useSelector((state) => state.user.role);
-
   const rows = useSelector((state) => state.patient.presc);
+  const focusedId = new URLSearchParams(location.search).get("prescriptionId");
 
-  const iconStyle = {
-    color: "white",
-  };
-  const filterStyle = {
-    marginLeft: "40%",
-  };
-
-  const dateTimePickerContainer = {
-    display: "flex",
-    alignItems: "center",
-    borderRadius: "4px",
-    padding: "8px",
-  };
-
-  const Info = {
-    margin: "20px 20px",
-    alignItems: "baseline",
-  };
-
-  const [prescriptionid, setPrescriptionid] = useState(null);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [paying, setPaying] = useState(false);
-  const focusedPrescriptionId = new URLSearchParams(location.search).get("prescriptionId");
+  const [loaded, setLoaded] = useState(false);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [viewing, setViewing] = useState(null);
+  const [paying, setPaying] = useState(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    dispatch(viewPrescriptions(patientId));
+    if (!patientId) return;
+    dispatch(viewPrescriptions(patientId)).finally(() => setLoaded(true));
   }, [dispatch, patientId]);
 
-  const handleView = (id) => {
-    setPrescriptionid(rows.find((row) => row._id === id));
-    setOpen(true);
-  };
+  const list = Array.isArray(rows) ? rows : [];
 
   useEffect(() => {
-    if (!focusedPrescriptionId || !rows?.length) return;
-    const target = rows.find((row) => row._id === focusedPrescriptionId);
-    if (target) {
-      setPrescriptionid(target);
-      setOpen(true);
-    }
-  }, [focusedPrescriptionId, rows]);
+    if (!focusedId || !list.length) return;
+    const target = list.find((r) => r._id === focusedId);
+    if (target) setViewing(target);
+  }, [focusedId, list.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const prescriptionTotal = prescriptionid?.meds?.reduce(
-    (total, medicine) => total + Number(medicine.medID?.price || 0),
-    0
-  ) || 0;
+  const shown = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return list
+      .filter((r) => !status || (status === "filled" ? r.status === "filled" : r.status !== "filled"))
+      .filter((r) => !q || r.doctorID?.name?.toLowerCase().includes(q) || r.doctorID?.speciality?.toLowerCase().includes(q) || (r.meds || []).some((m) => m.medID?.name?.toLowerCase().includes(q)))
+      .sort((a, b) => new Date(b.datePrescribed) - new Date(a.datePrescribed));
+  }, [list, search, status]);
 
-  const confirmPrescriptionPayment = async () => {
-    if (!prescriptionid?._id || !patientId) return;
-    setPaying(true);
+  const pay = async () => {
+    setBusy(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/patient/payPrescriptionWithWallet/${prescriptionid._id}/${patientId}`
-      );
-      setPrescriptionid(response.data.prescription);
-      setCheckoutOpen(false);
+      const r = await axios.post(`${API_URL}/patient/payPrescriptionWithWallet/${paying._id}/${patientId}`);
+      snackbarMessage(`Paid ${formatMoney(r.data?.total ?? totalOf(paying))} from your wallet. Prescription filled.`, "success");
+      if (viewing?._id === paying._id) setViewing(r.data?.prescription || null);
+      setPaying(null);
       dispatch(viewPrescriptions(patientId));
-      snackbarMessage(
-        `Prescription paid successfully. Total: ${response.data.total}`,
-        "success"
-      );
-    } catch (error) {
-      console.error("Error during prescription payment:", error);
-      snackbarMessage(
-        error.response?.data?.error || "Unable to complete prescription payment.",
-        "error"
-      );
+    } catch (e) {
+      snackbarMessage(e.response?.data?.error || "Payment didn't go through. Check your wallet balance.", "error");
     } finally {
-      setPaying(false);
+      setBusy(false);
     }
   };
 
-  return role === "patient" ? (
-    <Box className="prescriptions-page">
+  const filtering = Boolean(search || status);
+
+  return (
+    <>
       <AccountAvatar />
-      <Dialog open={open} onClose={() => setOpen(false)} className="clinic-modern-dialog prescription-view-dialog" maxWidth="md" fullWidth>
+      <Page>
+        <PageHead title="Prescriptions" lead="Medicines your doctors prescribed. Pay from your wallet to have them filled." />
+
+        <section className="ui-card" style={{ marginBottom: 20 }}>
+          <div className="ui-toolbar" style={{ borderBottom: 0 }}>
+            <div className="ui-field">
+              <label htmlFor="rx-search">Doctor or medicine</label>
+              <div className="ui-input-wrap">
+                <SearchRoundedIcon />
+                <input id="rx-search" className="ui-input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search" />
+              </div>
+            </div>
+            <div className="ui-field" style={{ flex: "0 1 220px" }}>
+              <label htmlFor="rx-status">Status</label>
+              <select id="rx-status" className="ui-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                <option value="">All</option>
+                <option value="unfilled">Not filled</option>
+                <option value="filled">Filled</option>
+              </select>
+            </div>
+            {filtering && <button type="button" className="ui-btn ui-btn--ghost" onClick={() => { setSearch(""); setStatus(""); }}>Clear filters</button>}
+          </div>
+        </section>
+
+        {!loaded && !list.length ? (
+          <Skeleton height={150} count={2} />
+        ) : !shown.length ? (
+          <div className="ui-card">
+            <EmptyState
+              icon={<MedicationRoundedIcon />}
+              title={filtering ? "No prescriptions match" : "No prescriptions yet"}
+              text={filtering ? "Clear the filters to see all your prescriptions." : "After a visit, prescriptions from your doctor appear here."}
+              action={!filtering && <Link to="/DoctorsList" className="ui-btn">Find a doctor</Link>}
+            />
+          </div>
+        ) : (
+          <div className="ui-grid ui-grid-2">
+            {shown.map((p) => {
+              const total = totalOf(p);
+              const filled = p.status === "filled";
+              return (
+                <article key={p._id} className={`ui-card rx-card ${focusedId === p._id ? "rx-card--focus" : ""}`}>
+                  <header className="rx-head">
+                    <div>
+                      <h3>Dr. {p.doctorID?.name || "Unknown doctor"}</h3>
+                      <p>{[p.doctorID?.speciality, formatDate(p.datePrescribed)].filter(Boolean).join(", ")}</p>
+                    </div>
+                    <StatusChip status={filled ? "filled" : "unfilled"} />
+                  </header>
+                  <ul className="rx-meds">
+                    {(p.meds || []).map((m, i) => (
+                      <li key={m._id || i}>
+                        <MedicationRoundedIcon />
+                        <span>
+                          <strong>{m.medID?.name || "Medicine"}</strong>
+                          <span>{m.dosage}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <footer className="rx-foot">
+                    <div className="ui-price">
+                      <strong>{formatMoney(total)}</strong>
+                      <span>{filled ? "Paid" : "Total for medicines"}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button type="button" className="ui-btn ui-btn--sm" onClick={() => setViewing(p)}>View</button>
+                      {!filled && total > 0 && (
+                        <button type="button" className="ui-btn ui-btn--sm ui-btn--primary" onClick={() => setPaying(p)}>Pay {formatMoney(total)}</button>
+                      )}
+                    </div>
+                  </footer>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </Page>
+
+      <Dialog open={Boolean(viewing)} onClose={() => setViewing(null)} className="clinic-modern-dialog prescription-view-dialog" maxWidth="md" fullWidth>
         <DialogTitle className="clinic-dialog-title">
-          <div><span>MEDICATION</span><h2>Prescription details</h2></div>
-          <IconButton className="clinic-dialog-close" onClick={() => setOpen(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
+          <div><span>PRESCRIPTION</span><h2>Dr. {viewing?.doctorID?.name || ""}</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={() => setViewing(null)} aria-label="Close"><CloseRoundedIcon /></IconButton>
         </DialogTitle>
-        {prescriptionid && prescriptionid.patientID ? (
+        {viewing && (
           <div id="pagetodownload" className="prescription-receipt">
             <div className="prescription-receipt-header">
               <div className="prescription-brand">
-                <div className="prescription-brand-image">
-                  <img src="/virtualclinic.png" alt="El7a2ny Virtual Clinic" />
-                </div>
-                <div>
-                  <strong>EL7A2NY</strong>
-                  <span>VIRTUAL CLINIC</span>
-                </div>
+                <div className="prescription-brand-image"><img src="/virtualclinic.png" alt="El7a2ny Virtual Clinic" /></div>
+                <div><strong>EL7A2NY</strong><span>VIRTUAL CLINIC</span></div>
               </div>
               <div className="prescription-receipt-meta">
                 <span>Date prescribed</span>
-                <strong>{new Date(prescriptionid.datePrescribed).toLocaleString()}</strong>
+                <strong>{formatDate(viewing.datePrescribed)}</strong>
               </div>
               <div className="prescription-receipt-meta prescription-receipt-doctor">
                 <span>Doctor</span>
-                <strong>{prescriptionid.doctorID?.name || "Not provided"}</strong>
-                <small>{prescriptionid.doctorID?.speciality || "General care"}</small>
+                <strong>{viewing.doctorID?.name || "Not provided"}</strong>
+                <small>{viewing.doctorID?.speciality || "General care"}</small>
               </div>
             </div>
-
             <div className="prescription-receipt-body">
-              {prescriptionid.meds.map((medicine, index) => (
-                <div className="prescription-medicine" key={medicine.medID?._id || index}>
+              {(viewing.meds || []).map((m, i) => (
+                <div className="prescription-medicine" key={m.medID?._id || i}>
                   <div className="prescription-medicine-title">
-                    <strong>{medicine.medID?.name || "Medicine"}</strong>
-                    <span>{medicine.medID?.price ? `${medicine.medID.price}` : "Price not set"}</span>
+                    <strong>{m.medID?.name || "Medicine"}</strong>
+                    <span>{m.medID?.price ? formatMoney(m.medID.price) : "Price not set"}</span>
                   </div>
                   <div className="prescription-medicine-grid">
-                    <div><span>Active element</span><strong>{medicine.medID?.activeElement || "Not provided"}</strong></div>
-                    <div><span>Medical use</span><strong>{medicine.medID?.use || "Not provided"}</strong></div>
-                    <div><span>Frequency</span><strong>{medicine.medID?.amount || "Not provided"}</strong></div>
-                    <div><span>Dosage</span><strong>{medicine.dosage || "Not provided"}</strong></div>
+                    <div><span>Active ingredient</span><strong>{m.medID?.activeElement || "Not provided"}</strong></div>
+                    <div><span>Used for</span><strong>{m.medID?.use || "Not provided"}</strong></div>
+                    <div><span>Dosage</span><strong>{m.dosage || "Not provided"}</strong></div>
                   </div>
                 </div>
               ))}
             </div>
-
             <div className="prescription-receipt-footer">
-              <DownloadPage
-                rootElementId="pagetodownload"
-                downloadFileName="prescription"
-              />
-
-              {prescriptionid.status === "filled" ? (
-                <div className="prescription-paid-stamp">
-                  <img src="/Pharmacy Stamp.png" alt="Pharmacy stamp" />
-                  <span>PAID</span>
-                </div>
+              <DownloadPage rootElementId="pagetodownload" downloadFileName="prescription" />
+              {viewing.status === "filled" ? (
+                <div className="prescription-paid-stamp"><img src="/Pharmacy Stamp.png" alt="Pharmacy stamp" /><span>PAID</span></div>
               ) : (
-                <div className="prescription-total">
-                  <span>Total</span>
-                  <strong>{prescriptionTotal > 0 ? prescriptionTotal : "—"}</strong>
-                </div>
+                <div className="prescription-total"><span>Total</span><strong>{formatMoney(totalOf(viewing))}</strong></div>
               )}
-
-              {prescriptionid.status === "filled" ? (
-                <div className="prescription-status-badge">Paid</div>
-              ) : (
-                <Button
-                  className="prescription-action-button"
-                  onClick={() => setCheckoutOpen(true)}
-                  variant="contained"
-                >
-                  Pay & checkout
-                </Button>
+              {viewing.status !== "filled" && totalOf(viewing) > 0 && (
+                <Button className="prescription-action-button" variant="contained" onClick={() => setPaying(viewing)}>Pay {formatMoney(totalOf(viewing))}</Button>
               )}
             </div>
           </div>
-        ) : null}
+        )}
       </Dialog>
-      <Dialog
-        open={checkoutOpen}
-        onClose={() => !paying && setCheckoutOpen(false)}
-        className="clinic-modern-dialog prescription-checkout-dialog"
-        maxWidth="xs"
-        fullWidth
-      >
+
+      <Dialog open={Boolean(paying)} onClose={() => !busy && setPaying(null)} className="clinic-modern-dialog prescription-checkout-dialog" maxWidth="xs" fullWidth>
         <DialogTitle className="clinic-dialog-title">
-          <div><span>CHECKOUT</span><h2>Pay prescription</h2></div>
-          <IconButton className="clinic-dialog-close" onClick={() => !paying && setCheckoutOpen(false)} aria-label="Close">
-            <CloseRoundedIcon />
-          </IconButton>
+          <div><span>CHECKOUT</span><h2>Pay for medicines</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={() => !busy && setPaying(null)} aria-label="Close"><CloseRoundedIcon /></IconButton>
         </DialogTitle>
         <div className="prescription-checkout-body">
-          <p>Pay for the medicines in this prescription using your clinic wallet.</p>
-          <div className="prescription-checkout-total">
-            <span>Total due</span>
-            <strong>{prescriptionTotal}</strong>
-          </div>
+          <p>The total is taken from your clinic wallet and the prescription is marked as filled.</p>
+          <div className="prescription-checkout-total"><span>Total</span><strong>{formatMoney(totalOf(paying))}</strong></div>
         </div>
         <div className="clinic-dialog-actions">
-          <Button className="clinic-dialog-cancel" onClick={() => setCheckoutOpen(false)} disabled={paying}>Cancel</Button>
-          <Button className="clinic-dialog-primary" onClick={confirmPrescriptionPayment} disabled={paying || prescriptionTotal <= 0}>
-            {paying ? "Processing..." : "Confirm & pay"}
-          </Button>
+          <Button className="clinic-dialog-cancel" onClick={() => setPaying(null)} disabled={busy}>Cancel</Button>
+          <Button className="clinic-dialog-primary" onClick={pay} disabled={busy}>{busy ? "Paying..." : "Pay from wallet"}</Button>
         </div>
       </Dialog>
-
-      <AppBar position="static" className="prescriptions-toolbar" elevation={0}>
-        <Toolbar>
-          <Grid container className="prescriptions-filter-grid" alignItems="center" spacing={1.5}>
-            <Grid item xs={12} md="auto">
-              <div className="prescriptions-page-heading">
-                <span>MEDICATION</span>
-                <Typography variant="h5">My prescriptions</Typography>
-                <small>Review your prescriptions and medication details.</small>
-              </div>
-            </Grid>
-
-            <Grid item className="prescriptions-filter-controls">
-              <button
-                type="button"
-                className={`prescriptions-filled-toggle ${isFilled ? "active" : ""}`}
-                onClick={() => setIsFilled((current) => !current)}
-              >
-                <span className="prescriptions-filled-check">{isFilled ? "✓" : ""}</span>
-                <span>Filled only</span>
-              </button>
-
-              <ClinicDateField
-                className="prescription-filter-field prescription-date-filter"
-                placeholder="Prescription date"
-                value={selectedDate || ""}
-                onChange={(value) => setSelectedDate(value || null)}
-              />
-
-              <ClinicSearchField
-                className="prescription-filter-field prescription-search-field"
-                placeholder="Search doctor"
-                value={nameFilter}
-                onChange={setNameFilter}
-              />
-
-              <ClinicTextField
-                className="prescription-filter-field"
-                placeholder="Speciality"
-                value={specialityFilter}
-                onChange={setSpecialityFilter}
-              />
-
-              <Button
-                className="prescription-filter-reset"
-                onClick={() => {
-                  setSelectedDate(null);
-                  setNameFilter("");
-                  setSpecialityFilter("");
-                  setIsFilled(false);
-                }}
-              >
-                Reset
-              </Button>
-            </Grid>
-          </Grid>        </Toolbar>
-      </AppBar>
-            <Paper className="prescriptions-table-card" elevation={0}>
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table aria-label="prescriptions table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="left" className="prescription-table-heading">
-                  Filled
-                </TableCell>
-                <TableCell align="left" className="prescription-table-cell">
-                  Date
-                </TableCell>
-                <TableCell align="left" sx={{ fontSize: "20px" }}>
-                  Doctor Name
-                </TableCell>
-                <TableCell align="left" sx={{ fontSize: "20px" }}>
-                  Speciality
-                </TableCell>
-                <TableCell align="left" sx={{ fontSize: "20px" }}>
-                  View
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows
-                .filter((row) => {
-                  return (
-                    nameFilter === "" ||
-                    row.doctorID?.name
-                      .toLowerCase()
-                      .includes(nameFilter.toLowerCase())
-
-                    // Add this line
-                  );
-                })
-                .filter((row) => {
-                  return (
-                    specialityFilter === "" ||
-                    row.doctorID.speciality
-                      .toLowerCase()
-                      .includes(specialityFilter.toLowerCase())
-                  );
-                })
-                .filter((row) => {
-                  return (
-                    !selectedDate ||
-                    new Date(row.datePrescribed) >= new Date(selectedDate)
-                  );
-                })
-                .filter((row) => {
-                  return isFilled === false || row.status === "filled";
-                })
-                .map((row, index) => (
-                  <TableRow key={index} hover role="checkbox" tabIndex={-1}>
-                    <TableCell align="left">
-                      <FormControlLabel
-                        disabled
-                        control={<Checkbox checked={row.status === "filled"} />}
-                        label={
-                          row.status === "filled" ? "Filled" : "Not Filled"
-                        }
-                        sx={{ fontSize: "20px" }}
-                      />
-                    </TableCell>
-                    <TableCell align="left" sx={{ fontSize: "20px" }}>
-                      {new Date(row.datePrescribed).toLocaleString()}
-                    </TableCell>
-                    <TableCell align="left" sx={{ fontSize: "20px" }}>
-                      {row.doctorID?.name}
-                    </TableCell>
-                    <TableCell align="left" sx={{ fontSize: "20px" }}>
-                      {row.doctorID?.speciality}
-                    </TableCell>
-                    <TableCell align="left" sx={{ fontSize: "20px" }}>
-                      <IconButton onClick={() => handleView(row._id)}>
-                        <VaccinesIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-    </Box>
-  ) : (
-    <>
-      <Link to="/Login" sx={{ left: "100%" }}>
-        <Typography
-          variant="h6"
-          noWrap
-          component="div"
-          sx={{
-            flexGrow: 1,
-            display: { xs: "none", sm: "flex" },
-            fontSize: "20px",
-            maragin: "auto",
-          }}
-        >
-          Login
-        </Typography>
-      </Link>
     </>
   );
-};
-
-export default App;
+}

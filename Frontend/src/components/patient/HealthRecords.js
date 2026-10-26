@@ -23,6 +23,7 @@ import { API_URL } from "../../Consts.js";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import AccountAvatar from "../Authentication/AccountAvatar.js";
+import { formatDate } from "../../design/format";
 const styles = {
   paper: {
     padding: "20px",
@@ -110,7 +111,7 @@ function HealthRecords() {
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <div className="health-record-summary">
                       <strong>{healthRecord.description || "Health record"}</strong>
-                      <span>{new Date(healthRecord.date).toLocaleString()}</span>
+                      <span>{formatDate(healthRecord.date)}</span>
                     </div>
                   </AccordionSummary>
                   <AccordionDetails>

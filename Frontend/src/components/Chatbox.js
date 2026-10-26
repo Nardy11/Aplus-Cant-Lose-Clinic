@@ -10,7 +10,7 @@ const Chatbox = ({ fetchAgain, setFetchAgain }) => {
       <div className="chatbox-heading">
         <div>
           <span>CONVERSATION</span>
-          <h1>{selectedChat ? "Chat" : "Talk-A-Tive"}</h1>
+          <h1>{selectedChat ? "Conversation" : "Messages"}</h1>
         </div>
       </div>
       <div className="chatbox-content">

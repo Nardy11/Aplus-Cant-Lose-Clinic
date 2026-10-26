@@ -12,6 +12,7 @@ import AccountAvatar from "./Authentication/AccountAvatar";
 import { API_URL } from "../Consts";
 import { getNotifications } from "../features/patientSlice";
 import { getNotificationsd } from "../features/doctorSlice";
+import { notificationTitle } from "../design/format";
 
 const iconFor = (type = "") => {
   const normalized = type.toLowerCase();
@@ -249,7 +250,7 @@ export default function NotificationsPage() {
                     <div className="clinic-notification-row-copy">
                       <div>
                         <strong>
-                          {formatType(notification.type || "Clinic update")}
+                          {notificationTitle(notification.type, notification.entityType)}
                         </strong>
                         <time>
                           {notification.timestamp

@@ -1,212 +1,219 @@
-import * as React from 'react';
-import { Paper, Tooltip, Button, Avatar, Container, Menu, Typography, IconButton, Toolbar, Box, AppBar } from '@mui/material';
-import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import MedicalInformationIcon from '@mui/icons-material/MedicalInformation';
-import VaccinesIcon from '@mui/icons-material/Vaccines';
-import WalletIcon from '@mui/icons-material/Wallet';
-import { NavLink } from 'react-router-dom';
-import PermPhoneMsgIcon from '@mui/icons-material/PermPhoneMsg';
-import { WalletDialog } from '../WalletDialog.js';
-import {useState} from 'react'
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-import { useSelector, useDispatch } from "react-redux";
-import { useEffect } from "react";
-import { getNotifications } from '../../features/patientSlice.js';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import HealthAndSafetyRoundedIcon from "@mui/icons-material/HealthAndSafetyRounded";
+import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
+import MedicationRoundedIcon from "@mui/icons-material/MedicationRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import FolderSharedRoundedIcon from "@mui/icons-material/FolderSharedRounded";
+import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import { API_URL } from "../../Consts";
+import { getNotifications } from "../../features/patientSlice.js";
+import { Page, PageHead, VisitCard, EmptyState, Skeleton } from "../../design/ui";
+import { formatMoney, formatDateTime, isUpcoming, byStart, notificationTitle } from "../../design/format";
 
+const greeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+};
+
+function usePatientOverview(patientId) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!patientId) return;
+    let active = true;
+    const get = (path) => axios.get(`${API_URL}/patient/${path}`).then((r) => r.data).catch(() => null);
+    Promise.all([
+      get(`profile/${patientId}`),
+      get(`viewAppoints/${patientId}`),
+      get(`viewPrescriptions/${patientId}`),
+      get(`viewHealthPackagesPatient/${patientId}`),
+    ]).then(([profile, appts, presc, plans]) => {
+      if (!active) return;
+      if (!profile && !appts) setError(true);
+      setData({
+        profile: profile || {},
+        appointments: appts?.Appointments || [],
+        prescriptions: presc?.prescriptions || [],
+        plan: (plans?.healthPackages || []).find((p) => p.isSubscribed) || null,
+      });
+    });
+    return () => { active = false; };
+  }, [patientId]);
+
+  return { data, error };
+}
+
+function CareRow({ to, icon: Icon, label, value }) {
+  return (
+    <li>
+      <Link to={to} className="ui-row">
+        <span className="ui-row-icon"><Icon /></span>
+        <span className="ui-row-body">
+          <strong>{label}</strong>
+          <span>{value}</span>
+        </span>
+        <ChevronRightRoundedIcon className="ui-row-end" />
+      </Link>
+    </li>
+  );
+}
 
 function Home() {
-  const patientId = useSelector((state) => state.user.id);
   const dispatch = useDispatch();
+  const patientId = useSelector((state) => state.user.id);
   const notifications = useSelector((state) => state.patient.notifications);
-  const [openDialog, setOpenDialog] = useState(false);
+  const { data, error } = usePatientOverview(patientId);
 
   useEffect(() => {
     if (patientId) dispatch(getNotifications(patientId));
   }, [dispatch, patientId]);
 
+  const firstName = (data?.profile?.name || "").split(" ")[0];
+  const upcoming = (data?.appointments || []).filter(isUpcoming).sort(byStart);
+  const [next, ...later] = upcoming;
+  const toFill = (data?.prescriptions || []).filter((p) => p.status !== "filled").length;
+  const family = data?.profile?.family?.length || 0;
+  const unread = (Array.isArray(notifications) ? notifications : []).filter((n) => n && !n.seen).slice(0, 3);
+
   return (
-    <main className="patient-home">
-      <section className="patient-hero">
-        <div className="patient-hero-copy">
-          <span className="patient-kicker">EL7A2NY CLINIC · PATIENT PORTAL</span>
-          <h1>Healthcare that stays<br />with you.</h1>
-          <p>
-            Find trusted doctors, manage appointments, and keep your
-            healthcare journey organized in one simple place.
-          </p>
-          <div className="patient-hero-actions">
-            <NavLink to="/DoctorsList" className="patient-primary-action">
-              Find a doctor
-            </NavLink>
-            <NavLink to="/Appointments" className="patient-secondary-action">
-              View appointments
-            </NavLink>
-          </div>
-        </div>
+    <Page>
+      <PageHead
+        title={firstName ? `${greeting()}, ${firstName}` : greeting()}
+        lead="Your next visit, medicines and plan, in one place."
+        actions={
+          <Link to="/DoctorsList" className="ui-btn ui-btn--primary">
+            <SearchRoundedIcon /> Find a doctor
+          </Link>
+        }
+      />
 
-        <div className="patient-hero-visual">
-          <div className="patient-hero-image-wrap">
-            <img src="/doctors.jpg" alt="Healthcare professionals" />
-          </div>
-          <div className="patient-hero-badge">
-            <span className="patient-hero-badge-dot" />
-            <div>
-              <strong>Care, simplified</strong>
-              <small>Appointments · Records · Prescriptions</small>
-            </div>
-          </div>
-        </div>
-      </section>
+      {error && <div className="ui-alert" role="alert" style={{ marginBottom: 16 }}>We couldn't load your care summary. Refresh the page to try again.</div>}
 
-      <section className="patient-quick-grid">
-        <NavLink to="/DoctorsList" className="patient-quick-card">
-          <span className="patient-quick-number">01</span>
-          <div>
-            <strong>Find doctors</strong>
-            <small>Browse specialties and profiles</small>
-          </div>
-          <span className="patient-quick-arrow">→</span>
-        </NavLink>
-        <NavLink to="/Appointments" className="patient-quick-card">
-          <span className="patient-quick-number">02</span>
-          <div>
-            <strong>Appointments</strong>
-            <small>Manage your upcoming visits</small>
-          </div>
-          <span className="patient-quick-arrow">→</span>
-        </NavLink>
-        <NavLink to="/HealthRecords" className="patient-quick-card">
-          <span className="patient-quick-number">03</span>
-          <div>
-            <strong>Health records</strong>
-            <small>Keep your medical information close</small>
-          </div>
-          <span className="patient-quick-arrow">→</span>
-        </NavLink>
-      </section>
-
-      <section className="patient-home-overview">
-        <article className="patient-home-panel">
-          <div className="patient-home-panel-heading">
-            <div>
-              <span>YOUR CARE HUB</span>
-              <h2>Everything you need, in one place</h2>
-              <p>Jump straight into the parts of your care you use most.</p>
-            </div>
-            <span className="patient-home-status-pill">Patient portal</span>
-          </div>
-
-          <div className="patient-home-action-list">
-            <NavLink to="/MedHistList" className="patient-home-action">
-              <MedicalInformationIcon />
-              <strong>Medical documents</strong>
-              <small>Upload, review and download your health files.</small>
-            </NavLink>
-            <NavLink to="/ListOfPrescriptions" className="patient-home-action">
-              <VaccinesIcon />
-              <strong>Prescriptions</strong>
-              <small>Review medicines and prescription details.</small>
-            </NavLink>
-            <NavLink to="/viewfamilymembers" className="patient-home-action">
-              <FamilyRestroomIcon />
-              <strong>Family members</strong>
-              <small>Manage the people connected to your care.</small>
-            </NavLink>
-          </div>
-        </article>
-
-        <article className="patient-home-panel patient-home-notification">
-          <div className="patient-home-panel-heading">
-            <div>
-              <span>RECENT ACTIVITY</span>
-              <h2>Clinic updates</h2>
-              <p>Your latest notifications.</p>
-            </div>
-            <NotificationsIcon sx={{ color: "#1769ff", fontSize: 20 }} />
-          </div>
-
-          {notifications?.length ? (
-            <div className="clinic-notification-item">
-              <span className="clinic-notification-icon"><NotificationsIcon /></span>
-              <div>
-                <strong>{notifications[0].type || "Clinic update"}</strong>
-                <p>{notifications[0].message}</p>
-              </div>
-            </div>
+      <div className="ui-grid ui-grid-main">
+        <section aria-labelledby="next-visit" style={{ display: "grid", gap: 14 }}>
+          <h2 id="next-visit" className="ui-section-title">Next visit</h2>
+          {!data ? (
+            <Skeleton height={112} count={1} />
+          ) : next ? (
+            <VisitCard
+              feature
+              start={next.startDate}
+              title={`Dr. ${next.drID?.name || "your doctor"}`}
+              subtitle={next.drID?.speciality}
+              status={next.status}
+              actions={
+                <>
+                  <Link to="/chats" className="ui-btn ui-btn--primary">Message doctor</Link>
+                  <Link to="/Appointments" className="ui-btn">Manage</Link>
+                </>
+              }
+            />
           ) : (
-            <div className="patient-home-notification-empty">
-              <NotificationsIcon />
-              <div>
-                <strong>You're all caught up</strong>
-                <span>No new clinic notifications right now.</span>
-              </div>
+            <div className="ui-card">
+              <EmptyState
+                icon={<CalendarMonthRoundedIcon />}
+                title="No visits booked"
+                text="Find a doctor and book a video visit. It will show up here."
+                action={<Link to="/DoctorsList" className="ui-btn ui-btn--primary">Find a doctor</Link>}
+              />
             </div>
           )}
-        </article>
-      </section>
 
-      <section className="patient-home-essentials">
-        <div className="patient-home-essentials-heading">
-          <div>
-            <span>CARE ESSENTIALS</span>
-            <h2>Keep your health journey organized</h2>
-            <p>Everything important is one tap away, with the same calm interface throughout the clinic.</p>
-          </div>
-        </div>
+          {later.length > 0 && (
+            <>
+              <h2 className="ui-section-title" style={{ marginTop: 14 }}>Coming up</h2>
+              <div className="ui-visits">
+                {later.slice(0, 3).map((a) => (
+                  <VisitCard
+                    key={a._id}
+                    start={a.startDate}
+                    title={`Dr. ${a.drID?.name || "your doctor"}`}
+                    subtitle={a.drID?.speciality}
+                    status={a.status}
+                  />
+                ))}
+              </div>
+              {later.length > 3 && <Link to="/Appointments" className="ui-btn ui-btn--ghost">See all appointments</Link>}
+            </>
+          )}
+        </section>
 
-        <div className="patient-home-essentials-grid">
-          <NavLink to="/Appointments" className="patient-home-essential-card">
-            <span className="patient-home-essential-icon"><CalendarMonthIcon /></span>
-            <div>
-              <strong>Plan your visits</strong>
-              <small>Book, review and reschedule appointments from one place.</small>
+        <aside style={{ display: "grid", gap: 16 }}>
+          <section className="ui-card" aria-labelledby="your-care">
+            <div className="ui-card-head"><h2 id="your-care" className="ui-section-title">Your care</h2></div>
+            {!data ? (
+              <div className="ui-card-pad"><Skeleton height={44} count={4} /></div>
+            ) : (
+              <ul className="ui-list">
+                <CareRow
+                  to="/ViewHealthPackage"
+                  icon={HealthAndSafetyRoundedIcon}
+                  label={data.plan ? `${data.plan.type} plan` : "No plan yet"}
+                  value={data.plan ? `${data.plan.doctorDisc}% off every doctor session` : "Save on sessions and medicine"}
+                />
+                <CareRow
+                  to="/Wallet"
+                  icon={AccountBalanceWalletRoundedIcon}
+                  label="Wallet"
+                  value={`${formatMoney(data.profile.wallet)} available`}
+                />
+                <CareRow
+                  to="/ListOfPrescriptions"
+                  icon={MedicationRoundedIcon}
+                  label="Prescriptions"
+                  value={toFill ? `${toFill} waiting to be filled` : "All filled"}
+                />
+                <CareRow
+                  to="/HealthRecords"
+                  icon={FolderSharedRoundedIcon}
+                  label="Health records"
+                  value="Diagnoses, lab results and documents"
+                />
+                <CareRow
+                  to="/viewfamilymembers"
+                  icon={GroupsRoundedIcon}
+                  label="Family"
+                  value={family ? `${family} ${family === 1 ? "person" : "people"} on your account` : "Add your family"}
+                />
+              </ul>
+            )}
+          </section>
+
+          <section className="ui-card" aria-labelledby="updates">
+            <div className="ui-card-head">
+              <h2 id="updates" className="ui-section-title">Updates</h2>
+              <Link to="/Notifications" className="ui-btn ui-btn--ghost ui-btn--sm">See all</Link>
             </div>
-            <span className="patient-home-essential-arrow">→</span>
-          </NavLink>
-
-          <NavLink to="/MedHistList" className="patient-home-essential-card">
-            <span className="patient-home-essential-icon"><MedicalInformationIcon /></span>
-            <div>
-              <strong>Keep records close</strong>
-              <small>Review your medical documents without leaving the portal.</small>
-            </div>
-            <span className="patient-home-essential-arrow">→</span>
-          </NavLink>
-
-          <NavLink to="/ListOfPrescriptions" className="patient-home-essential-card">
-            <span className="patient-home-essential-icon"><VaccinesIcon /></span>
-            <div>
-              <strong>Stay on top of medication</strong>
-              <small>Review prescriptions, medicines and their current status.</small>
-            </div>
-            <span className="patient-home-essential-arrow">→</span>
-          </NavLink>
-
-          <NavLink to="/viewfamilymembers" className="patient-home-essential-card">
-            <span className="patient-home-essential-icon"><FamilyRestroomIcon /></span>
-            <div>
-              <strong>Manage family care</strong>
-              <small>Keep family members connected to the right care information.</small>
-            </div>
-            <span className="patient-home-essential-arrow">→</span>
-          </NavLink>
-        </div>
-      </section>
-
-      <Snackbar open={false} anchorOrigin={{ vertical: "top", horizontal: "left" }}>
-        <MuiAlert elevation={3} variant="filled" severity="info">
-          Appointment is rescheduled!!
-        </MuiAlert>
-      </Snackbar>
-    </main>
+            {unread.length ? (
+              <ul className="ui-list">
+                {unread.map((n) => (
+                  <li key={n._id} className="ui-row">
+                    <span className="ui-row-icon"><NotificationsNoneRoundedIcon /></span>
+                    <span className="ui-row-body">
+                      <strong>{notificationTitle(n.type, n.entityType)}</strong>
+                      <span>{n.message}</span>
+                      <span>{formatDateTime(n.timestamp)}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyState title="You're all caught up" text="New bookings, prescriptions and plan changes will appear here." />
+            )}
+          </section>
+        </aside>
+      </div>
+    </Page>
   );
 }
+
 export default Home;
