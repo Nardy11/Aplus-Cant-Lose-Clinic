@@ -154,7 +154,7 @@ function BasicTable({ status, date, searchTerm, onPayButtonClick }) {
             new Date(row.startDate).toLocaleDateString()}
         </TableCell>
         <TableCell align="left">{row.status}
-        {row.Description.toLowerCase().includes('follow up') && (
+        {row.Description?.toLowerCase().includes('follow up') && (
     <span className="appointment-followup-mark">+</span>
   )}
       </TableCell>

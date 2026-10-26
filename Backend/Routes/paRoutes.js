@@ -356,15 +356,16 @@ router.get("/calculateAmount/:drId/:patientId", async (req, res) => {
       return res.status(404).json({ message: "Doctor or Patient not found" });
     }
 
-    // Calculate amount based on doctor's rate and patient's health package
-    let amount = doctor.rate * 100;
+    // Session price = doctor's hourly rate + 10% clinic markup,
+    // minus the subscribed package's doctor-session discount (a percentage).
+    const base = Number(doctor.rate || 0) * 1.1;
+    const discount =
+      patient.hPStatus === "Subscribed" && patient.hPackage
+        ? Number(patient.hPackage.doctorDisc || 0)
+        : 0;
+    const amount = Math.round(base * (1 - discount / 100));
 
-    if (patient.hPStatus === "Subscribed" && patient.hPackage) {
-      // Assuming hPackage has a rate field
-      amount -= patient.hPackage.rate;
-    }
-
-    res.json({ amount });
+    res.json({ amount, base: Math.round(base), discount });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });

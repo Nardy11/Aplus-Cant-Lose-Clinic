@@ -1,0 +1,101 @@
+/*
+ * El7a2ny Clinic design tokens.
+ * The two role accents come from the logo: blue (patients) and green (doctors).
+ * <html data-role="patient|doctor"> switches the accent; everything else is shared.
+ *
+ * Radius rule: surfaces 14px, controls 10px, chips and badges fully round.
+ */
+@import "@fontsource-variable/bricolage-grotesque/index.css";
+@import "@fontsource-variable/figtree/index.css";
+
+:root {
+  --font-display: "Bricolage Grotesque Variable", "Figtree Variable", system-ui, sans-serif;
+  --font-body: "Figtree Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Neutrals: one cool slate family. */
+  --ink: #101b2d;
+  --ink-2: #33415a;
+  --muted: #5d6b82;
+  --faint: #8a96a8;
+  --line: #e2e7ee;
+  --line-strong: #cdd5df;
+  --canvas: #f3f5f8;
+  --surface: #ffffff;
+  --surface-2: #f8f9fb;
+
+  /* Patient accent (logo blue). */
+  --accent: #1351c4;
+  --accent-strong: #0d3f9c;
+  --accent-soft: #e9f0fc;
+  --accent-line: #c9d8f5;
+
+  /* States. */
+  --ok: #157548;
+  --ok-soft: #e5f4ec;
+  --warn: #9a5a06;
+  --warn-soft: #fdf3e2;
+  --danger: #b8322b;
+  --danger-soft: #fcebea;
+
+  --r-surface: 14px;
+  --r-control: 10px;
+  --r-round: 999px;
+
+  --shadow-1: 0 1px 2px rgba(16, 27, 45, 0.05), 0 1px 1px rgba(16, 27, 45, 0.03);
+  --shadow-2: 0 12px 32px -12px rgba(16, 27, 45, 0.18), 0 2px 6px rgba(16, 27, 45, 0.05);
+
+  --header-h: 68px;
+  --page-max: 1180px;
+  --gutter: clamp(16px, 4vw, 32px);
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Doctor accent (logo green, deepened for AA contrast on white). */
+:root[data-role="doctor"] {
+  --accent: #0d7a5f;
+  --accent-strong: #095e49;
+  --accent-soft: #e4f3ee;
+  --accent-line: #bfe2d6;
+}
+
+html,
+body {
+  background: var(--canvas);
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-feature-settings: "tnum" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

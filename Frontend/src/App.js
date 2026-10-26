@@ -7,7 +7,10 @@ import PatientDirect from "./PatientDirect";
 import AdminDirect from "./PatientDirect";
 
 import DoctorDirect from "./DoctorDirect";
-import { createContext, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { ThemeProvider } from "@mui/material/styles";
+import { makeTheme } from "./design/theme";
 import dayjs from "dayjs";
 import "dayjs/plugin/weekOfYear";
 import "dayjs/plugin/customParseFormat";
@@ -145,6 +148,14 @@ const router = createBrowserRouter(
 export const SnackbarContext = createContext();
 
 const App = () => {
+  const role = useSelector((state) => state.user.role);
+  const theme = useMemo(() => makeTheme(role), [role]);
+
+  useEffect(() => {
+    // Accent tokens switch on this attribute: blue for patients, green for doctors.
+    document.documentElement.dataset.role = role === "doctor" ? "doctor" : "patient";
+  }, [role]);
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -156,20 +167,21 @@ const App = () => {
   }
 
   return (
-    <div>
+    <ThemeProvider theme={theme}>
       <SnackbarContext.Provider value={displaySnackbar}>
         <RouterProvider router={router} />
       </SnackbarContext.Provider>
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={10000}
+        autoHideDuration={6000}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         onClose={() => {
           setSnackbarOpen(false);
         }}
       >
         <Alert className="clinic-snackbar-alert" severity={snackbarSeverity}>{snackbarMessage}</Alert>
       </Snackbar>
-    </div>
+    </ThemeProvider>
   );
 };
 
