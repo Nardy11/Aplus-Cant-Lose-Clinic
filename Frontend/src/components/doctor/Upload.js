@@ -1,104 +1,82 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useContext, useState } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import { API_URL } from "../../Consts.js";
-import { useSelector } from 'react-redux';
-import {useNavigate} from "react-router-dom";
-const containerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  padding: '20px',
-  border: '1px solid #ddd',
-  borderRadius: '8px',
-  marginTop: 'auto',  // Corrected the typo
-  margin: 'auto',     // Center horizontally
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-};
+import { SnackbarContext } from "../../App";
 
-const inputStyle = {
-  margin: '10px 0',
-  padding: '10px',
-  border: '1px solid #ddd',
-  borderRadius: '5px',
-  width: '40%',
-  paddingLeft: '50px',
-};
+const DOCS = [
+  { key: "id", label: "National ID", hint: "Front side, clearly readable" },
+  { key: "degree", label: "Medical degree", hint: "Your university degree certificate" },
+  { key: "license", label: "Medical license", hint: "Your current license to practise" },
+];
 
-const buttonStyle = {
-  margin: '15px 0',
-  padding: '15px',
-  backgroundColor: '#4CAF50',
-  width: '15%',
-  color: 'white',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-};
-
+// Step 2 of doctor sign-up: the documents the clinic reviews before approving the account.
 function Upload() {
-  const [idFile, setIdFile] = useState(null);
-  const [degreeFile, setDegreeFile] = useState(null);
-  const [licenseFile, setLicenseFile] = useState(null);
-  const id = useSelector(state => state.doctor.ndrID);
-const navigate = useNavigate();
-  const handleFileChange = (e, fileType) => {
-    const file = e.target.files[0];
+  const navigate = useNavigate();
+  const notify = useContext(SnackbarContext);
+  const doctorId = useSelector((state) => state.doctor.ndrID);
+  const [files, setFiles] = useState({});
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
 
-    switch (fileType) {
-      case 'id':
-        setIdFile(file);
-        break;
-      case 'degree':
-        setDegreeFile(file);
-        break;
-      case 'license':
-        setLicenseFile(file);
-        break;
-      default:
-        break;
+  const missing = DOCS.filter((d) => !files[d.key]);
+
+  const send = async () => {
+    if (!doctorId) return setError("We lost track of your sign-up. Start again from the doctor sign-up page.");
+    if (missing.length) return setError(`Add your ${missing.map((d) => d.label.toLowerCase()).join(" and ")}.`);
+    const form = new FormData();
+    DOCS.forEach((d) => form.append("files", files[d.key]));
+    setSending(true);
+    setError("");
+    try {
+      await axios.post(`${API_URL}/doctor/upload/${doctorId}`, form);
+      notify?.("Application sent. We'll email you once the clinic reviews it.", "success");
+      navigate("/Login");
+    } catch {
+      setError("Upload failed. Check your connection and try again.");
+      setSending(false);
     }
-  };
-
-  const uploadFiles = () => {
-    if (!idFile || !degreeFile || !licenseFile) {
-      alert('Please select files for ID, Degree, and License');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('files', idFile);
-    formData.append('files', degreeFile);
-    formData.append('files', licenseFile);
-
-    axios.post(`${API_URL}/doctor/upload/${id}`, formData)
-    .then((response) => {
-        console.log(response);
-        alert(response.data);
-        navigate("/Login");
-      })
-      .catch((error) => {
-        console.error(error);
-        alert('Error uploading files. Please try again.');
-      });
   };
 
   return (
-    <div style={containerStyle}>
-      <h1>File Uploader</h1>
-      <div style={inputStyle}>
-        <label style={{paddingRight:"150px"}}>ID File:</label>
-        <input type="file" onChange={(e) => handleFileChange(e, 'id')} />
+    <main className="ui-auth-shell is-doctor-accent">
+      <div className="ui-auth-card ui-auth-card--wide">
+        <p className="upload-step">Step 2 of 2</p>
+        <h1 className="ui-title">Upload your documents</h1>
+        <p className="ui-lead">The clinic checks these before approving your account. Photos or PDFs work.</p>
+
+        <div className="upload-list">
+          {DOCS.map((d) => {
+            const file = files[d.key];
+            return (
+              <label key={d.key} className={`upload-row ${file ? "is-done" : ""}`}>
+                <span className="ui-row-icon">{file ? <CheckCircleRoundedIcon /> : <UploadFileRoundedIcon />}</span>
+                <span className="upload-row-body">
+                  <strong>{d.label}</strong>
+                  <span>{file ? file.name : d.hint}</span>
+                </span>
+                <span className="ui-btn ui-btn--sm">{file ? "Replace" : "Choose file"}</span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="ui-sr-only"
+                  onChange={(e) => setFiles((f) => ({ ...f, [d.key]: e.target.files?.[0] || f[d.key] }))}
+                />
+              </label>
+            );
+          })}
+        </div>
+
+        {error && <div className="ui-alert" role="alert">{error}</div>}
+
+        <button type="button" className="ui-btn ui-btn--primary ui-btn--lg ui-btn--block" onClick={send} disabled={sending}>
+          {sending ? "Sending..." : "Send application"}
+        </button>
       </div>
-      <div style={inputStyle}>
-        <label style={{paddingRight:"40px"}}>Medical Degree File:</label>
-        <input type="file" onChange={(e) => handleFileChange(e, 'degree')} />
-      </div>
-      <div style={inputStyle}>
-        <label style={{paddingRight:"40px"}}>Medical License File:</label>
-        <input type="file" onChange={(e) => handleFileChange(e, 'license')} />
-      </div>
-      <button style={buttonStyle} onClick={uploadFiles}>Upload Files</button>
-    </div>
+    </main>
   );
 }
 

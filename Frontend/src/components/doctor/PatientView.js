@@ -76,23 +76,18 @@ export default function PatientView() {
       <AccountAvatar />
       <main className="doctor-page">
       <div className="doctor-page-shell">
-        <section className="doctor-page-header">
-          <div className="doctor-page-header-copy"><span>PATIENT CARE</span><h1>My patients</h1><p>Review the patients connected to your care, open their records, and add clinical information without leaving the portal.</p></div>
-          <div className="doctor-page-header-icon"><PersonRoundedIcon /></div>
-        </section>
-
-        <section className="doctor-stats">
-          <div className="doctor-stat"><span>Total patients</span><strong>{patientsList.length}</strong><small>Patients currently returned by your account</small></div>
-          <div className="doctor-stat"><span>Showing</span><strong>{filteredPatients.length}</strong><small>Patients matching the current search</small></div>
-          <div className="doctor-stat"><span>Search</span><strong>{search ? "On" : "Off"}</strong><small>Filter by name, email, username or mobile</small></div>
-          <div className="doctor-stat"><span>Records</span><strong>{patientsList.filter((p) => (p.healthRecords || []).length).length}</strong><small>Patients with health records</small></div>
-        </section>
+        <div className="ui-page-head">
+          <div>
+            <h1 className="ui-title">Patients</h1>
+            <p className="ui-lead">Everyone with a visit booked with you. Open their medical history or add a health record.</p>
+          </div>
+        </div>
 
         <section className="doctor-surface">
           <div className="doctor-toolbar">
-            <div className="search-field"><span style={{ color:"#1769ff", fontSize:8, fontWeight:850, letterSpacing:".13em" }}>PATIENT DIRECTORY</span><div style={{ marginTop:5 }}><ClinicSearchField value={search} onChange={setSearch} placeholder="Search patients by name, email or mobile..." /></div></div>
+            <div className="search-field"><ClinicSearchField value={search} onChange={setSearch} placeholder="Search by name, email or mobile" /></div>
             <div className="doctor-toolbar-spacer" />
-            <span style={{ color:"#8995a5", fontSize:9 }}>{filteredPatients.length} result{filteredPatients.length === 1 ? "" : "s"}</span>
+            <span className="ui-toolbar-count">{filteredPatients.length} {filteredPatients.length === 1 ? "patient" : "patients"}</span>
           </div>
 
           {loading && !patientsList.length ? <div className="doctor-empty-state"><strong>Loading patients...</strong></div> : filteredPatients.length ? (

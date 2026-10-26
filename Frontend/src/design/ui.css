@@ -825,3 +825,78 @@ select.ui-input { font-size: 14.5px !important; padding: 0 12px !important; heig
   background: transparent !important;
 }
 :root { --clinic-bg: var(--canvas); }
+
+/* Single-choice picker (patients in dialogs) */
+.pick-list { display: grid; gap: 8px; max-height: 240px; overflow-y: auto; }
+.pick-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 14.5px var(--font-body);
+  text-align: left;
+  cursor: pointer;
+}
+.pick-item:hover { border-color: var(--line-strong); }
+.pick-item[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent); }
+.pick-item .ui-avatar { width: 34px; height: 34px; font-size: 13px; }
+
+/* Tabs */
+.ui-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: var(--r-control); background: var(--surface-2); }
+.ui-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  font: 600 14px var(--font-body);
+  cursor: pointer;
+}
+.ui-tab:hover { color: var(--ink); }
+.ui-tab[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+.ui-tab-count { min-width: 22px; padding: 1px 7px; border-radius: var(--r-round); background: var(--line); color: var(--ink-2); font-size: 12px; font-weight: 700; text-align: center; }
+.ui-tab[aria-selected="true"] .ui-tab-count { background: var(--accent-soft); color: var(--accent-strong); }
+
+.ui-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.ui-toolbar-count { color: var(--muted); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+
+/* Contract */
+.contract-head { display: flex; align-items: flex-start; gap: 14px; }
+.contract-head > div { flex: 1; min-width: 0; }
+.contract-head p { margin: 4px 0 0; color: var(--ink-2); font-size: 14.5px; line-height: 1.5; }
+.contract-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+
+/* Doctor sign-up, step 2 */
+.upload-step { margin: 0 0 -8px; color: var(--accent-strong); font-size: 13px; font-weight: 700; }
+.upload-list { display: grid; gap: 10px; }
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-surface);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background-color 0.15s var(--ease);
+}
+.upload-row:hover { border-color: var(--accent); }
+.upload-row:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.upload-row.is-done { border-style: solid; border-color: var(--accent-line); background: var(--accent-soft); }
+.upload-row-body { flex: 1; min-width: 0; }
+.upload-row-body strong { display: block; font-size: 15px; font-weight: 650; }
+.upload-row-body span { display: block; margin-top: 2px; overflow: hidden; color: var(--muted); font-size: 13.5px; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 640px) {
+  /* Toolbars stack on phones: every field takes the full row. */
+  .ui-toolbar .ui-field { flex: 1 1 100% !important; margin-left: 0 !important; }
+  .ui-toolbar { padding: 14px; }
+}

@@ -1,14 +1,13 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import download from "downloadjs";
 import { useSelector } from "react-redux";
-import { API_URL } from "../../Consts.js";
-import { SnackbarContext } from "../../App";
 import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import Button from "@mui/material/Button";
+import { API_URL } from "../../Consts.js";
+import { SnackbarContext } from "../../App";
 import AccountAvatar from "../Authentication/AccountAvatar";
+import { Page, PageHead, Skeleton } from "../../design/ui";
 
 export default function ContractDetails({ embedded = false, onContractAccepted }) {
   const { id, role } = useSelector((state) => state.user);
@@ -16,56 +15,78 @@ export default function ContractDetails({ embedded = false, onContractAccepted }
   const [contractPath, setContractPath] = useState(null);
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
 
-  const load = async () => {
-    if (!id) return;
-    setLoading(true);
-    try { const response = await axios.get(`${API_URL}/doctor/getContract/${id}`); const contract = response.data.contract || {}; setContractPath(contract.file || null); setAccepted(Boolean(contract.accepted)); }
-    catch { setContractPath(null); }
-    finally { setLoading(false); }
-  };
-  useEffect(() => { if (role === "doctor") load(); }, [id, role]);
+  useEffect(() => {
+    if (role !== "doctor" || !id) return;
+    axios.get(`${API_URL}/doctor/getContract/${id}`)
+      .then((r) => { const c = r.data.contract || {}; setContractPath(c.file || null); setAccepted(Boolean(c.accepted)); })
+      .catch(() => setContractPath(null))
+      .finally(() => setLoading(false));
+  }, [id, role]);
 
   const acceptContract = async () => {
-    try { await axios.put(`${API_URL}/doctor/acceptContract/${id}`); setAccepted(true); notify?.("Contract accepted successfully.", "success"); onContractAccepted?.(); }
-    catch { notify?.("Unable to accept the contract.", "error"); }
+    setBusy(true);
+    try {
+      await axios.put(`${API_URL}/doctor/acceptContract/${id}`);
+      setAccepted(true);
+      notify?.("Contract accepted.", "success");
+      onContractAccepted?.();
+    } catch {
+      notify?.("The contract couldn't be accepted. Try again.", "error");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const downloadContract = async () => {
-    try { const response = await axios.get(`${API_URL}/doctor/download/${id}`, { responseType:"blob" }); download(response.data, "El7a2ny-Clinic-Contract.pdf", response.headers?.["content-type"] || "application/pdf"); }
-    catch { notify?.("Unable to download the contract.", "error"); }
+    try {
+      const r = await axios.get(`${API_URL}/doctor/download/${id}`, { responseType: "blob" });
+      download(r.data, "El7a2ny-Clinic-Contract.pdf", r.headers?.["content-type"] || "application/pdf");
+    } catch {
+      notify?.("The contract couldn't be downloaded. Try again.", "error");
+    }
   };
 
   if (role !== "doctor") return null;
 
-  const content = <section className={embedded ? "doctor-dialog-section" : "doctor-surface"} style={embedded ? undefined : { padding:24 }}>
-    <div style={{ display:"flex", alignItems:"flex-start", gap:12 }}>
-      <div className="doctor-empty-icon" style={{ margin:0, flex:"0 0 46px", width:46, height:46 }}><DescriptionRoundedIcon /></div>
-      <div style={{ flex:1 }}><span style={{ color:"#1769ff", fontSize:8, fontWeight:850, letterSpacing:".14em" }}>JOB DOCUMENTS</span><h2 style={{ margin:"5px 0 5px", color:"#2d3d54", fontSize:17 }}>Doctor contract</h2><p style={{ margin:0, color:"#8794a6", fontSize:9, lineHeight:1.5 }}>{accepted ? "Your contract has been accepted." : "Review and accept your clinic contract when it is available."}</p></div>
-      {accepted && <CheckCircleRoundedIcon sx={{ color:"#278a68", fontSize:22 }} />}
-    </div>
-    <div className="doctor-detail" style={{ marginTop:16 }}><span>DOCUMENT STATUS</span><strong>{loading ? "Loading..." : contractPath ? (accepted ? "Accepted" : "Awaiting acceptance") : "No contract found"}</strong></div>
-    {contractPath && <div className="doctor-action-row">{!accepted && <Button className="doctor-primary-button" onClick={acceptContract}>Accept contract</Button>}<Button className="doctor-secondary-button" onClick={downloadContract}><DownloadRoundedIcon sx={{ fontSize:15, mr:.5 }} />Download contract</Button></div>}
-  </section>;
+  // What is true about the contract, in plain words.
+  const state = loading
+    ? null
+    : contractPath && !accepted
+      ? { chip: ["warn", "Waiting for you"], text: "The clinic sent your contract. Read it, then accept it." }
+      : accepted
+        ? { chip: ["ok", "Accepted"], text: contractPath ? "You accepted your contract. Download a copy any time." : "Your contract is accepted. The clinic hasn't attached a copy; ask them if you need one." }
+        : { chip: ["neutral", "Not sent yet"], text: "The clinic hasn't sent your contract yet. Check back here later." };
+
+  const content = (
+    <section className="ui-card ui-card-pad contract-card">
+      <div className="contract-head">
+        <span className="ui-row-icon"><DescriptionRoundedIcon /></span>
+        <div>
+          <h2 className="ui-section-title">Employment contract</h2>
+          {state ? <p>{state.text}</p> : <Skeleton height={18} count={1} />}
+        </div>
+        {state && <span className={`ui-chip ui-chip--${state.chip[0]}`}>{state.chip[1]}</span>}
+      </div>
+      {contractPath && (
+        <div className="contract-actions">
+          <button type="button" className="ui-btn" onClick={downloadContract}><DownloadRoundedIcon /> Download</button>
+          {!accepted && <button type="button" className="ui-btn ui-btn--primary" onClick={acceptContract} disabled={busy}>{busy ? "Accepting..." : "Accept contract"}</button>}
+        </div>
+      )}
+    </section>
+  );
 
   if (embedded) return content;
 
   return (
     <>
       <AccountAvatar />
-      <main className="doctor-page">
-        <div className="doctor-page-shell">
-          <section className="doctor-page-header">
-            <div className="doctor-page-header-copy">
-              <span>JOB DOCUMENTS</span>
-              <h1>Credentials</h1>
-              <p>Review your employment contract and keep your clinic documents accessible from one place.</p>
-            </div>
-            <div className="doctor-page-header-icon"><DescriptionRoundedIcon /></div>
-          </section>
-          {content}
-        </div>
-      </main>
+      <Page>
+        <PageHead title="Credentials" lead="Your employment contract with the clinic." />
+        {content}
+      </Page>
     </>
   );
 }

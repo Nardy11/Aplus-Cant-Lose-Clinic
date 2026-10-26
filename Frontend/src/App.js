@@ -94,12 +94,12 @@ const router = createBrowserRouter(
         <Route path="/RegisterAs" element={<RegisterAs />} />
         <Route path="/RegisterAsPatient" element={<RegisterAsPatient />} />
         <Route path="/RegisterAsDoctor" element={<RegisterAsDoctor />} />
+        <Route path="/upload" element={<Upload />} />
       </Route>
       <Route path="/reset_password/:id/:token" element={<ChangePass />} />
       <Route path="/Home" element={<HomeDirect />} />
       <Route path="/Notifications" element={<NotificationsPage />} />
       <Route path="/Wallet" element={<WalletPage />} />
-      <Route path="/upload" element={<Upload />} />
       <Route path='/Prescription' element={<DocPrescriptions/>} />
       <Route path="/MedHist" element={<MedHist />} />
       {/* The document list lives inside Health records; this standalone route had no header. */}

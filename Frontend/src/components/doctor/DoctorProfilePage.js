@@ -28,6 +28,7 @@ import ConfirmDialog from "../common/ConfirmDialog";
 import { editDoctorCredentials, getDr } from "../../features/doctorSlice";
 import { syncProfile } from "../../features/userSlice";
 import { SnackbarContext } from "../../App";
+import { formatMoney, formatBirthDate } from "../../design/format";
 
 const defaultAvatar = "/logo192.png";
 
@@ -209,7 +210,7 @@ const DoctorProfilePage = () => {
   const profileFields = [
     { label: "Username", value: info.username || "Not provided", icon: BadgeRoundedIcon, key: "username" },
     { label: "Specialty", value: info.speciality || info.specialty || "Not provided", icon: LocalHospitalRoundedIcon, key: "speciality" },
-    { label: "Date of birth", value: info.Dbirth ? new Date(info.Dbirth).toLocaleDateString() : "Not provided", icon: CalendarMonthRoundedIcon, key: "Dbirth" },
+    { label: "Date of birth", value: formatBirthDate(info.Dbirth), icon: CalendarMonthRoundedIcon, key: "Dbirth" },
     { label: "Gender", value: formatStatus(info.gender), icon: WcRoundedIcon, key: "gender" },
   ];
 
@@ -271,7 +272,7 @@ const DoctorProfilePage = () => {
             </article>
             <article className="doctor-profile-card">
               <div className="doctor-profile-card-icon"><PaymentsRoundedIcon /></div>
-              <div className="doctor-profile-card-content"><span>Hourly rate</span><strong>{info.rate != null ? `$${info.rate}` : "Not provided"}</strong></div>
+              <div className="doctor-profile-card-content"><span>Hourly rate</span><strong>{info.rate != null ? `${formatMoney(info.rate)} per hour` : "Not provided"}</strong></div>
             </article>
             <article className="doctor-profile-card">
               <div className="doctor-profile-card-icon"><WorkOutlineRoundedIcon /></div>
@@ -309,7 +310,7 @@ const DoctorProfilePage = () => {
               <MenuItem key="female" value="female">Female</MenuItem>,
               <MenuItem key="none" value="none">Not specified</MenuItem>,
             ]})}
-            {field("Hourly rate", "rate", { type: "number", inputProps: { min: 0, step: "0.01" } })}
+            {field("Hourly rate (EGP)", "rate", { type: "number", inputProps: { min: 0, step: "0.01" } })}
             {field("Hospital affiliation", "affiliation")}
             {field("Account status", "status", { select: true, children: [
               <MenuItem key="pending" value="pending">Pending</MenuItem>,

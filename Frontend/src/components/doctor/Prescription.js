@@ -30,6 +30,7 @@ import { ClinicSearchField } from '../common/ClinicFields';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
+import { formatDate, statusInfo } from "../../design/format";
 const Prescriptions = () => {
     const doctorId = useSelector((state) => state.user.id);
     const [patientList, setPatientList] = useState([]);
@@ -313,7 +314,7 @@ const Prescriptions = () => {
                                 <Box style={Info}>
                                     <Typography sx={{ fontSize: '16px' }}>
                                         <strong>Date : </strong>
-                                        {new Date(prescriptionid?.datePrescribed).toLocaleDateString()}
+                                        {formatDate(prescriptionid?.datePrescribed)}
                                     </Typography>
                                 </Box>
                             </Grid>
@@ -408,27 +409,18 @@ const Prescriptions = () => {
             </Dialog>
             <AccountAvatar /><main className="doctor-page">
               <div className="doctor-page-shell">
-                <section className="doctor-page-header">
-                  <div className="doctor-page-header-copy">
-                    <span>PATIENT CARE</span>
-                    <h1>Prescriptions</h1>
-                    <p>Create, review, and update prescriptions for the patients connected to your care.</p>
+                <div className="ui-page-head">
+                  <div>
+                    <h1 className="ui-title">Prescriptions</h1>
+                    <p className="ui-lead">Pick a patient to see their prescriptions, or write a new one.</p>
                   </div>
-                  <div className="doctor-page-header-icon"><AssignmentRoundedIcon /></div>
-                </section>
-
-                <section className="doctor-stats">
-                  <div className="doctor-stat"><span>Patients</span><strong>{patientList.length}</strong><small>Patients available for prescription care</small></div>
-                  <div className="doctor-stat"><span>Showing</span><strong>{patientList.filter((p) => !patientSearch || (p.name || '').toLowerCase().includes(patientSearch.toLowerCase())).length}</strong><small>Matches your search</small></div>
-                  <div className="doctor-stat"><span>Selected</span><strong>{selectedPatient ? '1' : '0'}</strong><small>Patient currently selected</small></div>
-                  <div className="doctor-stat"><span>Prescriptions</span><strong>{prescriptionsList.length}</strong><small>Prescriptions in the selected view</small></div>
-                </section>
+                </div>
 
                 <section className="doctor-surface">
                   <div className="doctor-toolbar">
-                    <ClinicSearchField value={patientSearch} onChange={setPatientSearch} placeholder="Search patient by name..." />
+                    <ClinicSearchField value={patientSearch} onChange={setPatientSearch} placeholder="Search patient by name" />
                     <div className="doctor-toolbar-spacer" />
-                    <span style={{ color:"#8995a5", fontSize:9 }}>{patientList.length} patient{patientList.length === 1 ? '' : 's'}</span>
+                    <span className="ui-toolbar-count">{patientList.length} {patientList.length === 1 ? 'patient' : 'patients'}</span>
                   </div>
 
                   {patientList.filter((patient) => !patientSearch || (patient.name || '').toLowerCase().includes(patientSearch.toLowerCase())).length ? (
@@ -439,7 +431,6 @@ const Prescriptions = () => {
                             <div className="doctor-person-avatar"><PersonRoundedIcon sx={{ fontSize:18 }} /></div>
                             <div><h3>{patient.name || 'Unnamed patient'}</h3><p>{patient.email || patient.username || 'Patient account'}</p></div>
                           </div>
-                          <div className="doctor-detail" style={{ marginTop:13 }}><span>Selected</span><strong>{selectedPatient === patient._id ? 'Yes · prescriptions loaded' : 'Open patient prescriptions'}</strong></div>
                           <div className="doctor-row-actions" style={{ marginTop:12 }}>
                             <button className="doctor-secondary-button" onClick={(event) => { event.stopPropagation(); getPrescriptions(patient._id); }}><AssignmentRoundedIcon sx={{ fontSize:15, mr:.5, verticalAlign:'middle' }} />View prescriptions</button>
                             <button className="doctor-primary-button" onClick={(event) => { event.stopPropagation(); setSelectedPatient(patient._id); setAddPrescriptionDialogOpen(true); }}><AddCircleOutlineRoundedIcon sx={{ fontSize:15, mr:.5, verticalAlign:'middle' }} />Add</button>
@@ -449,7 +440,7 @@ const Prescriptions = () => {
                               {prescriptionsList.map((prescription) => (
                                 <button key={prescription._id} className="doctor-detail" style={{ textAlign:'left', border:0, cursor:'pointer' }} onClick={(event) => { event.stopPropagation(); handlePrescriptionClick(prescription); }}>
                                   <span>Prescription</span>
-                                  <strong>{new Date(prescription.datePrescribed).toLocaleDateString()} · {prescription.status || 'active'}</strong>
+                                  <strong>{formatDate(prescription.datePrescribed)}, {statusInfo(prescription.status || 'unfilled').label}</strong>
                                 </button>
                               ))}
                             </div>

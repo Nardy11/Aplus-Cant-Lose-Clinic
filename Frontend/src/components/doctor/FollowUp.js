@@ -1,97 +1,119 @@
-import * as React from 'react';
-import { useState } from "react";
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import { useDispatch, useSelector } from "react-redux";
-import axios from 'axios';
-import {
-    Typography
-} from "@mui/material";
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
+import * as React from "react";
+import axios from "axios";
+import { useContext, useState } from "react";
+import { useSelector } from "react-redux";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Button from "@mui/material/Button";
+import EventRepeatRoundedIcon from "@mui/icons-material/EventRepeatRounded";
 import { ClinicDateTimeField } from "../common/ClinicFields";
-import { API_URL } from "../../Consts.js";
+import { API_URL } from "../../Consts";
+import { SnackbarContext } from "../../App";
 import ConfirmDialog from "../common/ConfirmDialog";
-function FollowUp() {
-    const [open, setOpen] = React.useState(false);
-    const [endDate, setEndDate] = useState(null);
-    const [startDate, setStartDate] = useState(null);
-    const { id, role } = useSelector((state) => state.user);
-    const [patients, setPatients] = useState([]);
-    const [currentpatient, setCurrentPatient] = useState("");
-    const [confirmClose, setConfirmClose] = useState(false);
-       //to get list of doctors patients so he can choose the name of the patient he want to schedule follow up with
-    const getPatientList = async () => {
-        try {
-            const response = await axios.get(`${API_URL}/doctor/patientsInUpcomingApointments/${id}`);
-            const patientsdata = response.data.patients;
-            setPatients(patientsdata);
-        } catch (error) {
-            console.error("Error fetching patientlist", error);
-        }
-    }
-    //that is the function that addes the follow up slot for selected patient
-    async function addFollowUp() {
-        try {
-            console.log(currentpatient);
+import { Avatar } from "../../design/ui";
+import { formatDateTime } from "../../design/format";
 
-            const response = await axios.post( `${API_URL}/doctor/createFollowUpAppointment/${id}?patientID=${currentpatient}`, {
-                startDate,
-                endDate
-            });
-            console.log(response);
-        } catch (error) {
-            console.error("Error posting free slots", error);
-        }
-    }
-    const handleClickOpen = async () => {
-        setOpen(true);
-        await getPatientList();
-    };
+// Books a follow-up visit for one of the doctor's patients.
+function FollowUp({ buttonClassName = "ui-btn", onSaved }) {
+  const notify = useContext(SnackbarContext);
+  const { id } = useSelector((state) => state.user);
+  const [open, setOpen] = useState(false);
+  const [patients, setPatients] = useState(null);
+  const [patientId, setPatientId] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
 
-    const reset = () => { setStartDate(null); setEndDate(null); setCurrentPatient(""); };
-    const hasDraft = Boolean(startDate || endDate || currentpatient);
-    const requestClose = () => {
-        if (hasDraft) setConfirmClose(true);
-        else { setOpen(false); reset(); }
-    };
-    const save = async () => {
-        if (!startDate || !endDate || !currentpatient) { alert("Choose a patient, start time and end time."); return; }
-        await addFollowUp();
-        setOpen(false);
-        reset();
-    };
-    return (
-        <>
-            <Button className="doctor-secondary-button" variant="outlined" onClick={handleClickOpen}>
-                Create a Follow up appointment
-            </Button>
-            <Dialog open={open} onClose={requestClose} className="doctor-dialog">
-                <DialogTitle>Create Follow up Appointment</DialogTitle>
-                <DialogContent>
-                    <ClinicDateTimeField value={startDate} onChange={setStartDate} label="Start date & time" />
-                    <ClinicDateTimeField value={endDate} onChange={setEndDate} label="End date & time" />
-                    {patients.map((patient) => (
-                        <ListItem disableGutters key={patient}>
-                            <ListItemButton onClick={() => setCurrentPatient(patient._id)}>
-                                {console.log(patients)}
-                                <ListItemText primary={patient?.name} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
-                </DialogContent>
-                <DialogActions>
-                    <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button><Button disableRipple className="doctor-primary-button" onClick={save}>Create follow-up</Button>
-                </DialogActions>
-            </Dialog>
-            <ConfirmDialog open={confirmClose} title="Discard follow-up?" message="You have selected follow-up details. Closing now will discard the unsaved appointment." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }} onCancel={() => setConfirmClose(false)} />
-        </>
-    );
+  const openDialog = async () => {
+    setOpen(true);
+    try {
+      const r = await axios.get(`${API_URL}/doctor/patientsInUpcomingApointments/${id}`);
+      setPatients(r.data?.patients || []);
+    } catch {
+      setPatients([]);
+    }
+  };
+
+  const reset = () => { setStartDate(null); setEndDate(null); setPatientId(""); setError(""); setSaving(false); };
+  const requestClose = () => { if (startDate || endDate || patientId) setConfirmClose(true); else { setOpen(false); reset(); } };
+
+  const save = async () => {
+    if (!patientId) return setError("Choose the patient.");
+    if (!startDate || !endDate) return setError("Choose when the visit starts and ends.");
+    if (new Date(endDate) <= new Date(startDate)) return setError("The end has to be after the start.");
+    setSaving(true);
+    try {
+      await axios.post(`${API_URL}/doctor/createFollowUpAppointment/${id}?patientID=${patientId}`, { startDate, endDate });
+      const name = patients?.find((p) => p._id === patientId)?.name;
+      notify?.(`Follow-up booked${name ? ` for ${name}` : ""}: ${formatDateTime(startDate)}`, "success");
+      setOpen(false);
+      reset();
+      onSaved?.();
+    } catch (e) {
+      setError(e.response?.data?.message || e.response?.data?.error || "The follow-up couldn't be booked. Try again.");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <button type="button" className={buttonClassName} onClick={openDialog}>
+        <EventRepeatRoundedIcon /> Book a follow-up
+      </button>
+      <Dialog open={open} onClose={requestClose} className="clinic-modern-dialog doctor-dialog" maxWidth="sm" fullWidth>
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>FOLLOW-UP</span><h2>Book a follow-up visit</h2></div>
+        </DialogTitle>
+        <DialogContent style={{ display: "grid", gap: 14, paddingTop: 4 }}>
+          <div className="ui-field">
+            <span className="ui-label">Patient</span>
+            {patients === null ? (
+              <p className="clinic-dialog-copy" style={{ margin: 0 }}>Loading your patients...</p>
+            ) : patients.length === 0 ? (
+              <p className="clinic-dialog-copy" style={{ margin: 0 }}>You can book follow-ups for patients who have a visit with you. None yet.</p>
+            ) : (
+              <div className="pick-list" role="radiogroup" aria-label="Patient">
+                {patients.map((p) => (
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={patientId === p._id}
+                    key={p._id}
+                    className="pick-item"
+                    onClick={() => setPatientId(p._id)}
+                  >
+                    <Avatar name={p.name} />
+                    <span>{p.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <ClinicDateTimeField value={startDate} onChange={setStartDate} label="Starts" />
+          <ClinicDateTimeField value={endDate} onChange={setEndDate} label="Ends" />
+          {error && <div className="ui-alert" role="alert">{error}</div>}
+        </DialogContent>
+        <DialogActions className="clinic-dialog-actions">
+          <Button className="clinic-dialog-cancel" onClick={requestClose} disabled={saving}>Cancel</Button>
+          <Button className="clinic-dialog-primary" onClick={save} disabled={saving}>{saving ? "Booking..." : "Book follow-up"}</Button>
+        </DialogActions>
+      </Dialog>
+      <ConfirmDialog
+        open={confirmClose}
+        title="Discard this follow-up?"
+        message="You picked a patient or a time but haven't booked the follow-up yet."
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        destructive
+        onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }}
+        onCancel={() => setConfirmClose(false)}
+      />
+    </>
+  );
 }
 
 export default FollowUp;
