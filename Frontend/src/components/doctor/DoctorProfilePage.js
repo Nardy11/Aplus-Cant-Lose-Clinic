@@ -140,8 +140,6 @@ const DoctorProfilePage = () => {
         affiliation: form.affiliation.trim(),
         background: form.background.trim(),
         pic: form.pic.trim() || defaultAvatar,
-        status: form.status,
-        contractAccepted: Boolean(form.contractAccepted),
         docs: form.docs.filter((doc) => doc.url.trim()).map((doc) => ({ url: doc.url.trim(), desc: doc.desc.trim() })),
       })).unwrap();
 
@@ -313,20 +311,6 @@ const DoctorProfilePage = () => {
             ]})}
             {field("Hourly rate (EGP)", "rate", { type: "number", inputProps: { min: 0, step: "0.01" } })}
             {field("Hospital affiliation", "affiliation")}
-            {field("Account status", "status", { select: true, children: [
-              <MenuItem key="pending" value="pending">Pending</MenuItem>,
-              <MenuItem key="accepted" value="accepted">Accepted</MenuItem>,
-              <MenuItem key="rejected" value="rejected">Rejected</MenuItem>,
-            ]})}
-            <div className="doctor-profile-edit-field">
-              <label>Contract</label>
-              <div className="doctor-profile-contract-toggle">
-                <Chip className={`doctor-profile-status-chip ${form.contractAccepted ? "contract-accepted" : "contract-pending"}`} label={form.contractAccepted ? "Accepted" : "Not accepted"} size="small" />
-                <Button disableRipple type="button" className="doctor-profile-inline-action" onClick={() => update("contractAccepted", !form.contractAccepted)}>
-                  {form.contractAccepted ? "Mark not accepted" : "Mark accepted"}
-                </Button>
-              </div>
-            </div>
             {field("Professional background", "background", { multiline: true, minRows: 4, placeholder: "Education, experience, certifications, and clinical focus." })}
 
             <div className="doctor-profile-edit-field doctor-profile-card-wide">
@@ -364,7 +348,7 @@ const DoctorProfilePage = () => {
           <div className="doctor-profile-note-icon"><LinkRoundedIcon /></div>
           <div>
             <strong>Profile controls</strong>
-            <p>Personal, professional, account, contract, photo, and credential details are managed from this profile. Financial wallet history and system notifications remain protected records.</p>
+            <p>Edit your personal and professional details, photo and documents here. Your account approval and contract are handled by the clinic, and your wallet history and notifications are read-only.</p>
           </div>
         </section>
       </div>

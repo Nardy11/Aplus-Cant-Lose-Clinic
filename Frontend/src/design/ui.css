@@ -977,3 +977,104 @@ select.ui-input { font-size: 14.5px !important; padding: 0 12px !important; heig
   .auth-intro h1 { font-size: 26px; }
   .auth-intro p { font-size: 14px; margin-bottom: 0; }
 }
+
+/* Fields with a prefix/suffix (e.g. "EGP") inside the box */
+.ui-affix-wrap { display: flex; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--r-control); background: var(--surface); }
+.ui-affix-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.ui-affix-wrap .ui-input { flex: 1; min-width: 0; padding: 0; border: 0; box-shadow: none; background: transparent; }
+.ui-affix { color: var(--muted); font-size: 14px; font-weight: 600; }
+textarea.ui-input { height: auto; padding: 10px 12px; line-height: 1.45; resize: vertical; }
+input[type="date"].ui-input, input[type="datetime-local"].ui-input { min-height: 42px; }
+
+/* Signed-in home: a welcome first */
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 56px);
+  margin-bottom: 36px;
+  padding: clamp(20px, 3vw, 36px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+.home-hello { margin: 0 0 10px; color: var(--accent-strong); font-size: 15px; font-weight: 700; }
+.home-hero h1 { margin: 0; font-size: clamp(32px, 4vw, 48px); font-weight: 650; line-height: 1.06; letter-spacing: -0.03em; max-width: 14ch; }
+.home-lead { margin: 16px 0 0; max-width: 46ch; color: var(--ink-2); font-size: 16.5px; line-height: 1.6; }
+.home-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.home-hero-visual { position: relative; padding-bottom: 40px; }
+.home-hero-visual img { display: block; width: 100%; aspect-ratio: 16 / 11; object-fit: cover; object-position: 50% 18%; border-radius: 16px; }
+.home-hero-card { position: absolute; left: 20px; right: 20px; bottom: 0; }
+.home-hero-card .ui-visit { box-shadow: 0 22px 44px -16px rgba(16, 27, 45, 0.3); }
+.home-hero-note {
+  display: flex; align-items: center; gap: 14px; padding: 18px 20px;
+  border: 1px solid var(--line); border-radius: var(--r-surface); background: var(--surface);
+  box-shadow: 0 22px 44px -16px rgba(16, 27, 45, 0.3);
+}
+.home-hero-note svg { color: var(--accent); font-size: 28px; }
+.home-hero-note strong { display: block; font-size: 15.5px; }
+.home-hero-note span { color: var(--muted); font-size: 13.5px; }
+
+.home-how { margin-top: 44px; padding-top: 28px; border-top: 1px solid var(--line); }
+.home-how ol { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin: 18px 0 0; padding: 0; list-style: none; }
+.home-how li { display: grid; align-content: start; gap: 6px; }
+.home-how h3 { margin: 8px 0 0; font-family: var(--font-body); font-size: 15.5px; font-weight: 700; letter-spacing: 0; }
+.home-how p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+@media (max-width: 900px) {
+  .home-hero { grid-template-columns: 1fr; }
+  .home-how ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .home-hero-card { left: 10px; right: 10px; }
+  .home-how ol { grid-template-columns: 1fr; }
+}
+.patient-profile-date-field label { font-size: 12.5px; padding-left: 2px; }
+
+/* Doctor prescriptions */
+.rxp-card { padding: 16px 18px; }
+.rxp-card > header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rxp-card > header > div:nth-child(2) { flex: 1; min-width: 160px; }
+.rxp-card h3 { margin: 0; font-family: var(--font-body); font-size: 15.5px; font-weight: 700; letter-spacing: 0; }
+.rxp-card header p { margin: 2px 0 0; color: var(--muted); font-size: 13.5px; }
+.rxp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.rxp-list { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.rxp-empty { margin: 0; color: var(--muted); font-size: 14px; }
+.rxp-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: var(--r-control); background: var(--surface-2);
+  color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+}
+.rxp-row:hover { border-color: var(--accent-line); background: var(--accent-soft); }
+.rxp-row > svg { color: var(--accent); flex: 0 0 auto; }
+.rxp-row > span { flex: 1; min-width: 0; }
+.rxp-row strong { display: block; font-size: 14.5px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rxp-row small { color: var(--muted); font-size: 12.5px; }
+.rxp-note { padding: 10px 12px; border-radius: var(--r-control); background: var(--warn-soft); color: var(--warn); font-size: 13.5px; font-weight: 600; }
+.rxp-meds { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.rxp-meds li { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-control); }
+.rxp-meds strong { display: block; font-size: 15px; font-weight: 700; }
+.rxp-meds span { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; }
+.rxp-meds em { display: block; margin-top: 6px; color: var(--ink); font-size: 14px; font-style: normal; font-weight: 600; }
+.rxp-med-actions { display: flex; flex: 0 0 auto; }
+.rxp-medform { display: grid; gap: 12px; padding: 14px; border-radius: var(--r-control); background: var(--surface-2); }
+
+/* Doctor profile and the older doctor pages */
+.doctor-profile-shell { width: min(var(--page-max), 100%); padding-left: var(--gutter); padding-right: var(--gutter); }
+.doctor-page-shell { width: min(var(--page-max), 100%); margin: 0 auto; padding: 28px var(--gutter) 72px; }
+.doctor-page { padding: 0; }
+.doctor-profile-page .doctor-primary-button,
+.doctor-profile-page .doctor-secondary-button,
+.doctor-profile-hero button { white-space: nowrap; }
+.doctor-profile-page select,
+.doctor-profile-page .MuiSelect-select { min-height: 42px; }
+.doctor-profile-save,
+.doctor-profile-cancel,
+.doctor-profile-edit { white-space: nowrap; flex: 0 0 auto; }
+.rxp-row > span:first-of-type { flex: 1; min-width: 0; }
+.rxp-row .ui-chip { flex: 0 0 auto; }
+.home-hero + .ui-stats { margin-top: 0; }
+.rxp-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.rxp-card, .rxp-list, .rxp-row { min-width: 0; max-width: 100%; }
+.rxp-card > header > div:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }

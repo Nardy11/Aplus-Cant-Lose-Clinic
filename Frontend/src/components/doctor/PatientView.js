@@ -123,7 +123,7 @@ export default function PatientView() {
                 <div className="doctor-form-field" key={key}>
                   <label htmlFor={"health-"+key}>{label}</label>
                   {key === "date" ? (
-                    <ClinicDateField value={form[key]} onChange={(value) => setForm({ ...form, [key]: value })} placeholder="Select date" />
+                    <ClinicDateField value={form[key]} onChange={(value) => setForm({ ...form, [key]: value })} placeholder="" />
                   ) : (
                     <input id={"health-"+key} type={type} value={form[key]} required onChange={(e) => setForm({ ...form, [key]:e.target.value })} />
                   )}

@@ -1,465 +1,325 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Button } from "@mui/material";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import MedicationRoundedIcon from "@mui/icons-material/MedicationRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import { API_URL } from "../../Consts";
+import { SnackbarContext } from "../../App";
 import AccountAvatar from "../Authentication/AccountAvatar";
-import { useSelector } from 'react-redux';
-import {
-    AppBar,
-    Box,
-    Toolbar,
-    Button,
-    IconButton,
-    Typography,
-    Grid,
-    Paper,
-    Dialog,
-    Container,
-} from '@mui/material';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import AddIcon from '@mui/icons-material/Add';
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import { API_URL } from '../../Consts';
-import { TextField } from "@mui/material";
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import 'react-datepicker/dist/react-datepicker.css';
-import DatePicker from 'react-datepicker';
-import { ClinicSearchField } from '../common/ClinicFields';
-import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
-import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
-import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
-import { formatDate, statusInfo } from "../../design/format";
+import ConfirmDialog from "../common/ConfirmDialog";
+import { ClinicDateTimeField } from "../common/ClinicFields";
+import { Page, PageHead, EmptyState, Skeleton, Avatar, StatusChip } from "../../design/ui";
+import { formatDate } from "../../design/format";
+
+const localInput = (d = new Date()) => {
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+
+// Pick from the clinic's medicine list. Typing a new name used to create a price-less medicine
+// that the patient could then never pay for.
+function MedicineSelect({ id, medicines, value, onChange }) {
+  return (
+    <select id={id} className="ui-input" value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">Choose a medicine</option>
+      {medicines.map((m) => (
+        <option key={m._id} value={m.name}>{m.name}{m.use ? `, ${m.use}` : ""}</option>
+      ))}
+    </select>
+  );
+}
+
 const Prescriptions = () => {
-    const doctorId = useSelector((state) => state.user.id);
-    const [patientList, setPatientList] = useState([]);
-    const [patientSearch, setPatientSearch] = useState('');
-    const [selectedPatient, setSelectedPatient] = useState(null);
-    const [prescriptionsList, setPrescriptionsList] = useState([]);
-    const [prescriptionid, setPrescriptionid] = useState(null);
-    const [AddPrescriptionDialogOpen, setAddPrescriptionDialogOpen] = useState(false);
-    const [editdosage, seteditdosage] = useState(false);
-    const [newDose, setNewDose] = useState('');
-    const [Medid, setMedid] = useState('');
-    const [newMed, setnewMed] = useState('');
-    const [addMed, setaddMed] = useState(false);
-    const [formData, setFormData] = useState({
-        medicineName: '',
-        dosage: '',
-    });
-    const Info = {
-        margin: '20px 20px',
-        alignItems: 'baseline',
-    };
-    const handleFormSubmit = async () => {
-      try {
-        // Validate the form data before submitting
-        if (!formData.medicineName || !formData.dosage) {
-          console.error("Invalid form data");
-          return;
-        }
-  
-        // Make an API call to create a new prescription
-        const response = await axios.post(`${API_URL}/doctor/addPrescription`, {
-          medName: formData.medicineName,
-          dosage: formData.dosage,
-          patientID: selectedPatient,
-          doctorID: doctorId,
-          datePrescribed: formData.prescriptionDate || new Date(),
-        });
-  
-        // Check the response and handle accordingly
-        console.log("API Response:", response.data);
-  
-        // Close the form dialog
-        setAddPrescriptionDialogOpen(false);
-  
-        // Optionally, you may want to refresh the prescription list or perform other actions
-      } catch (error) {
-        console.error("Error submitting prescription:", error);
-        // Handle the error (e.g., show an error message to the user)
-      }
-    };
-  
-    const getPatients = async () => {
-        try {
-            const { data } = await axios.get(
-                `${API_URL}/doctor/getPatientsByDoctorId/${doctorId}`
-            );
-            if (Array.isArray(data.patients)) {
-                setPatientList(data.patients);
-            } else {
-                console.error('Data.patients is not an array:', data.patients);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
+  const doctorId = useSelector((state) => state.user.id);
+  const notify = useContext(SnackbarContext);
 
+  const [patients, setPatients] = useState(null);
+  const [medicines, setMedicines] = useState([]);
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(null);                 // patient whose prescriptions are listed
+  const [list, setList] = useState([]);
+  const [listLoading, setListLoading] = useState(false);
 
+  const [writing, setWriting] = useState(null);           // patient we are writing a new prescription for
+  const [form, setForm] = useState({ medicine: "", dosage: "", date: localInput() });
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-    const updateDosageForMedicine = async (medID, dosage) => {
-        try {
-            console.log(medID);
-            const prescriptionID = prescriptionid._id;
-            console.log("prescriptionid:", prescriptionid._id);
-            console.log('====================================');
-            console.log(dosage);
-            console.log('====================================');
-            const { response } = await axios.put(
-                `${API_URL}/doctor/update/${prescriptionID}`, {
-                medID,
-                dosage
-            }
-            );
-            console.log("Response:", response);
-        } catch (err) {
-            console.error("Response data:", err.response.data);
+  const [details, setDetails] = useState(null);           // prescription id being viewed
+  const [medForm, setMedForm] = useState(null);           // { mode: "add" | "edit", medId?, medicine, dosage }
+  const [medError, setMedError] = useState("");
+  const [removing, setRemoving] = useState(null);
 
-        }
-    };
+  useEffect(() => {
+    if (!doctorId) return;
+    axios.get(`${API_URL}/doctor/getPatientsByDoctorId/${doctorId}`)
+      .then((r) => setPatients(Array.isArray(r.data?.patients) ? r.data.patients : []))
+      .catch(() => setPatients([]));
+    axios.get(`${API_URL}/admin/viewMedicine`)
+      .then((r) => setMedicines((r.data?.medicines || []).sort((a, b) => String(a.name).localeCompare(String(b.name)))))
+      .catch(() => setMedicines([]));
+  }, [doctorId]);
 
-    const addMedicineToPrescription = async (medName, dosage) => {
-        try {
-            console.log('====================================');
-            console.log(medName);
-            console.log(dosage);
-            const prescriptionID = prescriptionid._id;
+  const load = useCallback(async (patient) => {
+    setListLoading(true);
+    try {
+      const r = await axios.get(`${API_URL}/patient/viewPrescriptions/${patient._id}`);
+      const rows = Array.isArray(r.data?.prescriptions) ? r.data.prescriptions : [];
+      setList(rows.sort((a, b) => new Date(b.datePrescribed) - new Date(a.datePrescribed)));
+    } catch {
+      setList([]);
+      notify?.("Prescriptions didn't load. Try again.", "error");
+    } finally {
+      setListLoading(false);
+    }
+  }, [notify]);
 
-            console.log('====================================');
-            const { response } = await axios.post(
-                `${API_URL}/doctor/add/${prescriptionID}`, {
-                medName,
-                dosage
-            }
-            );
-            console.log("Response:", response);
-
-        } catch (err) {
-            console.error("Response data:", err.response.data);
-
-        }
-    };
-
-
-    const deleteMedicineFromPrescription = async (medID) => {
-        try {
-            console.log(medID);
-            const prescriptionID = prescriptionid._id;
-            console.log("prescriptionid:", prescriptionid._id);
-            const { response } = await axios.delete(
-                `${API_URL}/doctor/delete/${prescriptionID}/${medID}`
-            );
-        } catch (err) {
-            console.error("Response data:", err.response.data);
-
-        }
-    };
-
-
-
-
-    const handlePrescriptionClick = (prescriptionId) => {
-        console.log('New Prescription ID:', prescriptionId);
-        setPrescriptionid(prescriptionId);
-        console.log(prescriptionid);
-    };
-
-    const getPrescriptions = async (patientId) => {
-        try {
-            const { data } = await axios.get(
-                `${API_URL}/patient/viewPrescriptions/${patientId}`
-            );
-            if (Array.isArray(data.prescriptions)) {
-                setPrescriptionsList(data.prescriptions);
-                setSelectedPatient(patientId); // Set the selected patient
-            } else {
-                console.error('Data.prescriptions is not an array:', data);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const handleAddPrescription = () => {
-        setAddPrescriptionDialogOpen(true);
-    };
-    const handleAddPrescriptionClose = () => {
-      setAddPrescriptionDialogOpen(false);
+  const toggle = (patient) => {
+    if (open?._id === patient._id) return setOpen(null);
+    setOpen(patient);
+    load(patient);
   };
-  
 
-    useEffect(() => {
-        getPatients();
-    }, []);
+  const shown = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (patients || []).filter((p) => !q || p.name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q));
+  }, [patients, search]);
 
+  const current = list.find((p) => p._id === details) || null;
+  const mine = current && String(current.doctorID?._id) === String(doctorId);
+  const locked = current?.status === "filled"; // paid by the patient: no more changes
 
+  const startWriting = (patient) => { setWriting(patient); setForm({ medicine: "", dosage: "", date: localInput() }); setFormError(""); };
 
-    return (
-        <div>
+  const submitNew = async (e) => {
+    e.preventDefault();
+    if (!form.medicine) return setFormError("Choose a medicine.");
+    if (!form.dosage.trim()) return setFormError("Write the dosage, for example: 1 tablet twice a day after meals.");
+    setSaving(true);
+    try {
+      await axios.post(`${API_URL}/doctor/addPrescription`, {
+        medName: form.medicine,
+        dosage: form.dosage.trim(),
+        patientID: writing._id,
+        doctorID: doctorId,
+        datePrescribed: form.date ? new Date(form.date) : new Date(),
+      });
+      notify?.(`Prescription added for ${writing.name}`, "success");
+      const patient = writing;
+      setWriting(null);
+      setOpen(patient);
+      load(patient);
+    } catch (err) {
+      setFormError(err.response?.data?.error || "The prescription wasn't saved. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-<Dialog
-                open={addMed}
-                sx={{ width: '100%', height: '100%' }}>
-                <DialogContent>
-                    <DialogTitle>Add Medicine </DialogTitle>
-                    <TextField
-                        label="Enter Medicine Name "
-                        fullWidth
-                        value={newMed}
-                        margin='30px'
-                        onChange={(e) => setnewMed(e.target.value)}
-                        sx={{margin: '10px'}}
+  const saveMed = async (e) => {
+    e.preventDefault();
+    if (!medForm.dosage.trim()) return setMedError("Write the dosage.");
+    if (medForm.mode === "add" && !medForm.medicine) return setMedError("Choose a medicine.");
+    setSaving(true);
+    try {
+      if (medForm.mode === "add") await axios.post(`${API_URL}/doctor/add/${current._id}`, { medName: medForm.medicine, dosage: medForm.dosage.trim() });
+      else await axios.put(`${API_URL}/doctor/update/${current._id}`, { medID: medForm.medId, dosage: medForm.dosage.trim() });
+      notify?.(medForm.mode === "add" ? "Medicine added" : "Dosage updated", "success");
+      setMedForm(null);
+      load(open);
+    } catch (err) {
+      setMedError(err.response?.data?.message || "That didn't save. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-                    />
-                     <TextField
-                        label="Enter Dose "
-                        fullWidth
-                        value={newDose}
-                        onChange={(e) => setNewDose(e.target.value)}
-                        sx={{margin: '10px'}}
-                    />
-                    <Button variant="contained" onClick={() => {addMedicineToPrescription(newMed, newDose);setaddMed(false);}} sx={{ marginTop: "10px" }}>
-                        Done
-                    </Button>
-                    <Button variant="contained" onClick={() => {setaddMed(false);}} sx={{ marginTop: "10px" }}>
-                        Back
-                    </Button>
-                </DialogContent>
-            </Dialog>
+  const removeMed = async () => {
+    const m = removing;
+    setRemoving(null);
+    try {
+      await axios.delete(`${API_URL}/doctor/delete/${current._id}/${m.medID._id}`);
+      notify?.(`${m.medID.name} removed`, "success");
+      load(open);
+    } catch (err) {
+      notify?.(err.response?.data?.message || "The medicine couldn't be removed. Try again.", "error");
+    }
+  };
 
-            <Dialog
-                open={editdosage}
-                sx={{ width: '100%', height: '100%' }}>
-                <DialogContent>
-                    <DialogTitle>Edit Dose </DialogTitle>
-                    <TextField
-                        label="Enter Dose "
-                        fullWidth
-                        value={newDose}
-                        onChange={(e) => setNewDose(e.target.value)}
-                    />
-                    <Button variant="contained" onClick={() => {updateDosageForMedicine(Medid, newDose);seteditdosage(false);}} sx={{ margin: "10px" }}>
-                        Done
-                    </Button>
-                    <Button variant="contained" onClick={() => {seteditdosage(false);}} sx={{ marginTop: "10px" }}>
-                        Back
-                    </Button>
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={AddPrescriptionDialogOpen}
-                sx={{ width: '100%', height: '100%' }}>
-                {prescriptionid ? (
-                    <DialogContent>
-                        <DialogTitle>Prescription Details</DialogTitle>
-                        <Typography>Prescription ID: {prescriptionid}</Typography>
-                    </DialogContent>
-                ) : (
-                    <DialogContent>
-                        <DialogTitle>Add Prescription</DialogTitle>
-                        <TextField
-                            label="Medicine Name"
-                            fullWidth
-                            value={formData.medicineName}
-                            onChange={(e) => setFormData({ ...formData, medicineName: e.target.value })}
-                        />
-                        <TextField
-                            label="Dosage"
-                            fullWidth
-                            value={formData.dosage}
-                            onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
-                        />
-                          <div>
-            <Typography sx={{ marginBottom: '8px' }}>Prescription Date and Time</Typography>
-            <DatePicker
-              selected={formData.prescriptionDate}
-              onChange={(date) => setFormData({ ...formData, prescriptionDate: date })}
-              showTimeSelect
-              timeFormat="HH:mm"
-              timeIntervals={15}
-              timeCaption="Time"
-              dateFormat="MMMM d, yyyy h:mm aa"
-              placeholderText="Select date and time"
-              className="custom-datepicker" // Add your own class for styling
-              // ... other props
-            />
+  return (
+    <>
+      <AccountAvatar />
+      <Page>
+        <PageHead title="Prescriptions" lead="Pick a patient to see their prescriptions, or write a new one." />
+
+        <section className="ui-card">
+          <div className="ui-toolbar">
+            <div className="ui-field">
+              <label htmlFor="rx-patient-search" className="ui-sr-only">Search patients</label>
+              <div className="ui-input-wrap">
+                <SearchRoundedIcon />
+                <input id="rx-patient-search" className="ui-input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or email" />
+              </div>
+            </div>
+            <span className="ui-toolbar-count" style={{ marginLeft: "auto" }}>{shown.length} {shown.length === 1 ? "patient" : "patients"}</span>
           </div>
-                        {/* Add more form fields as needed */}
-                        <Button variant="contained" onClick={handleFormSubmit}>
-                            Add Prescription
-                        </Button>
-                        <Button variant="contained" onClick={handleAddPrescriptionClose}>
-                        Back
-                    </Button>
-                    </DialogContent>)}
-            </Dialog>
-            <Dialog
-                open={Boolean(prescriptionid)}
-                sx={{ width: '100%', height: '100%' }}
-            >
-                {prescriptionid ? (
-                    <Paper
-                        sx={{
-                            width: '100%',
-                            height: '100%',
-                            marginTop: '0px',
-                            marginLeft: '0%',
-                            boxShadow: '5px 5px 5px 5px #8585854a',
-                        }}
-                    >
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
-                                <Box style={Info}>
-                                    <Typography sx={{ fontSize: '16px' }}>
-                                        <strong>Date : </strong>
-                                        {formatDate(prescriptionid?.datePrescribed)}
-                                    </Typography>
-                                </Box>
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <img
-                                    src="/virtualclinic.png"
-                                    alt="virtualclinic"
-                                    width={'200px'}
-                                    sx={{ marginBottom: '50px' }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <Box sx={{ margin: '20px 20px 0px 80px' }}>
-                                    <Typography sx={{ fontSize: '16px' }}>
-                                        {prescriptionid.doctorID?.name}
-                                    </Typography>
-                                    <Typography sx={{ fontSize: '16px' }}>
-                                        {prescriptionid.doctorID?.speciality}
-                                    </Typography>
-                                </Box>
-                            </Grid>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            {prescriptionid?.meds?.map((medicine, index) => (
-                                <Box sx={{ margin: '20px 20px 0px 80px' }} key={index}>
-                                    <DeleteIcon onClick={() => deleteMedicineFromPrescription(medicine.medID._id)} />
-                                    <Typography sx={{ fontSize: '16px' }}>
-                                        Medicine Name :{medicine.medID?.name}
-                                    </Typography>
-                                    <Typography sx={{ fontSize: '16px' }}>
-                                        Medicine Active elements:
-                                        {medicine.medID?.activeElement}
-                                    </Typography>
-                                    <Typography sx={{ fontSize: '16px' }}>
-                                        Medicine Used for :{medicine.medID?.use}
-                                    </Typography>
-                                    <Typography sx={{ fontSize: '16px' }}>
-                                        Medicine Frequency :{medicine.medID?.amount}
-                                    </Typography>
-                                    <Typography sx={{ fontSize: '16px' }}>
-                                        Medicine Dosage :{medicine?.dosage}
-                                        <EditIcon
-                                            sx={{ margin: '-10px 40px 0px 80px' }}
-                                            onClick={() => {
-                                                seteditdosage(true);
-                                                setMedid(medicine.medID._id);
-                                            }}
-                                        />
-                                    </Typography>
-                                </Box>
-                            ))}
-                        </Grid>
-                        <Paper
-                            sx={{
-                                width: '100px',
-                                marginTop: '40px',
-                                marginLeft: '40%',
-                                boxShadow: 'none',
-                                display: 'flex',
-                            }}
-                        >
-                            {prescriptionid.status === 'filled' ? (
-                                <img
-                                    src="/Pharmacy Stamp.png"
-                                    alt="hospital stamp"
-                                    width={'100px'}
-                                />
-                            ) : (
-                                ''
-                            )}
-                            <Link to={'/Home'}>
-                                <Button
-                                    sx={{
-                                        margin: '10px 0px 0px 50px',
-                                        justifyItems: 'center',
-                                        color: 'black',
-                                        border: 'black',
-                                    }}
-                                >
-                                    <IconButton sx={{ paddingLeft: '0px' }}>
-                                        <ArrowBackIosIcon />
-                                    </IconButton>
-                                    Back
-                                </Button>
-                            </Link>
-                            <Button onClick={()=>setaddMed(true)}>
-                                Add Medicine
-                            </Button>
-                        </Paper>
-                    </Paper>
-                ) : null}
-            </Dialog>
-            <AccountAvatar /><main className="doctor-page">
-              <div className="doctor-page-shell">
-                <div className="ui-page-head">
-                  <div>
-                    <h1 className="ui-title">Prescriptions</h1>
-                    <p className="ui-lead">Pick a patient to see their prescriptions, or write a new one.</p>
-                  </div>
-                </div>
 
-                <section className="doctor-surface">
-                  <div className="doctor-toolbar">
-                    <ClinicSearchField value={patientSearch} onChange={setPatientSearch} placeholder="Search patient by name" />
-                    <div className="doctor-toolbar-spacer" />
-                    <span className="ui-toolbar-count">{patientList.length} {patientList.length === 1 ? 'patient' : 'patients'}</span>
-                  </div>
-
-                  {patientList.filter((patient) => !patientSearch || (patient.name || '').toLowerCase().includes(patientSearch.toLowerCase())).length ? (
-                    <div className="doctor-card-grid">
-                      {patientList.filter((patient) => !patientSearch || (patient.name || '').toLowerCase().includes(patientSearch.toLowerCase())).map((patient) => (
-                        <article className="doctor-patient-card" key={patient._id} onClick={() => getPrescriptions(patient._id)}>
-                          <div className="doctor-patient-card-head">
-                            <div className="doctor-person-avatar"><PersonRoundedIcon sx={{ fontSize:18 }} /></div>
-                            <div><h3>{patient.name || 'Unnamed patient'}</h3><p>{patient.email || patient.username || 'Patient account'}</p></div>
-                          </div>
-                          <div className="doctor-row-actions" style={{ marginTop:12 }}>
-                            <button className="doctor-secondary-button" onClick={(event) => { event.stopPropagation(); getPrescriptions(patient._id); }}><AssignmentRoundedIcon sx={{ fontSize:15, mr:.5, verticalAlign:'middle' }} />View prescriptions</button>
-                            <button className="doctor-primary-button" onClick={(event) => { event.stopPropagation(); setSelectedPatient(patient._id); setAddPrescriptionDialogOpen(true); }}><AddCircleOutlineRoundedIcon sx={{ fontSize:15, mr:.5, verticalAlign:'middle' }} />Add</button>
-                          </div>
-                          {selectedPatient === patient._id && prescriptionsList.length > 0 && (
-                            <div style={{ marginTop:12, display:'grid', gap:6 }}>
-                              {prescriptionsList.map((prescription) => (
-                                <button key={prescription._id} className="doctor-detail" style={{ textAlign:'left', border:0, cursor:'pointer' }} onClick={(event) => { event.stopPropagation(); handlePrescriptionClick(prescription); }}>
-                                  <span>Prescription</span>
-                                  <strong>{formatDate(prescription.datePrescribed)}, {statusInfo(prescription.status || 'unfilled').label}</strong>
-                                </button>
-                              ))}
-                            </div>
+          <div className="ui-card-pad">
+            {!patients ? (
+              <Skeleton height={96} count={2} />
+            ) : shown.length === 0 ? (
+              <EmptyState icon={<GroupsRoundedIcon />} title={search ? "No patients match" : "No patients yet"} text={search ? "Try another name." : "Patients appear here once they book a visit with you."} />
+            ) : (
+              <div className="rxp-grid">
+                {shown.map((p) => {
+                  const isOpen = open?._id === p._id;
+                  return (
+                    <article className="ui-card rxp-card" key={p._id}>
+                      <header>
+                        <Avatar name={p.name} />
+                        <div>
+                          <h3>{p.name}</h3>
+                          <p>{p.email}</p>
+                        </div>
+                        <div className="rxp-actions">
+                          <button type="button" className="ui-btn ui-btn--sm" aria-expanded={isOpen} onClick={() => toggle(p)}>{isOpen ? "Hide" : "View prescriptions"}</button>
+                          <button type="button" className="ui-btn ui-btn--sm ui-btn--primary" onClick={() => startWriting(p)}><AddRoundedIcon /> New prescription</button>
+                        </div>
+                      </header>
+                      {isOpen && (
+                        <div className="rxp-list">
+                          {listLoading ? (
+                            <Skeleton height={52} count={2} />
+                          ) : list.length === 0 ? (
+                            <p className="rxp-empty">No prescriptions for {p.name} yet.</p>
+                          ) : (
+                            list.map((rx) => (
+                              <button type="button" className="rxp-row" key={rx._id} onClick={() => { setDetails(rx._id); setMedForm(null); }}>
+                                <MedicationRoundedIcon />
+                                <span>
+                                  <strong>{(rx.meds || []).map((m) => m.medID?.name).filter(Boolean).join(", ") || "Prescription"}</strong>
+                                  <small>{formatDate(rx.datePrescribed)}{String(rx.doctorID?._id) !== String(doctorId) && rx.doctorID?.name ? `, Dr. ${rx.doctorID.name}` : ""}</small>
+                                </span>
+                                <StatusChip status={rx.status === "filled" ? "filled" : "unfilled"} />
+                              </button>
+                            ))
                           )}
-                        </article>
-                      ))}
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      </Page>
+
+      {/* New prescription */}
+      <Dialog open={Boolean(writing)} onClose={() => !saving && setWriting(null)} className="clinic-modern-dialog" maxWidth="xs" fullWidth>
+        <form onSubmit={submitNew} noValidate>
+          <DialogTitle className="clinic-dialog-title"><div><span>PRESCRIPTION</span><h2>New prescription for {writing?.name}</h2></div></DialogTitle>
+          <DialogContent style={{ display: "grid", gap: 14, paddingTop: 4 }}>
+            <div className="ui-field">
+              <label htmlFor="rx-medicine">Medicine</label>
+              <MedicineSelect id="rx-medicine" medicines={medicines} value={form.medicine} onChange={(v) => setForm({ ...form, medicine: v })} />
+              {medicines.length === 0 && <span className="auth-hint">The medicine list is empty. Ask the clinic admin to add medicines.</span>}
+            </div>
+            <div className="ui-field">
+              <label htmlFor="rx-dosage">Dosage</label>
+              <textarea id="rx-dosage" rows={2} className="ui-input" value={form.dosage} onChange={(e) => setForm({ ...form, dosage: e.target.value })} placeholder="e.g. 1 tablet twice a day after meals" />
+            </div>
+            <ClinicDateTimeField value={form.date} onChange={(v) => setForm({ ...form, date: v })} label="Prescribed on" />
+            {formError && <div className="ui-alert" role="alert">{formError}</div>}
+          </DialogContent>
+          <DialogActions className="clinic-dialog-actions">
+            <Button className="clinic-dialog-cancel" onClick={() => setWriting(null)} disabled={saving}>Cancel</Button>
+            <Button type="submit" className="clinic-dialog-primary" disabled={saving}>{saving ? "Saving..." : "Add prescription"}</Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* One prescription */}
+      <Dialog open={Boolean(current)} onClose={() => setDetails(null)} className="clinic-modern-dialog" maxWidth="sm" fullWidth>
+        {current && (
+          <>
+            <DialogTitle className="clinic-dialog-title">
+              <div><span>PRESCRIPTION, {formatDate(current.datePrescribed).toUpperCase()}</span><h2>{open?.name}</h2></div>
+              <IconButton className="clinic-dialog-close" onClick={() => setDetails(null)} aria-label="Close"><CloseRoundedIcon /></IconButton>
+            </DialogTitle>
+            <DialogContent style={{ display: "grid", gap: 14, paddingTop: 4 }}>
+              {(locked || !mine) && (
+                <div className="rxp-note">
+                  {locked ? "The patient has paid for this prescription, so it can't be changed." : `Written by Dr. ${current.doctorID?.name || "another doctor"}. You can read it but not change it.`}
+                </div>
+              )}
+              <ul className="rxp-meds">
+                {(current.meds || []).map((m) => (
+                  <li key={m._id || m.medID?._id}>
+                    <div>
+                      <strong>{m.medID?.name || "Medicine"}</strong>
+                      <span>{[m.medID?.activeElement, m.medID?.use].filter(Boolean).join(", ")}</span>
+                      <em>{m.dosage}</em>
                     </div>
-                  ) : (
-                    <div className="doctor-empty-state">
-                      <div className="doctor-empty-icon"><PersonRoundedIcon /></div>
-                      <h3>{patientList.length ? 'No matching patients' : 'No patients available'}</h3>
-                      <p>{patientList.length ? 'Try another patient name.' : 'Patients connected to your doctor account will appear here.'}</p>
+                    {mine && !locked && (
+                      <div className="rxp-med-actions">
+                        <button type="button" className="ui-icon-btn" aria-label={`Change dosage of ${m.medID?.name}`} onClick={() => { setMedError(""); setMedForm({ mode: "edit", medId: m.medID._id, dosage: m.dosage || "" }); }}><EditRoundedIcon /></button>
+                        <button type="button" className="ui-icon-btn" aria-label={`Remove ${m.medID?.name}`} onClick={() => setRemoving(m)}><DeleteOutlineRoundedIcon /></button>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+
+              {medForm && (
+                <form className="rxp-medform" onSubmit={saveMed} noValidate>
+                  {medForm.mode === "add" && (
+                    <div className="ui-field">
+                      <label htmlFor="rx-add-med">Medicine</label>
+                      <MedicineSelect id="rx-add-med" medicines={medicines} value={medForm.medicine || ""} onChange={(v) => setMedForm({ ...medForm, medicine: v })} />
                     </div>
                   )}
-                </section>
-              </div>
-            </main>
-        </div>
-    );
+                  <div className="ui-field">
+                    <label htmlFor="rx-med-dosage">{medForm.mode === "add" ? "Dosage" : "New dosage"}</label>
+                    <input id="rx-med-dosage" className="ui-input" value={medForm.dosage} onChange={(e) => setMedForm({ ...medForm, dosage: e.target.value })} autoFocus />
+                  </div>
+                  {medError && <div className="ui-alert" role="alert">{medError}</div>}
+                  <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                    <button type="button" className="ui-btn ui-btn--sm" onClick={() => setMedForm(null)} disabled={saving}>Cancel</button>
+                    <button type="submit" className="ui-btn ui-btn--sm ui-btn--primary" disabled={saving}>{saving ? "Saving..." : "Save"}</button>
+                  </div>
+                </form>
+              )}
+            </DialogContent>
+            <DialogActions className="clinic-dialog-actions">
+              {mine && !locked && !medForm && (
+                <Button className="clinic-dialog-cancel" onClick={() => { setMedError(""); setMedForm({ mode: "add", medicine: "", dosage: "" }); }}>Add a medicine</Button>
+              )}
+              <Button className="clinic-dialog-primary" onClick={() => setDetails(null)}>Done</Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
+
+      <ConfirmDialog
+        open={Boolean(removing)}
+        kicker="REMOVE MEDICINE"
+        title={`Remove ${removing?.medID?.name || "this medicine"}?`}
+        message="It is taken off this prescription."
+        confirmLabel="Remove"
+        cancelLabel="Keep it"
+        destructive
+        onConfirm={removeMed}
+        onCancel={() => setRemoving(null)}
+      />
+    </>
+  );
 };
 
 export default Prescriptions;

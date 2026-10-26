@@ -6,7 +6,7 @@ import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded
 import EventRepeatRoundedIcon from "@mui/icons-material/EventRepeatRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { API_URL } from "../../Consts";
-import { Page, PageHead, VisitCard, EmptyState, Skeleton, Avatar } from "../../design/ui";
+import { Page, VisitCard, EmptyState, Skeleton, Avatar } from "../../design/ui";
 import { formatMoney, formatDate, formatTime, relativeDay, isUpcoming, byStart, dayKey, ageFrom } from "../../design/format";
 
 const greeting = () => {
@@ -66,11 +66,41 @@ function HomePage() {
 
   return (
     <Page>
-      <PageHead
-        title={firstName ? `${greeting()}, Dr. ${firstName}` : greeting()}
-        lead={lead}
-        actions={<Link to="/DocPatients" className="ui-btn ui-btn--primary"><AddRoundedIcon /> Add open times</Link>}
-      />
+      <section className="home-hero">
+        <div className="home-hero-copy">
+          <p className="home-hello">{firstName ? `${greeting()}, Dr. ${firstName}` : greeting()}</p>
+          <h1>Your practice, in one place.</h1>
+          <p className="home-lead">{lead} Your schedule, patients and prescriptions are one click away.</p>
+          <div className="home-hero-actions">
+            <Link to="/DocPatients" className="ui-btn ui-btn--primary ui-btn--lg">Open my schedule</Link>
+            <Link to="/DocPatients" className="ui-btn ui-btn--lg"><AddRoundedIcon /> Add open times</Link>
+          </div>
+        </div>
+        <div className="home-hero-visual">
+          <img src="/doctors.jpg" alt="A doctor smiling, with her colleagues behind her" />
+          <div className="home-hero-card">
+            {!data ? (
+              <Skeleton height={96} count={1} />
+            ) : next ? (
+              <VisitCard
+                feature
+                start={next.startDate}
+                title={next.pID?.name || "Patient"}
+                subtitle="Your next visit"
+                status={next.status}
+              />
+            ) : (
+              <div className="home-hero-note">
+                <EventAvailableRoundedIcon />
+                <div>
+                  <strong>No visits booked</strong>
+                  <span>Add open times so patients can book you.</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       <div className="ui-stats" style={{ marginBottom: 24 }}>
         <Link to="/DocPatients" className="ui-stat"><span>Visits today</span><strong>{data ? today.length : "-"}</strong><small>{today[0] ? `First at ${formatTime(today[0].startDate)}` : "Nothing booked today"}</small></Link>

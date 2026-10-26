@@ -2,9 +2,6 @@ import React from "react";
 import { IconButton, MenuItem, Select } from "@mui/material";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import { DatePicker, Input, Textarea } from "@heroui/react";
-import { parseDate, parseDateTime } from "@internationalized/date";
 export function ClinicSearchField({ value, onChange, placeholder = "Search...", className = "" }) {
   return (
     <div className={`clinic-field clinic-search-field search-field search-field--secondary ${className}`}>
@@ -73,85 +70,53 @@ export function ClinicSelectField({ value, onChange, options, placeholder, class
   );
 }
 
-const toDateValue = (value) => {
-  if (!value) return null;
-  try {
-    return parseDate(String(value).slice(0, 10));
-  } catch {
-    return null;
-  }
-};
-
-const toDateTimeValue = (value) => {
-  if (!value) return null;
-  try {
-    return parseDateTime(String(value).slice(0, 16));
-  } catch {
-    return null;
-  }
-};
-
-const formatDateValue = (value) => {
-  if (!value) return "";
-  return value.toString();
-};
-
-export function ClinicDateField({ value, onChange, placeholder = "Select date", className = "", minDate }) {
-  const parsedValue = toDateValue(value);
-  const parsedMin = toDateValue(minDate);
-
+// Date, date-time and text fields use the browser's own inputs, styled like the rest of the app.
+// (They used to be HeroUI components, which style themselves with Tailwind classes this app does
+// not build, so their layout fell apart: the calendar button dropped under the field.)
+function Labelled({ id, label, required, className, children }) {
   return (
-    <div className={`clinic-heroui-date-field ${className}`}>
-      <DatePicker
-        label={placeholder}
-        labelPlacement="outside-top"
-        value={parsedValue}
-        onChange={(nextValue) => onChange(formatDateValue(nextValue))}
-        minValue={parsedMin || undefined}
-        variant="bordered"
-        color="primary"
-        size="sm"
-        radius="lg"
-        selectorIcon={<CalendarMonthRoundedIcon />}
-        classNames={{
-          base: "clinic-heroui-picker",
-          selectorIcon: "clinic-heroui-picker-icon",
-          popoverContent: "clinic-heroui-calendar-popover",
-          calendar: "clinic-heroui-calendar",
-        }}
-      />
+    <div className={`ui-field ${className}`}>
+      {label ? (
+        <label htmlFor={id}>
+          {label}
+          {required ? <span aria-hidden="true"> *</span> : null}
+        </label>
+      ) : null}
+      {children}
     </div>
   );
 }
 
-export function ClinicDateTimeField({ value, onChange, label, minDateTime }) {
-  const parsedValue = toDateTimeValue(value);
-  const parsedMin = toDateTimeValue(minDateTime);
-
+export function ClinicDateField({ value, onChange, placeholder = "Select date", className = "", minDate }) {
+  const id = React.useId();
   return (
-    <div className="clinic-heroui-date-field clinic-heroui-datetime-field">
-      <DatePicker
-        label={label}
-        labelPlacement="outside-top"
-        value={parsedValue}
-        onChange={(nextValue) => onChange(formatDateValue(nextValue))}
-        minValue={parsedMin || undefined}
-        granularity="minute"
-        hourCycle={12}
-        variant="bordered"
-        color="primary"
-        size="sm"
-        radius="lg"
-        selectorIcon={<CalendarMonthRoundedIcon />}
-        classNames={{
-          base: "clinic-heroui-picker",
-          selectorIcon: "clinic-heroui-picker-icon",
-          popoverContent: "clinic-heroui-calendar-popover",
-          calendar: "clinic-heroui-calendar",
-          timeInput: "clinic-heroui-time-input",
-        }}
+    <Labelled id={id} label={placeholder} className={className}>
+      <input
+        id={id}
+        type="date"
+        aria-label={placeholder || "Date"}
+        className="ui-input"
+        value={value ? String(value).slice(0, 10) : ""}
+        min={minDate ? String(minDate).slice(0, 10) : undefined}
+        onChange={(event) => onChange(event.target.value)}
       />
-    </div>
+    </Labelled>
+  );
+}
+
+export function ClinicDateTimeField({ value, onChange, label, minDateTime }) {
+  const id = React.useId();
+  return (
+    <Labelled id={id} label={label} className="">
+      <input
+        id={id}
+        type="datetime-local"
+        className="ui-input"
+        value={value ? String(value).slice(0, 16) : ""}
+        min={minDateTime ? String(minDateTime).slice(0, 16) : undefined}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </Labelled>
   );
 }
 
@@ -168,55 +133,28 @@ export function ClinicHeroTextField({
   startContent,
   endContent,
 }) {
+  const id = React.useId();
+  const common = {
+    id,
+    className: "ui-input",
+    value: value ?? "",
+    placeholder,
+    required: isRequired,
+    disabled: isDisabled,
+    onChange: (event) => onChange(event.target.value),
+  };
+  const control = multiline ? <textarea rows={3} {...common} /> : <input type={type} {...common} />;
   return (
-    <div className={`clinic-heroui-text-field ${className}`}>
-      {multiline ? (
-        <Textarea
-          label={label}
-          labelPlacement="outside-top"
-          value={value ?? ""}
-          onValueChange={onChange}
-          placeholder={placeholder}
-          minRows={3}
-          maxRows={7}
-          isRequired={isRequired}
-          isDisabled={isDisabled}
-          variant="bordered"
-          color="primary"
-          size="sm"
-          radius="lg"
-          classNames={{
-            base: "clinic-heroui-input-base",
-            label: "clinic-heroui-input-label",
-            inputWrapper: "clinic-heroui-input-wrapper",
-            input: "clinic-heroui-input",
-          }}
-        />
+    <Labelled id={id} label={label} required={isRequired} className={className}>
+      {startContent || endContent ? (
+        <div className="ui-affix-wrap">
+          {startContent ? <span className="ui-affix">{startContent}</span> : null}
+          {control}
+          {endContent ? <span className="ui-affix">{endContent}</span> : null}
+        </div>
       ) : (
-        <Input
-          label={label}
-          labelPlacement="outside-top"
-          value={value ?? ""}
-          onValueChange={onChange}
-          placeholder={placeholder}
-          type={type}
-          isRequired={isRequired}
-          isDisabled={isDisabled}
-          variant="bordered"
-          color="primary"
-          size="sm"
-          radius="lg"
-          startContent={startContent}
-          endContent={endContent}
-          classNames={{
-            base: "clinic-heroui-input-base",
-            label: "clinic-heroui-input-label",
-            inputWrapper: "clinic-heroui-input-wrapper",
-            input: "clinic-heroui-input",
-          }}
-        />
+        control
       )}
-    </div>
+    </Labelled>
   );
 }
-

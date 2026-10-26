@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import HealthAndSafetyRoundedIcon from "@mui/icons-material/HealthAndSafetyRounded";
 import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
@@ -13,8 +14,15 @@ import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneR
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import { API_URL } from "../../Consts";
 import { getNotifications } from "../../features/patientSlice.js";
-import { Page, PageHead, VisitCard, EmptyState, Skeleton } from "../../design/ui";
+import { Page, VisitCard, EmptyState, Skeleton } from "../../design/ui";
 import { formatMoney, formatDateTime, isUpcoming, byStart, notificationTitle } from "../../design/format";
+
+const HOW = [
+  { icon: SearchRoundedIcon, title: "Choose a doctor", text: "Filter by specialty and see each doctor's price and next free time." },
+  { icon: CalendarMonthRoundedIcon, title: "Pick a time and pay", text: "Pay from your wallet or by card. Your plan discount is already included." },
+  { icon: VideocamRoundedIcon, title: "Meet by video", text: "Join from your phone or laptop, and message your doctor before and after." },
+  { icon: MedicationRoundedIcon, title: "Keep everything together", text: "Prescriptions, records and documents land in your account." },
+];
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -86,51 +94,53 @@ function Home() {
 
   return (
     <Page>
-      <PageHead
-        title={firstName ? `${greeting()}, ${firstName}` : greeting()}
-        lead="Your next visit, medicines and plan, in one place."
-        actions={
-          <Link to="/DoctorsList" className="ui-btn ui-btn--primary">
-            <SearchRoundedIcon /> Find a doctor
-          </Link>
-        }
-      />
+      {/* A welcome first: who you are, what this place is for, and the one thing coming up. */}
+      <section className="home-hero">
+        <div className="home-hero-copy">
+          <p className="home-hello">{firstName ? `${greeting()}, ${firstName}` : greeting()}</p>
+          <h1>Healthcare that stays with you.</h1>
+          <p className="home-lead">See a doctor by video, keep your prescriptions and records together, and look after your family from one place.</p>
+          <div className="home-hero-actions">
+            <Link to="/DoctorsList" className="ui-btn ui-btn--primary ui-btn--lg">Find a doctor</Link>
+            <Link to="/Appointments" className="ui-btn ui-btn--lg">My appointments</Link>
+          </div>
+        </div>
+        <div className="home-hero-visual">
+          <img src="/doctors.jpg" alt="A doctor smiling, with her colleagues behind her" />
+          <div className="home-hero-card">
+            {!data ? (
+              <Skeleton height={96} count={1} />
+            ) : next ? (
+              <VisitCard
+                feature
+                start={next.startDate}
+                title={`Dr. ${next.drID?.name || "your doctor"}`}
+                subtitle={next.drID?.speciality ? `Your next visit, ${next.drID.speciality}` : "Your next visit"}
+                status={next.status}
+              />
+            ) : (
+              <div className="home-hero-note">
+                <CalendarMonthRoundedIcon />
+                <div>
+                  <strong>No visit booked</strong>
+                  <span>Pick a doctor and a time, and it shows up here.</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       {error && <div className="ui-alert" role="alert" style={{ marginBottom: 16 }}>We couldn't load your care summary. Refresh the page to try again.</div>}
 
       <div className="ui-grid ui-grid-main">
-        <section aria-labelledby="next-visit" style={{ display: "grid", gap: 14 }}>
-          <h2 id="next-visit" className="ui-section-title">Next visit</h2>
+        <div style={{ display: "grid", gap: 28, alignContent: "start" }}>
+        <section aria-labelledby="coming-up" style={{ display: "grid", gap: 12 }}>
+          <h2 id="coming-up" className="ui-section-title">Coming up</h2>
           {!data ? (
-            <Skeleton height={112} count={1} />
-          ) : next ? (
-            <VisitCard
-              feature
-              start={next.startDate}
-              title={`Dr. ${next.drID?.name || "your doctor"}`}
-              subtitle={next.drID?.speciality}
-              status={next.status}
-              actions={
-                <>
-                  <Link to="/chats" className="ui-btn ui-btn--primary">Message doctor</Link>
-                  <Link to="/Appointments" className="ui-btn">Manage</Link>
-                </>
-              }
-            />
-          ) : (
-            <div className="ui-card">
-              <EmptyState
-                icon={<CalendarMonthRoundedIcon />}
-                title="No visits booked"
-                text="Find a doctor and book a video visit. It will show up here."
-                action={<Link to="/DoctorsList" className="ui-btn ui-btn--primary">Find a doctor</Link>}
-              />
-            </div>
-          )}
-
-          {later.length > 0 && (
+            <Skeleton height={86} count={2} />
+          ) : later.length ? (
             <>
-              <h2 className="ui-section-title" style={{ marginTop: 14 }}>Coming up</h2>
               <div className="ui-visits">
                 {later.slice(0, 3).map((a) => (
                   <VisitCard
@@ -142,10 +152,43 @@ function Home() {
                   />
                 ))}
               </div>
-              {later.length > 3 && <Link to="/Appointments" className="ui-btn ui-btn--ghost">See all appointments</Link>}
+              <Link to="/Appointments" className="ui-btn ui-btn--ghost" style={{ justifySelf: "start" }}>See all appointments</Link>
             </>
+          ) : (
+            <div className="ui-card">
+              <EmptyState
+                icon={<CalendarMonthRoundedIcon />}
+                title={next ? "That's your only visit for now" : "Nothing booked yet"}
+                text="Browse doctors, see their open times and book in a minute."
+                action={<Link to="/DoctorsList" className="ui-btn">Find a doctor</Link>}
+              />
+            </div>
           )}
         </section>
+
+        <section className="ui-card" aria-labelledby="updates">
+          <div className="ui-card-head">
+            <h2 id="updates" className="ui-section-title">Updates</h2>
+            <Link to="/Notifications" className="ui-btn ui-btn--ghost ui-btn--sm">See all</Link>
+          </div>
+          {unread.length ? (
+            <ul className="ui-list">
+              {unread.map((n) => (
+                <li key={n._id} className="ui-row">
+                  <span className="ui-row-icon"><NotificationsNoneRoundedIcon /></span>
+                  <span className="ui-row-body">
+                    <strong>{notificationTitle(n.type, n.entityType)}</strong>
+                    <span>{n.message}</span>
+                    <span>{formatDateTime(n.timestamp)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState title="You're all caught up" text="New bookings, prescriptions and plan changes will appear here." />
+          )}
+        </section>
+        </div>
 
         <aside style={{ display: "grid", gap: 16 }}>
           <section className="ui-card" aria-labelledby="your-care">
@@ -160,58 +203,29 @@ function Home() {
                   label={data.plan ? `${data.plan.type} plan` : "No plan yet"}
                   value={data.plan ? `${data.plan.doctorDisc}% off every doctor session` : "Save on sessions and medicine"}
                 />
-                <CareRow
-                  to="/Wallet"
-                  icon={AccountBalanceWalletRoundedIcon}
-                  label="Wallet"
-                  value={`${formatMoney(data.profile.wallet)} available`}
-                />
-                <CareRow
-                  to="/ListOfPrescriptions"
-                  icon={MedicationRoundedIcon}
-                  label="Prescriptions"
-                  value={toFill ? `${toFill} waiting to be filled` : "All filled"}
-                />
-                <CareRow
-                  to="/HealthRecords"
-                  icon={FolderSharedRoundedIcon}
-                  label="Health records"
-                  value="Diagnoses, lab results and documents"
-                />
-                <CareRow
-                  to="/viewfamilymembers"
-                  icon={GroupsRoundedIcon}
-                  label="Family"
-                  value={family ? `${family} ${family === 1 ? "person" : "people"} on your account` : "Add your family"}
-                />
+                <CareRow to="/Wallet" icon={AccountBalanceWalletRoundedIcon} label="Wallet" value={`${formatMoney(data.profile.wallet)} available`} />
+                <CareRow to="/ListOfPrescriptions" icon={MedicationRoundedIcon} label="Prescriptions" value={toFill ? `${toFill} waiting to be filled` : "All filled"} />
+                <CareRow to="/HealthRecords" icon={FolderSharedRoundedIcon} label="Health records" value="Diagnoses, lab results and documents" />
+                <CareRow to="/viewfamilymembers" icon={GroupsRoundedIcon} label="Family" value={family ? `${family} ${family === 1 ? "person" : "people"} on your account` : "Add your family"} />
               </ul>
             )}
           </section>
 
-          <section className="ui-card" aria-labelledby="updates">
-            <div className="ui-card-head">
-              <h2 id="updates" className="ui-section-title">Updates</h2>
-              <Link to="/Notifications" className="ui-btn ui-btn--ghost ui-btn--sm">See all</Link>
-            </div>
-            {unread.length ? (
-              <ul className="ui-list">
-                {unread.map((n) => (
-                  <li key={n._id} className="ui-row">
-                    <span className="ui-row-icon"><NotificationsNoneRoundedIcon /></span>
-                    <span className="ui-row-body">
-                      <strong>{notificationTitle(n.type, n.entityType)}</strong>
-                      <span>{n.message}</span>
-                      <span>{formatDateTime(n.timestamp)}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <EmptyState title="You're all caught up" text="New bookings, prescriptions and plan changes will appear here." />
-            )}
-          </section>
         </aside>
       </div>
+
+      <section className="home-how" aria-labelledby="how-it-works">
+        <h2 id="how-it-works" className="ui-section-title">How a visit works</h2>
+        <ol>
+          {HOW.map(({ icon: Icon, title, text }) => (
+            <li key={title}>
+              <span className="ui-row-icon"><Icon /></span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
     </Page>
   );
 }
