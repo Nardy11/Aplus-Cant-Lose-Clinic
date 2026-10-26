@@ -45,14 +45,14 @@ function RegisterAsDoctor() {
   };
 
   return (
-    <main className="auth-page">
+    <main className="auth-page is-doctor-accent">
       <section className="auth-layout">
         <aside className="auth-intro auth-intro-doctor">
           <div className="auth-brand-mark"><MedicalServicesRoundedIcon /></div>
           <span className="auth-eyebrow">DOCTOR ACCOUNT</span>
           <h1>Bring your practice online.</h1>
           <p>
-            Join A+ Clinic to manage appointments, patient records,
+            Join El7a2ny Clinic to manage appointments, patient records,
             prescriptions, and your professional profile from one workspace.
           </p>
           <div className="auth-trust">
@@ -82,7 +82,7 @@ function RegisterAsDoctor() {
             <div className="auth-section">
               <div className="auth-section-heading">
                 <span>01</span>
-                <div><strong>Account details</strong><small>Your A+ Clinic login information</small></div>
+                <div><strong>Account details</strong><small>Your El7a2ny Clinic login information</small></div>
               </div>
 
               <div className="auth-grid">
@@ -137,7 +137,7 @@ function RegisterAsDoctor() {
                 </div>
                 <div className="auth-field">
                   <label htmlFor="rate">Hourly rate</label>
-                  <div className="auth-input-prefix"><span>$</span><input type="number" id="rate" min="0" step="0.01" placeholder="10.00" required /></div>
+                  <div className="auth-input-prefix"><span>EGP</span><input type="number" id="rate" min="0" step="1" placeholder="500" required /></div>
                 </div>
                 <div className="auth-field auth-field-wide">
                   <label htmlFor="affilation">Hospital / affiliation</label>

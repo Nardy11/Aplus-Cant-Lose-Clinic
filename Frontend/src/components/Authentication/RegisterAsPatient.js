@@ -53,7 +53,7 @@ function RegisterAsPatient() {
           <span className="auth-eyebrow">PATIENT ACCOUNT</span>
           <h1>Start your care journey.</h1>
           <p>
-            Create your A+ Clinic patient account to book appointments,
+            Create your El7a2ny Clinic patient account to book appointments,
             manage prescriptions, and keep your healthcare information in one place.
           </p>
           <div className="auth-trust">

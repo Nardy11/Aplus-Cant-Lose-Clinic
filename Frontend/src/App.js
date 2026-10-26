@@ -55,6 +55,7 @@ import MyAppointments from "./components/doctor/MyAppointments"; // Update the p
 import PatientDetails from "./components/doctor/PatientView"; // Update the path to match your file structure
 import PatientList from "./components/doctor/PatientsList";
 import Start from "./components/Start.js";
+import Landing from "./components/Landing";
 import { Snackbar, Alert } from "@mui/material";
 import RegisterAsDoctor from "./components/Authentication/RegisterAsDoctor";
 import ProfileDirect from "./ProfileDirect";
@@ -86,17 +87,20 @@ const router = createBrowserRouter(
 
     <Route>
 
-      <Route path="/"element={<Start />} />
-      <Route path="/Login" element={<Login />} />
+      {/* Public pages share the public header. */}
+      <Route element={<Start />}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/Login" element={<Login />} />
+        <Route path="/ResetPassword" element={<ResetPassword />} />
+        <Route path="/RegisterAs" element={<RegisterAs />} />
+        <Route path="/RegisterAsPatient" element={<RegisterAsPatient />} />
+        <Route path="/RegisterAsDoctor" element={<RegisterAsDoctor />} />
+      </Route>
       <Route path="/reset_password/:id/:token" element={<ChangePass />} />
-      <Route path="/ResetPassword" element={<ResetPassword />} />
-      <Route path="/RegisterAs" element={<RegisterAs />} />
       <Route path="/Home" element={<HomeDirect />} />
       <Route path="/Notifications" element={<NotificationsPage />} />
       <Route path="/Wallet" element={<WalletPage />} />
       <Route path="/upload" element={<Upload />} />
-    <Route path="/RegisterAsPatient" element={<RegisterAsPatient />} />
-    <Route path="/RegisterAsDoctor" element={<RegisterAsDoctor />} />
       <Route path='/Prescription' element={<DocPrescriptions/>} />
       <Route path="/MedHist" element={<MedHist />} />
       <Route path="/MedHistList" element={<MedHistList />} />

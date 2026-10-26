@@ -45,7 +45,7 @@ const ChangePass = () => {
         <span className="auth-eyebrow">SECURITY</span>
         <h1>Set a new password</h1>
         <p className="reset-copy">
-          Choose a strong password for your A+ Clinic account.
+          Choose a strong password for your El7a2ny Clinic account.
         </p>
 
         <form onSubmit={handleSubmit} className="auth-form">

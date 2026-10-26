@@ -1,158 +1,34 @@
 import * as React from "react";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Button from "@mui/material/Button";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import LoginIcon from "@mui/icons-material/Login";
-import AppRegistrationIcon from "@mui/icons-material/AppRegistration";
-import LocalHospitalRoundedIcon from "@mui/icons-material/LocalHospitalRounded";
-import { NavLink } from "react-router-dom";
-import RegisterOptions from "./Authentication/RegisterAs";
+import { Link, NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
 
+// Public header: landing, sign in and sign up pages.
 export default function Navbar() {
-  const [openRegisterDialog, setOpenRegisterDialog] = React.useState(false);
+  const { logged, role } = useSelector((state) => state.user);
+  const signedIn = logged && (role === "patient" || role === "doctor" || role === "admin");
 
   return (
-    <>
-      <AppBar
-        position="sticky"
-        elevation={0}
-        sx={{
-          background: "#ffffff",
-          borderBottom: "1px solid #e8edf2",
-          color: "#172033",
-          zIndex: 1200,
-        }}
-      >
-        <Container maxWidth="lg">
-          <Toolbar
-            disableGutters
-            sx={{
-              minHeight: "76px !important",
-              height: 76,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <NavLink
-              to="/"
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 11,
-                flexShrink: 0,
-              }}
-            >
-              <Box className="clinic-brand-mark"
-                sx={{
-                  width: 52,
-                  height: 52,
-                  display: "grid",
-                  placeItems: "center",
-                  position: "relative",
-                  overflow: "hidden",
-                  borderRadius: "15px",
-                  background: "linear-gradient(145deg, #1769ff 0%, #0f4ec4 62%, #18b6a4 100%)",
-                  color: "#fff",
-                  boxShadow: "0 9px 22px rgba(23,105,255,.22)",
-                  flexShrink: 0,
-                }}
-              >
-                <LocalHospitalRoundedIcon sx={{ fontSize: 31 }} />
-                <Box className="clinic-brand-plus">+</Box>
-              </Box>
-              <Box>
-                <Typography
-                  sx={{
-                    fontSize: 17,
-                    fontWeight: 800,
-                    lineHeight: 1.05,
-                    letterSpacing: "-0.035em",
-                  }}
-                >
-                  El7a2ny Clinic
-                </Typography>
-                <Typography
-                  sx={{
-                    fontSize: 10.5,
-                    color: "#718096",
-                    lineHeight: 1.2,
-                    mt: 0.35,
-                  }}
-                >
-                  Virtual healthcare
-                </Typography>
-              </Box>
-            </NavLink>
+    <header className="pub-header">
+      <div className="pub-header-inner">
+        <Link to="/" className="app-brand" aria-label="El7a2ny Clinic home">
+          <img src="/brand-mark.png" alt="" />
+          <span>
+            <strong>El7a2ny</strong>
+            <small>Virtual clinic</small>
+          </span>
+        </Link>
 
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                flexShrink: 0,
-                ml: 3,
-              }}
-            >
-              <NavLink to="/Login" style={{ textDecoration: "none" }}>
-                <Button
-                  startIcon={<LoginIcon sx={{ fontSize: 19 }} />}
-                  sx={{
-                    minWidth: "auto",
-                    width: "auto",
-                    color: "#253247",
-                    fontWeight: 650,
-                    fontSize: 14,
-                    textTransform: "none",
-                    borderRadius: "10px",
-                    px: 1.6,
-                    py: 1,
-                    whiteSpace: "nowrap",
-                    "&:hover": { background: "#f3f6fa" },
-                  }}
-                >
-                  Sign in
-                </Button>
-              </NavLink>
-
-              <Button
-                onClick={() => setOpenRegisterDialog(true)}
-                variant="contained"
-                startIcon={<AppRegistrationIcon sx={{ fontSize: 18 }} />}
-                sx={{
-                  minWidth: "auto",
-                  width: "auto",
-                  textTransform: "none",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  borderRadius: "10px",
-                  px: 2,
-                  py: 1.05,
-                  whiteSpace: "nowrap",
-                  background: "#1769ff",
-                  boxShadow: "none",
-                  "&:hover": {
-                    background: "#1257d6",
-                    boxShadow: "none",
-                  },
-                }}
-              >
-                Get started
-              </Button>
-            </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
-
-      <RegisterOptions
-        open={openRegisterDialog}
-        onClose={() => setOpenRegisterDialog(false)}
-      />
-    </>
+        <nav className="pub-header-actions" aria-label="Account">
+          {signedIn ? (
+            <Link to="/Home" className="ui-btn ui-btn--primary">Open my portal</Link>
+          ) : (
+            <>
+              <NavLink to="/Login" className="ui-btn ui-btn--ghost">Sign in</NavLink>
+              <NavLink to="/RegisterAs" className="ui-btn ui-btn--primary">Create account</NavLink>
+            </>
+          )}
+        </nav>
+      </div>
+    </header>
   );
 }

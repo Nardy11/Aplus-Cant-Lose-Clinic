@@ -51,6 +51,20 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Legacy page styles (styles.css, index.css) read these names; point them at the tokens. */
+:root,
+:root[data-role] {
+  --aplus-primary: var(--accent);
+  --aplus-primary-dark: var(--accent-strong);
+  --aplus-accent: var(--accent);
+  --aplus-bg: var(--canvas);
+  --aplus-surface: var(--surface);
+  --aplus-text: var(--ink);
+  --aplus-muted: var(--muted);
+  --aplus-border: var(--line);
+  --aplus-radius: var(--r-surface);
+}
+
 /* Doctor accent (logo green, deepened for AA contrast on white). */
 :root[data-role="doctor"] {
   --accent: #0d7a5f;

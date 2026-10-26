@@ -328,7 +328,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         </div>
       ) : (
         <Box className="chat-welcome-empty">
-          <img src="/virtualclinic.png" alt="A+ Clinic messaging" className="chat-welcome-image" />
+          <img src="/virtualclinic.png" alt="El7a2ny Clinic messaging" className="chat-welcome-image" />
           <Typography className="chat-welcome-title">Your care conversations, in one place</Typography>
           <Typography className="chat-welcome-copy">
             Select a doctor or patient from your chats, or search above to start a private conversation.
