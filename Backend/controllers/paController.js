@@ -10,6 +10,14 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Prescription = require("../Models/prescription");
 const mongoose = require("mongoose");
+
+// Raw driver queries (Model.collection) do not cast string ids from the URL to ObjectId.
+// Match either form so lookups work whether ids were stored as ObjectId or string.
+// Visit time as shown in notifications (the clinic runs on Cairo time).
+const visitTime = (d) =>
+  new Date(d).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Africa/Cairo" });
+const idQuery = (id) =>
+  mongoose.Types.ObjectId.isValid(id) ? { $in: [new mongoose.Types.ObjectId(String(id)), String(id)] } : id;
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 const nodemailer = require("nodemailer");
 const FollowUp = require("../Models/followUps");
@@ -205,7 +213,7 @@ const payPrescriptionWithWallet = async (req, res) => {
   try {
     const patientObjectId = new mongoose.Types.ObjectId(patientId);
     const prescription = await Prescription.collection.findOne({
-      _id: prescriptionId,
+      _id: idQuery(prescriptionId),
       patientID: patientObjectId,
     });
 
@@ -247,7 +255,7 @@ const payPrescriptionWithWallet = async (req, res) => {
       balanceAfter: patient.wallet,
       direction: "debit",
       type: "prescription_payment",
-      description: `Prescription payment ${prescription._id}`,
+      description: `Medicines: ${resolvedMedicines.map((m) => m.name).filter(Boolean).join(", ")}`,
     });
 
     await Promise.all(
@@ -983,7 +991,7 @@ const viewSpecificPrescription = async (req, res) => {
     const prescriptionId = req.params.id;
     if (!prescriptionId) return res.status(400).json({ error: "Prescription ID is required" });
 
-    const raw = await Prescription.collection.findOne({ _id: prescriptionId });
+    const raw = await Prescription.collection.findOne({ _id: idQuery(prescriptionId) });
     if (!raw) return res.status(404).json({ error: "Prescription not found" });
 
     const [patient, doctor, medicines] = await Promise.all([
@@ -1479,7 +1487,7 @@ const rescheduleAppointment = async (req, res) => {
       return res.status(400).json({ message: "Appointment, start date and end date are required." });
     }
 
-    const appointment = await Appointment.collection.findOne({ _id: appointmentId });
+    const appointment = await Appointment.collection.findOne({ _id: idQuery(appointmentId) });
     if (!appointment) return res.status(404).json({ message: "Appointment not found" });
 
     const doctor = await Doctor.findById(appointment.drID);
@@ -1497,14 +1505,14 @@ const rescheduleAppointment = async (req, res) => {
     );
 
     const patientNotification = {
-      message: `APPOINTMENT RESCHEDULED WITH DOCTOR ${doctor.name}`,
+      message: `Your visit with Dr. ${doctor.name} was moved to ${visitTime(startDate)}.`,
       type: "AppointmentRescheduled",
       entityType: "Appointment",
       entityId: String(appointment._id),
       timestamp: new Date(),
     };
     const doctorNotification = {
-      message: `APPOINTMENT RESCHEDULED WITH PATIENT ${patient.name}`,
+      message: `Your visit with ${patient.name} was moved to ${visitTime(startDate)}.`,
       type: "AppointmentRescheduled",
       entityType: "Appointment",
       entityId: String(appointment._id),
@@ -1563,7 +1571,7 @@ const cancelAppointment = async (req, res) => {
     const { aid, did, pid } = req.params;
     if (!aid || !did || !pid) return res.status(400).json({ message: "Invalid parameters" });
 
-    const appointment = await Appointment.collection.findOne({ _id: aid });
+    const appointment = await Appointment.collection.findOne({ _id: idQuery(aid) });
     const doctor = await Doctor.findById(did);
     const patient = await Patient.findById(pid);
 
@@ -1577,14 +1585,14 @@ const cancelAppointment = async (req, res) => {
     );
 
     const patientNotification = {
-      message: `APPOINTMENT CANCELED WITH DOCTOR ${doctor.name}`,
+      message: `Your visit with Dr. ${doctor.name} on ${visitTime(appointment.startDate)} was cancelled.`,
       type: "AppointmentCanceled",
       entityType: "Appointment",
       entityId: String(appointment._id),
       timestamp: new Date(),
     };
     const doctorNotification = {
-      message: `APPOINTMENT CANCELED WITH PATIENT ${patient.name}`,
+      message: `Your visit with ${patient.name} on ${visitTime(appointment.startDate)} was cancelled.`,
       type: "AppointmentCanceled",
       entityType: "Appointment",
       entityId: String(appointment._id),

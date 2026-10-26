@@ -1,6 +1,6 @@
 import { addPatient } from "../../features/patientSlice";
 import { useNavigate } from "react-router-dom";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useDispatch } from "react-redux";
 import "../../styles.css";
 import { SnackbarContext } from "../../App";
@@ -9,38 +9,52 @@ import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 import ContactEmergencyRoundedIcon from "@mui/icons-material/ContactEmergencyRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
+// The server only accepts patients aged 18 or over; the form used to freeze this at 2001-10-15.
+const latestBirth = () => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 18);
+  return d.toISOString().slice(0, 10);
+};
+// Mobile numbers are stored as numbers: keep digits only ("+20 10 1234 5678" -> 201012345678).
+const digits = (value) => String(value).replace(/\D/g, "");
+
 function RegisterAsPatient() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const snackbarMessage = useContext(SnackbarContext);
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    setError("");
 
     const emergencyContact = {
-      fullName: event.target.elements.fullname.value,
-      mobile: event.target.elements.mobile.value,
-      relation: event.target.elements.relation.value,
+      fullName: event.target.elements.fullname.value.trim(),
+      mobile: digits(event.target.elements.mobile.value),
+      relation: event.target.elements.relation.value.trim(),
     };
 
     const sampleData = {
-      name: event.target.elements.name.value,
-      email: event.target.elements.email.value,
-      username: event.target.elements.username.value,
+      name: event.target.elements.name.value.trim(),
+      email: event.target.elements.email.value.trim(),
+      username: event.target.elements.username.value.trim(),
       dBirth: event.target.elements.dBirth.value,
       gender: event.target.elements.gender.value,
       password: event.target.elements.password.value,
       emergencyContact,
-      mobile: event.target.elements.pmobile.value,
+      mobile: digits(event.target.elements.pmobile.value),
     };
 
-    const response = dispatch(addPatient(sampleData));
-    response.then((responseData) => {
-      if (responseData.payload === undefined) {
-        snackbarMessage("Registration could not be completed.", "error");
+    setSending(true);
+    dispatch(addPatient(sampleData)).then((responseData) => {
+      setSending(false);
+      if (responseData.meta.requestStatus !== "fulfilled") {
+        setError(responseData.payload || "We couldn't create your account. Check your details and try again.");
+        event.target.scrollIntoView?.({ behavior: "smooth", block: "start" });
       } else {
-        snackbarMessage("You have successfully registered", "success");
-        navigate("/login");
+        snackbarMessage("Account created. Sign in to continue.", "success");
+        navigate("/Login");
       }
     });
   };
@@ -53,7 +67,7 @@ function RegisterAsPatient() {
           <span className="auth-eyebrow">PATIENT ACCOUNT</span>
           <h1>Start your care journey.</h1>
           <p>
-            Create your A+ Clinic patient account to book appointments,
+            Create your El7a2ny Clinic patient account to book appointments,
             manage prescriptions, and keep your healthcare information in one place.
           </p>
           <div className="auth-trust">
@@ -104,11 +118,13 @@ function RegisterAsPatient() {
                   <input
                     type="password"
                     id="password"
-                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                    title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
+                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}"
+                    title="At least 8 characters, with a number, a symbol, an uppercase letter and a lowercase letter"
                     placeholder="At least 8 characters"
+                    autoComplete="new-password"
                     required
                   />
+                  <small className="auth-hint">8 or more characters, with an uppercase letter, a lowercase letter, a number and a symbol such as ! or @.</small>
                 </div>
                 <div className="auth-field">
                   <label htmlFor="gender">Gender</label>
@@ -120,11 +136,12 @@ function RegisterAsPatient() {
                 </div>
                 <div className="auth-field">
                   <label htmlFor="dBirth">Date of birth</label>
-                  <input type="date" id="dBirth" max="2001-10-15" required />
+                  <input type="date" id="dBirth" max={latestBirth()} required />
+                  <small className="auth-hint">You must be 18 or older to create an account.</small>
                 </div>
                 <div className="auth-field">
                   <label htmlFor="pmobile">Mobile number</label>
-                  <input type="tel" id="pmobile" placeholder="+20 1X XXX XXXX" required />
+                  <input type="tel" id="pmobile" inputMode="tel" placeholder="01012345678" pattern="\+?[0-9 ]{10,15}" title="Digits only, for example 01012345678" required />
                 </div>
               </div>
             </div>
@@ -142,7 +159,7 @@ function RegisterAsPatient() {
                 </div>
                 <div className="auth-field">
                   <label htmlFor="mobile">Mobile number</label>
-                  <input type="tel" id="mobile" placeholder="+20 1X XXX XXXX" required />
+                  <input type="tel" id="mobile" inputMode="tel" placeholder="01012345678" pattern="\+?[0-9 ]{10,15}" title="Digits only, for example 01012345678" required />
                 </div>
                 <div className="auth-field auth-field-wide">
                   <label htmlFor="relation">Relationship</label>
@@ -151,13 +168,15 @@ function RegisterAsPatient() {
               </div>
             </div>
 
+            {error && <div className="ui-alert" role="alert">{error}</div>}
+
             <div className="auth-form-footer">
-              <button type="submit" className="auth-submit">
-                Create patient account
+              <button type="submit" className="auth-submit" disabled={sending}>
+                {sending ? "Creating account..." : "Create patient account"}
                 <ArrowForwardRoundedIcon />
               </button>
               <span>
-                Already have an account? <NavLink to="/login">Sign in</NavLink>
+                Already have an account? <NavLink to="/Login">Sign in</NavLink>
               </span>
             </div>
           </form>

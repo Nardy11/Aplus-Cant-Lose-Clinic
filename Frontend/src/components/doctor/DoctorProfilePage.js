@@ -28,6 +28,7 @@ import ConfirmDialog from "../common/ConfirmDialog";
 import { editDoctorCredentials, getDr } from "../../features/doctorSlice";
 import { syncProfile } from "../../features/userSlice";
 import { SnackbarContext } from "../../App";
+import { formatMoney, formatBirthDate } from "../../design/format";
 
 const defaultAvatar = "/logo192.png";
 
@@ -139,8 +140,6 @@ const DoctorProfilePage = () => {
         affiliation: form.affiliation.trim(),
         background: form.background.trim(),
         pic: form.pic.trim() || defaultAvatar,
-        status: form.status,
-        contractAccepted: Boolean(form.contractAccepted),
         docs: form.docs.filter((doc) => doc.url.trim()).map((doc) => ({ url: doc.url.trim(), desc: doc.desc.trim() })),
       })).unwrap();
 
@@ -209,13 +208,14 @@ const DoctorProfilePage = () => {
   const profileFields = [
     { label: "Username", value: info.username || "Not provided", icon: BadgeRoundedIcon, key: "username" },
     { label: "Specialty", value: info.speciality || info.specialty || "Not provided", icon: LocalHospitalRoundedIcon, key: "speciality" },
-    { label: "Date of birth", value: info.Dbirth ? new Date(info.Dbirth).toLocaleDateString() : "Not provided", icon: CalendarMonthRoundedIcon, key: "Dbirth" },
+    { label: "Date of birth", value: formatBirthDate(info.Dbirth), icon: CalendarMonthRoundedIcon, key: "Dbirth" },
     { label: "Gender", value: formatStatus(info.gender), icon: WcRoundedIcon, key: "gender" },
   ];
 
   return (
+    <>
+    <AccountAvatar />
     <main className="doctor-profile-page">
-      <AccountAvatar />
       <div className="doctor-profile-shell">
         <button type="button" className="doctor-profile-back" onClick={() => navigate("/Home")}>
           <ArrowBackRoundedIcon /> Back to home
@@ -271,7 +271,7 @@ const DoctorProfilePage = () => {
             </article>
             <article className="doctor-profile-card">
               <div className="doctor-profile-card-icon"><PaymentsRoundedIcon /></div>
-              <div className="doctor-profile-card-content"><span>Hourly rate</span><strong>{info.rate != null ? `$${info.rate}` : "Not provided"}</strong></div>
+              <div className="doctor-profile-card-content"><span>Hourly rate</span><strong>{info.rate != null ? `${formatMoney(info.rate)} per hour` : "Not provided"}</strong></div>
             </article>
             <article className="doctor-profile-card">
               <div className="doctor-profile-card-icon"><WorkOutlineRoundedIcon /></div>
@@ -309,22 +309,8 @@ const DoctorProfilePage = () => {
               <MenuItem key="female" value="female">Female</MenuItem>,
               <MenuItem key="none" value="none">Not specified</MenuItem>,
             ]})}
-            {field("Hourly rate", "rate", { type: "number", inputProps: { min: 0, step: "0.01" } })}
+            {field("Hourly rate (EGP)", "rate", { type: "number", inputProps: { min: 0, step: "0.01" } })}
             {field("Hospital affiliation", "affiliation")}
-            {field("Account status", "status", { select: true, children: [
-              <MenuItem key="pending" value="pending">Pending</MenuItem>,
-              <MenuItem key="accepted" value="accepted">Accepted</MenuItem>,
-              <MenuItem key="rejected" value="rejected">Rejected</MenuItem>,
-            ]})}
-            <div className="doctor-profile-edit-field">
-              <label>Contract</label>
-              <div className="doctor-profile-contract-toggle">
-                <Chip className={`doctor-profile-status-chip ${form.contractAccepted ? "contract-accepted" : "contract-pending"}`} label={form.contractAccepted ? "Accepted" : "Not accepted"} size="small" />
-                <Button disableRipple type="button" className="doctor-profile-inline-action" onClick={() => update("contractAccepted", !form.contractAccepted)}>
-                  {form.contractAccepted ? "Mark not accepted" : "Mark accepted"}
-                </Button>
-              </div>
-            </div>
             {field("Professional background", "background", { multiline: true, minRows: 4, placeholder: "Education, experience, certifications, and clinical focus." })}
 
             <div className="doctor-profile-edit-field doctor-profile-card-wide">
@@ -362,7 +348,7 @@ const DoctorProfilePage = () => {
           <div className="doctor-profile-note-icon"><LinkRoundedIcon /></div>
           <div>
             <strong>Profile controls</strong>
-            <p>Personal, professional, account, contract, photo, and credential details are managed from this profile. Financial wallet history and system notifications remain protected records.</p>
+            <p>Edit your personal and professional details, photo and documents here. Your account approval and contract are handled by the clinic, and your wallet history and notifications are read-only.</p>
           </div>
         </section>
       </div>
@@ -378,6 +364,7 @@ const DoctorProfilePage = () => {
         onCancel={() => setConfirmClose(false)}
       />
     </main>
+    </>
   );
 };
 

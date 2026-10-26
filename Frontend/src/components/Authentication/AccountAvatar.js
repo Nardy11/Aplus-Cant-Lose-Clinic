@@ -27,11 +27,12 @@ import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { SnackbarContext } from "../../App";
 import { getNotifications } from "../../features/patientSlice.js";
 import { getNotificationsd } from "../../features/doctorSlice.js";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import NavbarGen from "../NavbarGen";
+import NavbarGen, { MobileTabBar } from "../NavbarGen";
 import { API_URL } from "../../Consts";
 import ConfirmDialog from "../common/ConfirmDialog";
+import { isStrongPassword, PASSWORD_HINT } from "../../design/password";
 
 const AccountAvatar = () => {
   const snackbarMessage = useContext(SnackbarContext);
@@ -124,9 +125,9 @@ const AccountAvatar = () => {
       return;
     }
 
-    if (!/^(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$/.test(newPassword)) {
+    if (!isStrongPassword(newPassword)) {
       setEmptyFieldError(false);
-      setPasswordError("Use at least 8 characters, one uppercase letter and one special character.");
+      setPasswordError(`Choose a stronger password: ${PASSWORD_HINT}`);
       return;
     }
 
@@ -150,75 +151,59 @@ const AccountAvatar = () => {
   };
 
   return (
-    <header className="clinic-header">
-      <div className="clinic-header-inner">
-        <div className="clinic-identity">
-          <div className="clinic-brand-mark">
-            <img src="/logo192.png" alt="El7a2ny Clinic" />
-          </div>
-          <div className="clinic-brand-copy">
-            <strong>El7a2ny Clinic</strong>
-            <span>{role === "doctor" ? "Doctor portal" : role === "patient" ? "Patient portal" : "Clinic portal"}</span>
-          </div>
-        </div>
+    <header className="app-header">
+      <div className="app-header-inner">
+        <Link to="/Home" className="app-brand" aria-label="El7a2ny Clinic home">
+          <img src="/brand-mark.png" alt="" />
+          <span>
+            <strong>El7a2ny</strong>
+            <small>{role === "doctor" ? "Doctor" : role === "patient" ? "Patient" : "Clinic"}</small>
+          </span>
+        </Link>
 
         <NavbarGen />
 
-        <div className="clinic-header-actions">
+        <div className="app-header-actions">
           {(role === "doctor" || role === "patient") && (
             <>
               <Tooltip title="Notifications">
-                <IconButton
-                  className="clinic-utility-button"
+                <button
+                  type="button"
+                  className="ui-icon-btn"
                   onClick={() => {
                     setNotificationBadgeVisible(false);
                     navigate("/Notifications");
                   }}
-                  aria-label="Notifications"
+                  aria-label={unseenNotificationCount ? `Notifications, ${unseenNotificationCount} unread` : "Notifications"}
                 >
                   <NotificationsNoneRoundedIcon />
                   {notificationBadgeVisible && unseenNotificationCount > 0 && (
-                    <span className="clinic-notification-badge">
-                      {unseenNotificationCount > 9 ? "9+" : unseenNotificationCount}
-                    </span>
+                    <span className="app-badge">{unseenNotificationCount > 9 ? "9+" : unseenNotificationCount}</span>
                   )}
-                </IconButton>
+                </button>
               </Tooltip>
 
               <Tooltip title="Wallet">
-                <IconButton
-                  className="clinic-utility-button"
-                  onClick={() => navigate("/Wallet")}
-                  aria-label="Wallet"
-                >
+                <button type="button" className="ui-icon-btn" onClick={() => navigate("/Wallet")} aria-label="Wallet">
                   <WalletIcon />
-                </IconButton>
+                </button>
               </Tooltip>
 
-              <Tooltip title="Chats and video">
-                <IconButton
-                  className="clinic-utility-button"
-                  onClick={() => navigate("/chats")}
-                  aria-label="Chats and video"
-                >
+              <Tooltip title="Messages and video visits">
+                <button type="button" className="ui-icon-btn app-hide-mobile" onClick={() => navigate("/chats")} aria-label="Messages and video visits">
                   <ChatBubbleOutlineRoundedIcon />
-                </IconButton>
+                </button>
               </Tooltip>
             </>
           )}
 
-          <Divider orientation="vertical" flexItem className="clinic-header-divider" />
-
-          <button className="clinic-profile-button" onClick={(e) => setAccountAnchor(e.currentTarget)}>
-            <Avatar src={pic || undefined} className="clinic-profile-avatar" />
-            <span>
-              <strong>{username || "Account"}</strong>
-              <small>Profile</small>
-            </span>
+          <button className="app-profile" onClick={(e) => setAccountAnchor(e.currentTarget)} aria-label="Account menu">
+            <Avatar src={pic || undefined} className="app-profile-avatar" />
+            <span className="app-hide-mobile">{username || "Account"}</span>
           </button>
-
         </div>
       </div>
+      {(role === "doctor" || role === "patient") && <MobileTabBar />}
 
       <Menu
         anchorEl={accountAnchor}
@@ -232,7 +217,7 @@ const AccountAvatar = () => {
           <Avatar src={pic || undefined} className="clinic-menu-avatar" />
           <div>
             <strong>{username}</strong>
-            <span>{role}</span>
+            <span>{role === "doctor" ? "Doctor account" : role === "patient" ? "Patient account" : "Account"}</span>
           </div>
         </div>
         <Divider />
@@ -246,7 +231,7 @@ const AccountAvatar = () => {
         </MenuItem>
         <MenuItem onClick={handleLogout} className="clinic-account-logout-item">
           <ListItemIcon><LogoutRoundedIcon fontSize="small" /></ListItemIcon>
-          Logout
+          Sign out
         </MenuItem>
       </Menu>
 

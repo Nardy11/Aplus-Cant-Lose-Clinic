@@ -1,39 +1,69 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSelector } from "react-redux";
-import { NavLink, useLocation, Link } from "react-router-dom";
-import { Box, Button, Badge, Tooltip } from "@mui/material";
+import { NavLink } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../Consts";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import FamilyRestroomRoundedIcon from "@mui/icons-material/FamilyRestroomRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import MedicalInformationRoundedIcon from "@mui/icons-material/MedicalInformationRounded";
-import VaccinesRoundedIcon from "@mui/icons-material/VaccinesRounded";
-import LocalHospitalRoundedIcon from "@mui/icons-material/LocalHospitalRounded";
-import SickRoundedIcon from "@mui/icons-material/SickRounded";
-import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
-import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
-import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
+import MedicationRoundedIcon from "@mui/icons-material/MedicationRounded";
+import FolderSharedRoundedIcon from "@mui/icons-material/FolderSharedRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import HealthAndSafetyRoundedIcon from "@mui/icons-material/HealthAndSafetyRounded";
+import EventRepeatRoundedIcon from "@mui/icons-material/EventRepeatRounded";
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import DoctorProfileDialog from "./doctor/DoctorProfileDialog";
 
-const patientItems = [
-  { to: "/viewfamilymembers", label: "Family", sub: "Members", icon: FamilyRestroomRoundedIcon },
-  { to: "/Appointments", label: "Appointments", sub: "My visits", icon: CalendarMonthRoundedIcon },
-  { to: "/HealthRecords", label: "Health records", sub: "Medical history", icon: MedicalInformationRoundedIcon },
-  { to: "/ListOfPrescriptions", label: "Prescriptions", sub: "My medicines", icon: VaccinesRoundedIcon },
-  { to: "/ViewHealthPackage", label: "Health packages", sub: "Plans & coverage", icon: LocalHospitalRoundedIcon },
+export const patientNav = [
+  { to: "/Home", label: "Home", icon: HomeRoundedIcon, tab: true },
+  { to: "/DoctorsList", label: "Find a doctor", tabLabel: "Doctors", icon: SearchRoundedIcon, tab: true },
+  { to: "/Appointments", label: "Appointments", tabLabel: "Visits", icon: CalendarMonthRoundedIcon, tab: true },
+  { to: "/ListOfPrescriptions", label: "Prescriptions", tabLabel: "Medicines", icon: MedicationRoundedIcon, tab: true },
+  { to: "/HealthRecords", label: "Health records", icon: FolderSharedRoundedIcon },
+  { to: "/viewfamilymembers", label: "Family", icon: GroupsRoundedIcon },
+  { to: "/ViewHealthPackage", label: "Plans", icon: HealthAndSafetyRoundedIcon },
 ];
 
-const doctorItems = [
-  { to: "/PatientsList", label: "Patients", sub: "My patients", icon: SickRoundedIcon },
-  { to: "/DocPatients", label: "Appointments", sub: "My schedule", icon: PendingActionsRoundedIcon },
-  { to: "/FollowUpRequests", label: "Follow ups", sub: "Requests", icon: GroupRoundedIcon },
-  { to: "/Prescription", label: "Prescriptions", sub: "Patient care", icon: PendingActionsRoundedIcon },
+export const doctorNav = [
+  { to: "/Home", label: "Today", icon: HomeRoundedIcon, tab: true },
+  { to: "/DocPatients", label: "Schedule", icon: CalendarMonthRoundedIcon, tab: true },
+  { to: "/PatientsList", label: "Patients", icon: GroupsRoundedIcon, tab: true },
+  { to: "/FollowUpRequests", label: "Follow-ups", icon: EventRepeatRoundedIcon, tab: true },
+  { to: "/Prescription", label: "Prescriptions", icon: MedicationRoundedIcon },
 ];
+
+export function MobileTabBar() {
+  const role = useSelector((state) => state.user.role);
+
+  useEffect(() => {
+    document.body.classList.add("has-tabbar");
+    return () => document.body.classList.remove("has-tabbar");
+  }, []);
+
+  if (role !== "patient" && role !== "doctor") return null;
+  const items = (role === "doctor" ? doctorNav : patientNav).filter((i) => i.tab);
+
+  // Portalled to <body>: the header's backdrop-filter would otherwise trap position:fixed.
+  return createPortal(
+    <nav className="ui-tabbar" aria-label="Main">
+      {items.map(({ to, label, tabLabel, icon: Icon }) => (
+        <NavLink key={to} to={to}>
+          <Icon />
+          {tabLabel || label}
+        </NavLink>
+      ))}
+      <NavLink to="/chats">
+        <ChatBubbleOutlineRoundedIcon />
+        Chats
+      </NavLink>
+    </nav>,
+    document.body
+  );
+}
 
 export default function NavbarGen() {
   const { role, id } = useSelector((state) => state.user);
-  const location = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [contractPending, setContractPending] = useState(false);
 
@@ -55,58 +85,32 @@ export default function NavbarGen() {
     return () => { active = false; };
   }, [id, role]);
 
-  if (!role || (role !== "patient" && role !== "doctor")) return null;
-
-  const items = role === "patient" ? patientItems : doctorItems;
+  if (role !== "patient" && role !== "doctor") return null;
+  const items = role === "patient" ? patientNav : doctorNav;
 
   return (
     <>
-      <nav className="clinic-primary-nav" aria-label="Primary navigation">
-        <Tooltip title="Home" placement="bottom">
-          <Link
-            to="/Home"
-            className={`clinic-home-button ${location.pathname === "/Home" ? "active" : ""}`}
-            aria-label="Home"
-          >
-            <HomeRoundedIcon />
-          </Link>
-        </Tooltip>
-
-        <Box className="clinic-nav-items">
-          {items.map(({ to, label, sub, icon: Icon }) => {
-            const active = location.pathname === to;
-            return (
-              <NavLink key={to} to={to} className="clinic-nav-link">
-                <Button className={`clinic-nav-item ${active ? "active" : ""}`}>
-                  <Icon className="clinic-nav-icon" />
-                  <span className="clinic-nav-label">
-                    <strong>{label}</strong>
-                    <small>{sub}</small>
-                  </span>
-                </Button>
-              </NavLink>
-            );
-          })}
-
-          {role === "doctor" && (
-            <Button className="clinic-nav-item" onClick={() => setDialogOpen(true)}>
-              <Badge badgeContent={contractPending ? 1 : 0} color="primary" invisible={!contractPending} sx={{ "& .MuiBadge-badge": { minWidth: 15, height: 15, borderRadius: "999px", fontSize: 8, fontWeight: 800, border: "2px solid #fff", boxShadow: "0 2px 6px rgba(23,105,255,.18)" } }}>
-                <BadgeRoundedIcon className="clinic-nav-icon" />
-              </Badge>
-              <span className="clinic-nav-label">
-                <strong>Credentials</strong>
-                <small>Job documents</small>
-              </span>
-            </Button>
-          )}
-        </Box>
+      <nav className="app-nav" aria-label="Primary">
+        {items.map(({ to, label }) => (
+          <NavLink key={to} to={to} className="app-nav-link">
+            {label}
+          </NavLink>
+        ))}
+        {role === "doctor" && (
+          <button type="button" className="app-nav-link" onClick={() => setDialogOpen(true)}>
+            Credentials
+            {contractPending && <span className="app-nav-flag" aria-label="Contract waiting for your review" />}
+          </button>
+        )}
       </nav>
 
-      <DoctorProfileDialog
-        open={dialogOpen}
-        handleClose={() => setDialogOpen(false)}
-        onContractAccepted={() => setContractPending(false)}
-      />
+      {role === "doctor" && (
+        <DoctorProfileDialog
+          open={dialogOpen}
+          handleClose={() => setDialogOpen(false)}
+          onContractAccepted={() => setContractPending(false)}
+        />
+      )}
     </>
   );
 }

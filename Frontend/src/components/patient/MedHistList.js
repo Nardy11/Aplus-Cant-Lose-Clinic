@@ -1,244 +1,143 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import download from "downloadjs";
 import axios from "axios";
-import { API_URL } from "../../Consts";
-import MedHist from "./MedHist.js"
-
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Snackbar,
-  Box,
-  Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
-import AddIcon from "@mui/icons-material/Add";
-import HomeIcon from "@mui/icons-material/Home";
-import Alert from "@mui/material/Alert";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import AccountAvatar from "../Authentication/AccountAvatar";
-import ConfirmDialog from "../common/ConfirmDialog";
+import { Dialog, DialogTitle, DialogContent, IconButton } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import { API_URL } from "../../Consts";
+import { SnackbarContext } from "../../App";
+import MedHist from "./MedHist.js";
+import ConfirmDialog from "../common/ConfirmDialog";
+import { EmptyState } from "../../design/ui";
 
+// The patient's own uploaded documents (lab reports, scans). Also used inside Health records.
 const MedHistList = () => {
-  const [filesList, setFilesList] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [previewFile, setPreviewFile] = useState(null);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  const [errorMsg, setErrorMsg] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const notify = useContext(SnackbarContext);
   const { id, role } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const [files, setFiles] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const getFilesList = async () => {
-      try {
-        const { data } = await axios.get(
-          `${API_URL}/patient/getAllFiles/${id}`
-        );
-        setErrorMsg("");
-        setFilesList(data);
-      } catch (error) {
-        error.response && setErrorMsg(error.response.data);
-      }
-    };
-    getFilesList();
-  }, [id]);
+  const load = () =>
+    axios.get(`${API_URL}/patient/getAllFiles/${id}`)
+      .then((r) => { setFiles(Array.isArray(r.data) ? r.data : []); setError(""); })
+      .catch((e) => { setFiles([]); if (e.response && typeof e.response.data === "string") setError(e.response.data); });
 
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
+  useEffect(() => { if (id) load(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchBlob = (fid) => axios.get(`${API_URL}/patient/download/${fid}/${id}`, { responseType: "blob" });
+
+  const save = async (file) => {
+    try {
+      const r = await fetchBlob(file._id);
+      const name = file.file_path.split("/").pop();
+      download(r.data, name, file.file_mimetype);
+      notify?.(`Saved ${file.title}`, "success");
+    } catch {
+      notify?.("The document couldn't be downloaded. Try again.", "error");
     }
-    setSnackbarOpen(false);
   };
 
-  const downloadFile = async (fid, path, mimetype) => {
+  const review = async (file) => {
     try {
-      const result = await axios.get(
-        `${API_URL}/patient/download/${fid}/${id}`,
-        { responseType: "blob" }
-      );
-      const split = path.split("/");
-      const filename = split[split.length - 1];
-      setErrorMsg("");
-      // Show Snackbar for download success
-      setSnackbarMessage(`File ${filename} downloaded successfully`);
-      setSnackbarOpen(true);
-      download(result.data, filename, mimetype);
-    } catch (error) {
-      if (error.response && error.response.status === 400) {
-        setErrorMsg("Error while downloading file. Try again later");
-      }
+      const r = await fetchBlob(file._id);
+      setPreview({ url: URL.createObjectURL(new Blob([r.data], { type: file.file_mimetype })), mimetype: file.file_mimetype, title: file.title });
+    } catch {
+      notify?.("The document couldn't be opened. Try again.", "error");
     }
   };
 
   const closePreview = () => {
-    if (previewFile?.url) URL.revokeObjectURL(previewFile.url);
-    setPreviewFile(null);
+    if (preview?.url) URL.revokeObjectURL(preview.url);
+    setPreview(null);
   };
 
-  const reviewFile = async (fid, mimetype, title) => {
-    try {
-      const result = await axios.get(
-        `${API_URL}/patient/download/${fid}/${id}`,
-        { responseType: "blob" }
-      );
-      const url = URL.createObjectURL(new Blob([result.data], { type: mimetype }));
-      setPreviewFile({ url, mimetype, title });
-      setErrorMsg("");
-    } catch (error) {
-      setErrorMsg("Unable to open this document.");
-    }
-  };
-
-  const deleteFile = async (fid, path) => {
-    try {
-      await axios.get(`${API_URL}/patient/delete/${fid}/${id}`);
-      const filename = path.split("/").pop();
-      setErrorMsg("");
-      setSnackbarMessage(`File ${filename} deleted successfully`);
-      setSnackbarOpen(true);
-      setFilesList((current) => current.filter((file) => file._id !== fid));
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        setErrorMsg("File not found");
-      } else {
-        setErrorMsg("Error while deleting file. Try again later");
-      }
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    const target = deleteTarget;
+  const remove = async () => {
+    const f = deleteTarget;
     setDeleteTarget(null);
-    await deleteFile(target._id, target.file_path);
+    try {
+      await axios.get(`${API_URL}/patient/delete/${f._id}/${id}`);
+      setFiles((list) => list.filter((x) => x._id !== f._id));
+      notify?.(`Deleted ${f.title}`, "success");
+    } catch (e) {
+      notify?.(e.response?.status === 404 ? "That document is already gone." : "The document couldn't be deleted. Try again.", "error");
+    }
   };
 
-  return role === "patient" ? (
-    <div className="medical-history-list">
-      {errorMsg && <p className="errorMsg">{errorMsg}</p>}
-      <div className="medical-history-toolbar">
+  if (role !== "patient") return null;
+
+  return (
+    <section className="ui-card">
+      <div className="ui-card-head">
         <div>
-          <span>UPLOADED DOCUMENTS</span>
-          <strong>{filesList.length} {filesList.length === 1 ? "document" : "documents"}</strong>
+          <h2 className="ui-section-title">Your documents</h2>
+          <p>{files ? `${files.length} ${files.length === 1 ? "file" : "files"}. Lab reports, scans and other papers your doctors may need.` : "Loading..."}</p>
         </div>
-        <button type="button" className="medical-history-add-button" onClick={handleOpen}>
-          <AddIcon />
-          Add document
+        <button type="button" className="ui-btn ui-btn--primary" onClick={() => setAdding(true)}>
+          <AddRoundedIcon /> Add document
         </button>
       </div>
 
-      {filesList.length > 0 ? (
-        <div className="medical-history-file-list">
-          {filesList.map(({ _id, title, description, file_path, file_mimetype }) => (
-            <div className="medical-history-file" key={_id}>
-              <div className="medical-history-file-icon"><CloudDownloadIcon /></div>
-              <div className="medical-history-file-copy">
-                <strong>{title}</strong>
-                <span>{description || "Medical document"}</span>
-              </div>
-              <div className="medical-history-file-actions">
-                <button
-                  type="button"
-                  className="medical-history-file-action"
-                  aria-label="Review document"
-                  onClick={() => reviewFile(_id, file_mimetype, title)}
-                >
-                  <VisibilityRoundedIcon />
-                  <span>Review</span>
-                </button>
-                <IconButton aria-label="download" onClick={() => downloadFile(_id, file_path, file_mimetype)}>
-                  <CloudDownloadIcon />
-                </IconButton>
-                <IconButton aria-label="delete" onClick={() => setDeleteTarget({ _id, title, file_path })}>
-                  <DeleteIcon />
-                </IconButton>
-              </div>
-            </div>
-          ))}
-        </div>
+      {error && <div className="ui-alert" role="alert" style={{ margin: 16 }}>{error}</div>}
+
+      {files && files.length === 0 ? (
+        <EmptyState icon={<DescriptionRoundedIcon />} title="No documents yet" text="Add a lab report or scan so your doctor can see it before your visit." />
       ) : (
-        <div className="medical-history-empty">
-          <CloudDownloadIcon />
-          <strong>No documents yet</strong>
-          <span>Add lab reports, scans or other supporting medical files.</span>
-        </div>
+        <ul className="ui-list">
+          {(files || []).map((f) => (
+            <li key={f._id} className="ui-row doc-row">
+              <span className="ui-row-icon"><DescriptionRoundedIcon /></span>
+              <span className="ui-row-body">
+                <strong>{f.title}</strong>
+                <span>{f.description || "Medical document"}</span>
+              </span>
+              <span className="doc-actions">
+                <button type="button" className="ui-btn ui-btn--sm" onClick={() => review(f)}><VisibilityRoundedIcon /> View</button>
+                <button type="button" className="ui-icon-btn" aria-label={`Download ${f.title}`} onClick={() => save(f)}><DownloadRoundedIcon /></button>
+                <button type="button" className="ui-icon-btn" aria-label={`Delete ${f.title}`} onClick={() => setDeleteTarget(f)}><DeleteOutlineRoundedIcon /></button>
+              </span>
+            </li>
+          ))}
+        </ul>
       )}
 
-      <Dialog
-        open={Boolean(previewFile)}
-        onClose={closePreview}
-        className="clinic-modern-dialog medical-history-preview-dialog"
-        maxWidth="lg"
-        fullWidth
-      >
+      <Dialog open={Boolean(preview)} onClose={closePreview} className="clinic-modern-dialog medical-history-preview-dialog" maxWidth="lg" fullWidth>
         <DialogTitle className="clinic-dialog-title">
-          <div>
-            <span>MEDICAL HISTORY</span>
-            <h2>{previewFile?.title || "Document review"}</h2>
-          </div>
-          <IconButton className="clinic-dialog-close" onClick={closePreview} aria-label="Close">
-            <CloseRoundedIcon />
-          </IconButton>
+          <div><span>DOCUMENT</span><h2>{preview?.title}</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={closePreview} aria-label="Close"><CloseRoundedIcon /></IconButton>
         </DialogTitle>
         <DialogContent className="medical-history-preview-content">
-          {previewFile?.mimetype?.startsWith("image/") ? (
-            <img
-              src={previewFile.url}
-              alt={previewFile.title || "Medical document"}
-              className="medical-history-preview-image"
-            />
-          ) : previewFile?.mimetype === "application/pdf" ? (
-            <iframe
-              src={previewFile.url}
-              title={previewFile.title || "Medical document"}
-              className="medical-history-preview-frame"
-            />
+          {preview?.mimetype?.startsWith("image/") ? (
+            <img src={preview.url} alt={preview.title || "Medical document"} className="medical-history-preview-image" />
+          ) : preview?.mimetype === "application/pdf" ? (
+            <iframe src={preview.url} title={preview.title || "Medical document"} className="medical-history-preview-frame" />
           ) : (
-            <div className="medical-history-preview-unsupported">
-              <VisibilityRoundedIcon />
-              <strong>Preview is not available for this file type.</strong>
-              <span>Use Download to save the original document.</span>
-            </div>
+            <EmptyState icon={<VisibilityRoundedIcon />} title="No preview for this file type" text="Download it to open the original." />
           )}
         </DialogContent>
       </Dialog>
 
-      <MedHist open={open} onClose={handleClose} />
+      <MedHist open={adding} onClose={() => { setAdding(false); load(); }} />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
+        kicker="DELETE DOCUMENT"
         title="Delete this document?"
-        message={deleteTarget ? `“${deleteTarget.title}” will be permanently removed from your medical history.` : ""}
+        message={deleteTarget ? `"${deleteTarget.title}" is removed from your records for good.` : ""}
         confirmLabel="Delete"
-        cancelLabel="Cancel"
+        cancelLabel="Keep it"
         destructive
-        onConfirm={confirmDelete}
+        onConfirm={remove}
         onCancel={() => setDeleteTarget(null)}
       />
-
-      <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity="success">{snackbarMessage}</Alert>
-      </Snackbar>
-    </div>
-  ) : (
-    <Link to="/Login" className="login-fallback">Login</Link>
+    </section>
   );
 };
 

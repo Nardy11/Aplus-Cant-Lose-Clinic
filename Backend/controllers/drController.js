@@ -8,6 +8,14 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
+
+// Raw driver queries (Model.collection) do not cast string ids from the URL to ObjectId.
+// Match either form so lookups work whether ids were stored as ObjectId or string.
+// Visit time as shown in notifications (the clinic runs on Cairo time).
+const visitTime = (d) =>
+  new Date(d).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Africa/Cairo" });
+const idQuery = (id) =>
+  mongoose.Types.ObjectId.isValid(id) ? { $in: [new mongoose.Types.ObjectId(String(id)), String(id)] } : id;
 const FollowUp=require("../Models/followUps");
 const Medicine = require("../Models/medicine");
 function generateToken(data) {
@@ -724,13 +732,13 @@ async function rescheduleAppointment(req, res) {
     appointment.endDate = endDate;
 
     patient.notifications.push({ //add notifiaction to patient
-      message:`APPOINTEMNT RESCHEULED WITH DOCTOR ${doctor.name}`,
+      message: `Your visit with Dr. ${doctor.name} was moved to ${visitTime(startDate)}.`,
       type:"AppointmentRescheduled",
       entityType:"Appointment",
       entityId:appointment._id,
     });
     doctor.notifications.push({//add notifiaction to doctor
-      message:`APPOINTEMNT RESCHEULED WITH PATIENT ${patient.name}`,
+      message: `Your visit with ${patient.name} was moved to ${visitTime(startDate)}.`,
       type:"AppointmentRescheduled",
       entityType:"Appointment",
       entityId:appointment._id,
@@ -1071,7 +1079,7 @@ const acceptFollowUpRequest = async (req, res) => {
       return res.status(400).json({ message: "Start and end times are required." });
     }
 
-    const request = await FollowUp.collection.findOne({ _id: id });
+    const request = await FollowUp.collection.findOne({ _id: idQuery(id) });
     if (!request) {
       return res.status(404).json({ message: "Follow-up request not found." });
     }
@@ -1100,7 +1108,7 @@ const rejectFollowUpRequest = async (req, res) => {
   try {
     if (!id) return res.status(400).json({ message: "Follow-up request id is required." });
 
-    const request = await FollowUp.collection.findOne({ _id: id });
+    const request = await FollowUp.collection.findOne({ _id: idQuery(id) });
     if (!request) return res.status(404).json({ message: "Follow-up request not found." });
 
     await FollowUp.collection.deleteOne({ _id: request._id });
@@ -1119,7 +1127,7 @@ const cancelAppointment = async (req, res) => {
       return res.status(400).json({ message: "Invalid parameters" });
     }
 
-    const appointment = await Appointment.collection.findOne({ _id: aid });
+    const appointment = await Appointment.collection.findOne({ _id: idQuery(aid) });
     const doctor = await Doctor.findById(did);
     const patient = await Patient.findById(pid);
 
@@ -1133,14 +1141,14 @@ const cancelAppointment = async (req, res) => {
     );
 
     const patientNotification = {
-      message: `APPOINTMENT CANCELED WITH DOCTOR ${doctor.name}`,
+      message: `Your visit with Dr. ${doctor.name} on ${visitTime(appointment.startDate)} was cancelled.`,
       type: "AppointmentCanceled",
       entityType: "Appointment",
       entityId: String(appointment._id),
       timestamp: new Date(),
     };
     const doctorNotification = {
-      message: `APPOINTMENT CANCELED WITH PATIENT ${patient.name}`,
+      message: `Your visit with ${patient.name} on ${visitTime(appointment.startDate)} was cancelled.`,
       type: "AppointmentCanceled",
       entityType: "Appointment",
       entityId: String(appointment._id),

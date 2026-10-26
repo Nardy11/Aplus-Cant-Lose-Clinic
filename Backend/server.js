@@ -13,6 +13,10 @@ const port = process.env.PORT || 10000;
 app.use(cors());
 
 
+// Stripe signs the raw request body, so this route must be registered BEFORE express.json().
+const { stripeWebhook } = require("./controllers/paymentController");
+app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+
 app.use(express.json());
 app.use(cookieParser());
 

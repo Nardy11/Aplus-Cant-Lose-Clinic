@@ -1,493 +1,208 @@
-import React, { useState, useContext } from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import { useSelector, useDispatch } from "react-redux";
-import { useEffect } from "react";
-import SubsciptionPayment from "./SubscriptionPayment";
-import { IconButton } from "@mui/material";
-import InfoIcon from "@mui/icons-material/Info";
-import {
-  viewHealthP,
-  unsubscribeHealthPackage,
-} from "../../features/patientSlice";
-import { Button, Typography } from "@mui/material";
-import { SnackbarContext } from "../../App";
-import { Link } from "react-router-dom";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from "@mui/material";
-import TextField from "@mui/material/TextField";
+import React, { useContext, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
+import { Dialog, DialogTitle, DialogActions, IconButton, Button } from "@mui/material";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { viewHealthP, unsubscribeHealthPackage } from "../../features/patientSlice";
+import { SnackbarContext } from "../../App";
 import { API_URL } from "../../Consts";
 import AccountAvatar from "../Authentication/AccountAvatar";
-import { useNavigate } from "react-router-dom";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import ConfirmDialog from "../common/ConfirmDialog";
+import { Page, PageHead, EmptyState, Skeleton } from "../../design/ui";
+import { formatDate, formatMoney } from "../../design/format";
+
 export default function Hpackages() {
   const snackbarMessage = useContext(SnackbarContext);
-  const id = useSelector((state) => state.user.id);
-  const role = useSelector((state) => state.user.role);
-
-  console.log("patient id is " + id);
-
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const id = useSelector((state) => state.user.id);
+  const plans = useSelector((state) => state.patient.hpackages);
+
+  const [loaded, setLoaded] = useState(false);
+  const [membership, setMembership] = useState(null);
+  const [familyAccounts, setFamilyAccounts] = useState([]);
+  const [chosen, setChosen] = useState(null);          // plan being bought
+  const [step, setStep] = useState(null);              // "who" | "pay"
+  const [recipient, setRecipient] = useState(null);    // { id, name, self }
+  const [unsubscribeTarget, setUnsubscribeTarget] = useState(null);
+  const [working, setWorking] = useState(false);
+
   useEffect(() => {
-    dispatch(viewHealthP(id));
-  }, [dispatch]);
+    if (!id) return;
+    dispatch(viewHealthP(id)).finally(() => setLoaded(true));
+    axios.get(`${API_URL}/patient/profile/${id}`)
+      .then((r) => setFamilyAccounts((r.data?.family || []).filter((f) => f.pid).map((f) => ({ id: f.pid, name: f.fullName, relation: f.relation }))))
+      .catch(() => setFamilyAccounts([]));
+  }, [dispatch, id]);
 
-  const dummyData = useSelector((state) => state.patient.hpackages);
+  const list = Array.isArray(plans) ? plans : [];
+  const current = list.find((p) => p.isSubscribed);
 
-  const handleUnSubscribe = (healthPackage) => {
-    setUnsubscribeTarget(healthPackage);
+  useEffect(() => {
+    if (!current?._id || !id) { setMembership(null); return; }
+    axios.get(`${API_URL}/patient/healthPackageInfo/${id}/${current._id}`)
+      .then((r) => setMembership(r.data?.status ? r.data : null))
+      .catch(() => setMembership(null));
+  }, [current?._id, id]);
+
+  const close = () => { setStep(null); setChosen(null); setRecipient(null); setWorking(false); };
+
+  const choose = (plan) => {
+    setChosen(plan);
+    if (familyAccounts.length) {
+      setStep("who");
+    } else {
+      setRecipient({ id, name: "you", self: true });
+      setStep("pay");
+    }
+  };
+
+  const payWithWallet = async () => {
+    setWorking(true);
+    try {
+      const body = { amount: chosen.rate };
+      if (recipient.self) {
+        await axios.patch(`${API_URL}/patient/SubscriptionPayment/${id}/${chosen._id}`, body);
+      } else {
+        await axios.patch(`${API_URL}/patient/SubscriptionPaymentF/${recipient.id}/${chosen._id}/${id}`, body);
+      }
+      snackbarMessage(`${chosen.type} plan is active for ${recipient.self ? "you" : recipient.name}`, "success");
+      close();
+      dispatch(viewHealthP(id));
+      if (!recipient.self) navigate("/Home");
+    } catch (e) {
+      snackbarMessage(e.response?.data?.message || e.response?.data?.error || "Your wallet balance isn't enough for this plan. Pay by card instead.", "error");
+      setWorking(false);
+    }
+  };
+
+  const payByCard = async () => {
+    setWorking(true);
+    try {
+      const r = await axios.post(`${API_URL}/patient/checkout/plan`, { packageId: chosen._id, recipientId: recipient.id, payerId: id });
+      if (!r.data?.url) throw new Error("Card checkout did not start.");
+      window.location.assign(r.data.url);
+    } catch (e) {
+      snackbarMessage(e.response?.data?.error || e.message || "Card checkout did not start.", "error");
+      setWorking(false);
+    }
   };
 
   const confirmUnsubscribe = async () => {
-    if (!unsubscribeTarget?._id) return;
-    setUnsubscribing(true);
+    setWorking(true);
     try {
-      await dispatch(
-        unsubscribeHealthPackage({
-          Pid: id,
-          healthPackageId: unsubscribeTarget._id,
-        })
-      ).unwrap();
-
-      snackbarMessage("Health package unsubscribed successfully.", "success");
+      await dispatch(unsubscribeHealthPackage({ Pid: id, healthPackageId: unsubscribeTarget._id })).unwrap();
+      snackbarMessage(`Your ${unsubscribeTarget.type} plan is cancelled.`, "success");
       setUnsubscribeTarget(null);
-    } catch (error) {
-      console.error("Error unsubscribing from health package:", error);
-      snackbarMessage(
-        error?.error || error?.message || "Unable to unsubscribe from this health package.",
-        "error"
-      );
+      dispatch(viewHealthP(id));
+    } catch (e) {
+      snackbarMessage(e?.error || e?.message || "The plan couldn't be cancelled. Try again.", "error");
     } finally {
-      setUnsubscribing(false);
+      setWorking(false);
     }
   };
 
-  //dialogiue component state
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogData, setDialogData] = useState("");
-  const[firstDialogue,setfirstDialogue]=useState(false);
-  const[secondDialogue,setSecondDialogue]=useState(false);
-  const[thirdDialogue,setThirdDialogue]=useState(false);
-  const[fourthDialogue,setFourthDialogue]=useState(false);
-  const [familyMemberUsername, setFamilyMemberUsername] = useState("");
-  const[subscribeID,setSubscribeID]=useState("");
-  const[packageID,setPackageID]=useState("");
-  const[amount,setAmount]=useState("");
-  const [confirmFamilyClose, setConfirmFamilyClose] = useState(false);
-  const [unsubscribeTarget, setUnsubscribeTarget] = useState(null);
-  const [unsubscribing, setUnsubscribing] = useState(false);
-  const [creditCardLoading, setCreditCardLoading] = useState(false);
-
-  const navigate = useNavigate();
-
-  const handleOpenDialog = async (healthPackageId) => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/patient/healthPackageInfo/${id}/${healthPackageId}`
-      );
-      const responseData = response.data;
-
-      setDialogData(responseData); // Assuming you have a state variable to store the data
-      setDialogOpen(true);
-    } catch (error) {
-      console.error("Error fetching health package info:", error);
-    }
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
-  const handleSubscribe=(id,rate)=>
-  {
-    setPackageID(id);
-    setAmount(rate);
-    console.log("RATEEEE",rate)
-    setfirstDialogue(true);
-    
-  }
-  const handleSubscribeForMyself=()=>
-  {
-    setfirstDialogue(false);
-    setSecondDialogue(true);
-    setSubscribeID(id);
-  }
-  const handleSubscribeForFamilyMember=()=>
-  {
-    setThirdDialogue(true)
-
-  }
-  const requestFamilyDialogClose = () => {
-    if (familyMemberUsername.trim()) {
-      setConfirmFamilyClose(true);
-    } else {
-      setThirdDialogue(false);
-    }
-  };
-
-  const discardFamilyDialog = () => {
-    setConfirmFamilyClose(false);
-    setFamilyMemberUsername("");
-    setThirdDialogue(false);
-  };
-
-  const handleSubmitFamilyMember=async()=>
-  {
-
-    try {
-      
-      const response = await axios.get(
-        `${API_URL}/patient/patientID/${familyMemberUsername}`
-      );
-      console.log("this is the response",response)
-      setSubscribeID(response.data._id)
-      setThirdDialogue(false);
-      setFourthDialogue(true);
-    } catch (error) {
-      console.error("Error getting ID", error);
-    }
-  }
-  const handleWalletButtonClick = async() => {
-    try{
-      const body={amount:amount};
-      console.log("Here",amount);
-      const response=await axios.patch(`${API_URL}/patient/SubscriptionPayment/${subscribeID}/${packageID}`,body)
-      snackbarMessage("You have successfully Subscribed to HealthPackage", "success");
-      navigate('/Home');
-
-    }catch(error)
-    {
-      console.error('Error:', error);
-      snackbarMessage("No Sufficient Balance!", "error");
-      
-    }
-   
-   
-  
-    };
-    const handleWalletButtonClickFamily = async() => {
-      try{
-        const body={amount:amount};
-        console.log("my parameter",subscribeID,packageID,id);
-        const response=await axios.patch(`${API_URL}/patient/SubscriptionPaymentF/${subscribeID}/${packageID}/${id}`,body)
-        snackbarMessage("You have successfully Subscribed to HealthPackage", "success");
-        navigate('/Home');
-  
-      }catch(error)
-      {
-        console.error('Error:', error);
-        snackbarMessage("No Sufficient Balance!", "error");
-        
-      }
-     
-     
-    
-      };
-    
-  const handleCreditCardButtonClick = async () => {
-    if (creditCardLoading || !subscribeID || !packageID) return;
-
-    setCreditCardLoading(true);
-    try {
-      const response = await axios.get(
-        `${API_URL}/patient/createCheckoutSession/${subscribeID}/${packageID}`
-      );
-      const url = response.data?.url;
-      if (!url) throw new Error("Stripe did not return a checkout URL.");
-      window.location.assign(url);
-    } catch (error) {
-      console.error("Unable to start credit-card checkout:", error);
-      snackbarMessage(
-        error.response?.data?.error || error.message || "Unable to start card payment.",
-        "error"
-      );
-      setCreditCardLoading(false);
-    }
-  };;
-    
-
-  const tableStyle = {
-    width: "80%",
-    marginLeft: "50px",
-    boxShadow: "5px 5px 5px 5px #8585854a",
-    marginTop: "30px",
-    marginBottom: "20px",
-  };
-
-  const cellStyle = {
-    fontSize: "20px",
-  };
-
-  const subscribeButtonStyle = {
-    backgroundColor: "#004E98",
-    color: "white",
-    marginRight: "20%",
-    width: "70%", // Set the width to the desired value for both buttons
-  };
-
-  const unsubscribeButtonStyle = {
-    backgroundColor: "#a80b0b", // Red background color for Unsubscribe
-    color: "white",
-    marginRight: "20%",
-    width: "70%", // Set the width to the desired value for both buttons
-  };
-
-  const infoButtonStyle = {
-    backgroundColor: "#7b1fa2", // Red background color for Unsubscribe
-    color: "white",
-  };
-
-  return role === "patient" ? (
+  return (
     <>
-      <div>
-        <AccountAvatar />
-      </div>
-      <main className="health-packages-page"><section className="health-packages-heading"><span>CARE PLANS</span><h1>Health packages</h1><p>Choose a plan that fits your care and coverage needs.</p></section>
-      <TableContainer component={Paper} className="health-packages-table">
-        <Table className="health-packages-grid" sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell align="left" style={cellStyle}>
-                Type
-              </TableCell>
-              <TableCell align="left" style={cellStyle}>
-                Rate
-              </TableCell>
-              <TableCell style={cellStyle}>Doctor Discount</TableCell>
-              <TableCell align="left" style={cellStyle}>
-                Medicine Discount
-              </TableCell>
-              <TableCell align="left" style={cellStyle}>
-                Family Discount
-              </TableCell>
-              <TableCell align="left" style={cellStyle}></TableCell>
-              <TableCell align="left" style={cellStyle}></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {dummyData.map((row, index) => (
-              <TableRow
-                key={row._id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" style={cellStyle} scope="row">
-                  {row.type}
-                </TableCell>
-                <TableCell align="left" style={cellStyle}>
-                  {row.rate}
-                </TableCell>
-                <TableCell align="left" style={cellStyle}>
-                  {row.doctorDisc}
-                </TableCell>
-                <TableCell align="left" style={cellStyle}>
-                  {row.medicineDisc}
-                </TableCell>
-                <TableCell align="left" style={cellStyle}>
-                  {row.familyDisc}
-                </TableCell>
-
-                <TableCell align="left" style={cellStyle}>
-                  {!row.isSubscribed ? (
-                    
-                      <Button
-                        sx={subscribeButtonStyle}
-                        onClick={() => {
-                          handleSubscribe(row._id, row.rate);
-                        }}
-                      >
-                        <Typography>Subscribe</Typography>
-                      </Button>
-                   
-                  ) : (
-                    <Button
-                      sx={unsubscribeButtonStyle}
-                      onClick={() => {
-                        console.log(row.isSubscribed);
-                        handleUnSubscribe(row);
-                      }}
-                    >
-                      <Typography>Unsubscribe</Typography>
-                    </Button>
-                  )}
-                </TableCell>
-
-                <TableCell>
-                  <IconButton
-                    sx={infoButtonStyle}
-                    onClick={() => {
-                      handleOpenDialog(row._id);
-                    }}
-                  >
-                    <InfoIcon fontSize="medium" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-            <HealthPackageInfo
-              data={dialogData}
-              openDialog={dialogOpen}
-              closeDialog={handleCloseDialog}
-            ></HealthPackageInfo>
-            <Dialog open={firstDialogue} onClose={()=>setfirstDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
-      <DialogTitle className="clinic-dialog-title">
-        <div><span>CARE PLAN</span><h2>Who is this plan for?</h2></div>
-        <IconButton className="clinic-dialog-close" onClick={()=>setfirstDialogue(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
-      </DialogTitle>
-      <div className="package-dialog-body">
-        <p>Select who should receive this health package.</p>
-        <div className="package-choice-grid">
-          <button type="button" className="package-choice-option" onClick={handleSubscribeForMyself}>
-            <strong>Myself</strong><span>Apply the package to your account</span>
-          </button>
-          <button type="button" className="package-choice-option" onClick={handleSubscribeForFamilyMember}>
-            <strong>Family member</strong><span>Apply it to a connected family member</span>
-          </button>
-        </div>
-      </div>
-      <DialogActions className="clinic-dialog-actions">
-        <Button onClick={()=>setfirstDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
-      </DialogActions>
-    </Dialog>
-    <Dialog open={secondDialogue} onClose={()=>setSecondDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
-      <DialogTitle className="clinic-dialog-title">
-        <div><span>PAYMENT</span><h2>Choose payment method</h2></div>
-        <IconButton className="clinic-dialog-close" onClick={()=>setSecondDialogue(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
-      </DialogTitle>
-      <div className="package-dialog-body">
-        <p>Choose how you want to pay for this health package.</p>
-        <div className="package-choice-grid">
-          <button type="button" className="package-choice-option" onClick={handleWalletButtonClick}>
-            <strong>Wallet</strong><span>Use your clinic account balance</span>
-          </button>
-          <button type="button" className="package-choice-option" onClick={handleCreditCardButtonClick} disabled={creditCardLoading}>
-            <strong>{creditCardLoading ? "Opening checkout…" : "Credit card"}</strong>
-            <span>{creditCardLoading ? "Connecting to secure payment" : "Continue securely to card payment"}</span>
-          </button>
-        </div>
-      </div>
-      <DialogActions className="clinic-dialog-actions">
-        <Button onClick={()=>setSecondDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
-      </DialogActions>
-    </Dialog>
-    <Dialog open={thirdDialogue} onClose={requestFamilyDialogClose} className="clinic-modern-dialog package-choice-dialog">
-      <DialogTitle className="clinic-dialog-title">
-        <div><span>HOUSEHOLD</span><h2>Select family member</h2></div>
-        <IconButton className="clinic-dialog-close" onClick={requestFamilyDialogClose} aria-label="Close"><CloseRoundedIcon /></IconButton>
-      </DialogTitle>
-      <div className="package-dialog-body">
-        <p>Enter the username of the family member who should receive the package.</p>
-        <TextField
-          label="Family member username"
-          variant="outlined"
-          fullWidth
-          value={familyMemberUsername}
-          onChange={(e) => setFamilyMemberUsername(e.target.value)}
+      <AccountAvatar />
+      <Page>
+        <PageHead
+          title="Plans"
+          lead={current ? `You're on ${current.type}. Every doctor session costs ${current.doctorDisc}% less.` : "A plan lowers the price of doctor sessions and medicine for a year."}
         />
-      </div>
-      <DialogActions className="clinic-dialog-actions">
-        <Button onClick={requestFamilyDialogClose} className="clinic-dialog-cancel">Cancel</Button>
-        <Button onClick={handleSubmitFamilyMember} className="clinic-dialog-primary">Continue</Button>
-      </DialogActions>
-    </Dialog>
-    <ConfirmDialog
-      open={Boolean(unsubscribeTarget)}
-      title="Unsubscribe from this health package?"
-      message={unsubscribeTarget ? `You will lose the benefits of “${unsubscribeTarget.type}” immediately. You can subscribe again later.` : ""}
-      confirmLabel={unsubscribing ? "Unsubscribing..." : "Confirm unsubscribe"}
-      cancelLabel="Keep package"
-      destructive
-      onConfirm={confirmUnsubscribe}
-      onCancel={() => !unsubscribing && setUnsubscribeTarget(null)}
-    />
 
-    <ConfirmDialog
-      open={confirmFamilyClose}
-      title="Discard family member selection?"
-      message="The family member username you entered has not been submitted. Leaving now will remove it."
-      confirmLabel="Discard"
-      cancelLabel="Keep editing"
-      destructive
-      onConfirm={discardFamilyDialog}
-      onCancel={() => setConfirmFamilyClose(false)}
-    />
+        {!loaded && !list.length ? (
+          <div className="ui-grid ui-grid-3"><Skeleton height={300} count={3} /></div>
+        ) : !list.length ? (
+          <div className="ui-card"><EmptyState title="No plans available" text="The clinic hasn't published any plans yet." /></div>
+        ) : (
+          <div className="ui-grid ui-grid-3">
+            {list.map((plan) => (
+              <article key={plan._id} className={`ui-plan ${plan.isSubscribed ? "ui-plan--current" : ""}`}>
+                <div className="ui-plan-name">
+                  <h3>{plan.type}</h3>
+                  {plan.isSubscribed && <span className="ui-chip ui-chip--accent">Your plan</span>}
+                </div>
+                <div className="ui-plan-price">{formatMoney(plan.rate)}<span>/ year</span></div>
+                <ul>
+                  <li><strong>{plan.doctorDisc}%</strong> off doctor sessions</li>
+                  <li><strong>{plan.medicineDisc}%</strong> off medicine</li>
+                  <li><strong>{plan.familyDisc}%</strong> off plans for your family</li>
+                </ul>
+                {plan.isSubscribed && membership?.subscribedDate && (
+                  <p className="ui-plan-meta">Member since {formatDate(membership.subscribedDate)}</p>
+                )}
+                {plan.isSubscribed ? (
+                  <button type="button" className="ui-btn ui-btn--danger" onClick={() => setUnsubscribeTarget(plan)}>Cancel plan</button>
+                ) : (
+                  <button type="button" className={`ui-btn ${current ? "" : "ui-btn--primary"}`} onClick={() => choose(plan)}>
+                    {current ? `Switch to ${plan.type}` : `Choose ${plan.type}`}
+                  </button>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </Page>
 
-    <Dialog open={fourthDialogue} onClose={()=>setFourthDialogue(false)} className="clinic-modern-dialog package-choice-dialog">
-      <DialogTitle className="clinic-dialog-title">
-        <div><span>PAYMENT</span><h2>Choose payment method</h2></div>
-        <IconButton className="clinic-dialog-close" onClick={()=>setFourthDialogue(false)} aria-label="Close"><CloseRoundedIcon /></IconButton>
-      </DialogTitle>
-      <div className="package-dialog-body">
-        <p>Choose how you want to pay for your family member's package.</p>
-        <div className="package-choice-grid">
-          <button type="button" className="package-choice-option" onClick={handleWalletButtonClickFamily}>
-            <strong>Wallet</strong><span>Use your clinic account balance</span>
-          </button>
-          <button type="button" className="package-choice-option" onClick={handleCreditCardButtonClick} disabled={creditCardLoading}>
-            <strong>{creditCardLoading ? "Opening checkout…" : "Credit card"}</strong>
-            <span>{creditCardLoading ? "Connecting to secure payment" : "Continue securely to card payment"}</span>
-          </button>
+      <Dialog open={step === "who"} onClose={close} className="clinic-modern-dialog package-choice-dialog">
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>{chosen?.type?.toUpperCase()} PLAN</span><h2>Who is this plan for?</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={close} aria-label="Close"><CloseRoundedIcon /></IconButton>
+        </DialogTitle>
+        <div className="package-dialog-body">
+          <div className="package-choice-grid">
+            <button type="button" className="package-choice-option" onClick={() => { setRecipient({ id, name: "you", self: true }); setStep("pay"); }}>
+              <strong>Me</strong><span>Apply the plan to your account</span>
+            </button>
+            {familyAccounts.map((f) => (
+              <button key={f.id} type="button" className="package-choice-option" onClick={() => { setRecipient({ id: f.id, name: f.name, self: false }); setStep("pay"); }}>
+                <strong>{f.name}</strong><span>Your {f.relation}</span>
+              </button>
+            ))}
+          </div>
+          <p className="booking-note" style={{ marginTop: 12 }}>
+            Only family members with their own account can get a plan. <Link to="/viewfamilymembers">Link a family member</Link>
+          </p>
         </div>
-      </div>
-      <DialogActions className="clinic-dialog-actions">
-        <Button onClick={()=>setFourthDialogue(false)} className="clinic-dialog-cancel">Cancel</Button>
-      </DialogActions>
-    </Dialog>
-          </TableBody>
-        </Table>
-      </TableContainer>
-      </main>
-    </>
-  ) : (
-    <>
-      <Link to="/Login" sx={{ left: "100%" }}>
-        <Typography
-          variant="h6"
-          noWrap
-          component="div"
-          sx={{
-            flexGrow: 1,
-            display: { xs: "none", sm: "flex" },
-            fontSize: "20px",
-            maragin: "auto",
-          }}
-        >
-          Login
-        </Typography>
-      </Link>
+        <DialogActions className="clinic-dialog-actions">
+          <Button onClick={close} className="clinic-dialog-cancel">Cancel</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={step === "pay"} onClose={() => !working && close()} className="clinic-modern-dialog package-choice-dialog">
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>{chosen ? `${chosen.type.toUpperCase()} PLAN, ${formatMoney(chosen.rate)} / YEAR` : "PAYMENT"}</span><h2>How do you want to pay?</h2></div>
+          <IconButton className="clinic-dialog-close" onClick={close} aria-label="Close" disabled={working}><CloseRoundedIcon /></IconButton>
+        </DialogTitle>
+        <div className="package-dialog-body">
+          {recipient && !recipient.self && <p>This plan is for {recipient.name}. You pay for it.</p>}
+          <div className="package-choice-grid">
+            <button type="button" className="package-choice-option" onClick={payWithWallet} disabled={working}>
+              <strong>Wallet</strong><span>Pay from your clinic balance</span>
+            </button>
+            <button type="button" className="package-choice-option" onClick={payByCard} disabled={working}>
+              <strong>{working ? "Opening checkout..." : "Card"}</strong><span>Continue to secure card payment</span>
+            </button>
+          </div>
+        </div>
+        <DialogActions className="clinic-dialog-actions">
+          <Button onClick={close} className="clinic-dialog-cancel" disabled={working}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+
+      <ConfirmDialog
+        open={Boolean(unsubscribeTarget)}
+        kicker="CANCEL PLAN"
+        title={`Cancel your ${unsubscribeTarget?.type || ""} plan?`}
+        message="Your discounts stop right away. You can choose a plan again at any time."
+        confirmLabel={working ? "Cancelling..." : "Cancel plan"}
+        cancelLabel="Keep plan"
+        destructive
+        onConfirm={confirmUnsubscribe}
+        onCancel={() => !working && setUnsubscribeTarget(null)}
+      />
     </>
   );
 }
-
-const HealthPackageInfo = ({ data, openDialog, closeDialog }) => {
-  // Use dialogData instead of the static data passed as a prop
-  return (
-    <Dialog open={openDialog} onClose={closeDialog} className="clinic-modern-dialog package-info-dialog">
-      <DialogTitle className="clinic-dialog-title">
-        <div><span>CARE PLAN</span><h2>Package details</h2></div>
-        <IconButton className="clinic-dialog-close" onClick={closeDialog} aria-label="Close"><CloseRoundedIcon /></IconButton>
-      </DialogTitle>
-      <DialogContent className="package-info-content">
-        {Object.entries(data).map(([key, value]) => (
-          <div className="package-info-row" key={key}>
-            <strong>{key}</strong><span>{String(value)}</span>
-          </div>
-        ))}
-      </DialogContent>
-      <DialogActions className="clinic-dialog-actions">
-        <Button onClick={closeDialog} className="clinic-dialog-primary">Done</Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-

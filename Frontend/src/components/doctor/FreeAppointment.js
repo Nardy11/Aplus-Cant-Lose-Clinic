@@ -1,75 +1,82 @@
-import * as React from 'react';
-import axios from 'axios';
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import {
-    Typography
-} from "@mui/material";
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
+import * as React from "react";
+import axios from "axios";
+import { useContext, useState } from "react";
+import { useSelector } from "react-redux";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Button from "@mui/material/Button";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { ClinicDateTimeField } from "../common/ClinicFields";
-import { useDispatch, useSelector } from "react-redux";
 import { API_URL } from "../../Consts";
+import { SnackbarContext } from "../../App";
 import ConfirmDialog from "../common/ConfirmDialog";
+import { formatDateTime } from "../../design/format";
 
-function FreeAppointment() {
-    const [open, setOpen] = React.useState(false);
-    const [endDate, setEndDate] = useState(null);
-    const { id, role } = useSelector((state) => state.user);
-    const [startDate, setStartDate] = useState(null);
-    const [confirmClose, setConfirmClose] = useState(false);
-    async function addFreeTimeSlots() {
-        try {
-            const response = await axios.post(`${API_URL}/doctor/addAppointmentSlot/${id}`, {
-                startDate,
-                endDate
-            });
-            console.log(response);
-        } catch (error) {
-            console.error("Error posting free slots", error);
-        }
+// Opens one bookable time on the doctor's schedule.
+function FreeAppointment({ buttonClassName = "ui-btn ui-btn--primary", onSaved }) {
+  const notify = useContext(SnackbarContext);
+  const { id } = useSelector((state) => state.user);
+  const [open, setOpen] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
+
+  const reset = () => { setStartDate(null); setEndDate(null); setError(""); setSaving(false); };
+  const requestClose = () => { if (startDate || endDate) setConfirmClose(true); else { setOpen(false); reset(); } };
+
+  const save = async () => {
+    if (!startDate || !endDate) return setError("Choose when the time starts and ends.");
+    if (new Date(endDate) <= new Date(startDate)) return setError("The end has to be after the start.");
+    if (new Date(startDate) <= new Date()) return setError("Choose a time in the future.");
+    setSaving(true);
+    try {
+      await axios.post(`${API_URL}/doctor/addAppointmentSlot/${id}`, { startDate, endDate });
+      notify?.(`Open time added: ${formatDateTime(startDate)}`, "success");
+      setOpen(false);
+      reset();
+      onSaved?.();
+    } catch (e) {
+      setError(e.response?.data?.message || e.response?.data?.error || "The time couldn't be added. Try again.");
+      setSaving(false);
     }
-    
-    const reset = () => { setStartDate(null); setEndDate(null); };
-    const hasDraft = Boolean(startDate || endDate);
-    const requestClose = () => { if (hasDraft) setConfirmClose(true); else { setOpen(false); reset(); } };
-    const save = async () => {
-        if (!startDate || !endDate) { alert("Choose start and end dates."); return; }
-        await addFreeTimeSlots();
-        setOpen(false);
-        reset();
-    };
-    
+  };
 
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-    return (
-        <>
-            <Button className="doctor-secondary-button" variant="outlined" onClick={handleClickOpen}>
-                Add free Appointment SLots
-            </Button>
-            <Dialog open={open} onClose={requestClose} className="doctor-dialog">
-                <DialogTitle>Add Free Time Slot</DialogTitle>
-                <DialogContent>
-                    <ClinicDateTimeField value={startDate} onChange={setStartDate} label="Start date & time" />
-                    <ClinicDateTimeField value={endDate} onChange={setEndDate} label="End date & time" />
-                </DialogContent>
-                <DialogActions>
-                    <Button className="doctor-secondary-button" onClick={requestClose}>Cancel</Button>
-                    <Button disableRipple className="doctor-primary-button" onClick={save}>Add slot</Button>
-                </DialogActions>
-            </Dialog>
-        <ConfirmDialog open={confirmClose} title="Discard time slot?" message="You have selected appointment times. Closing now will discard the unsaved slot." confirmLabel="Discard" cancelLabel="Keep editing" destructive onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }} onCancel={() => setConfirmClose(false)} />
-        </>
-    );
+  return (
+    <>
+      <button type="button" className={buttonClassName} onClick={() => setOpen(true)}>
+        <AddRoundedIcon /> Add open time
+      </button>
+      <Dialog open={open} onClose={requestClose} className="clinic-modern-dialog doctor-dialog" maxWidth="xs" fullWidth>
+        <DialogTitle className="clinic-dialog-title">
+          <div><span>SCHEDULE</span><h2>Add an open time</h2></div>
+        </DialogTitle>
+        <DialogContent style={{ display: "grid", gap: 14, paddingTop: 4 }}>
+          <p className="clinic-dialog-copy" style={{ margin: 0 }}>Patients can book this time once you add it.</p>
+          <ClinicDateTimeField value={startDate} onChange={setStartDate} label="Starts" />
+          <ClinicDateTimeField value={endDate} onChange={setEndDate} label="Ends" />
+          {error && <div className="ui-alert" role="alert">{error}</div>}
+        </DialogContent>
+        <DialogActions className="clinic-dialog-actions">
+          <Button className="clinic-dialog-cancel" onClick={requestClose} disabled={saving}>Cancel</Button>
+          <Button className="clinic-dialog-primary" onClick={save} disabled={saving}>{saving ? "Adding..." : "Add open time"}</Button>
+        </DialogActions>
+      </Dialog>
+      <ConfirmDialog
+        open={confirmClose}
+        title="Discard this time?"
+        message="You picked a time but haven't added it yet."
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        destructive
+        onConfirm={() => { setConfirmClose(false); setOpen(false); reset(); }}
+        onCancel={() => setConfirmClose(false)}
+      />
+    </>
+  );
 }
 
 export default FreeAppointment;

@@ -128,3 +128,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# OS / IDE noise
+.DS_Store
+.vs/
+
+# Files people upload while using the app (the folders must exist, so keep a .gitkeep)
+Backend/files/*
+Backend/medHist/*
+!Backend/files/.gitkeep
+!Backend/medHist/.gitkeep

@@ -7,7 +7,10 @@ import PatientDirect from "./PatientDirect";
 import AdminDirect from "./PatientDirect";
 
 import DoctorDirect from "./DoctorDirect";
-import { createContext, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { ThemeProvider } from "@mui/material/styles";
+import { makeTheme } from "./design/theme";
 import dayjs from "dayjs";
 import "dayjs/plugin/weekOfYear";
 import "dayjs/plugin/customParseFormat";
@@ -25,15 +28,12 @@ import RegisterAsPatient from "./components/Authentication/RegisterAsPatient";
 import Prescriptions from "./components/patient/Prescription";
 import ListOfPrescriptions from "./components/patient/ListOfPrescriptions";
 import ViewFamilyMember from "./components/patient/viewfamilymember";
-import NewFamilyMember from "./components/patient/newfamilymember";
 import Appointments from "./components/patient/appointments";
 import DoctorsList from "./components/patient/DoctorsList";
 import Doctordetails from "./components/patient/Doctordetails";
 import Admin from "./components/Adminstrator/Admin";
 import PaHome from "./components/patient/Home";
 import ViewHealthPackage from "./components/patient/ViewHealthPackage";
-import SubsciptionPayment from "./components/patient/SubscriptionPayment";
-import FamilyMemberForm from "./components/patient/FamilyMemberForm.js";
 import Chatpage from "./Pages/Chatpage";
 import FollowUpRequests from "./components/doctor/FollowUpRequests.js";
 
@@ -52,6 +52,8 @@ import MyAppointments from "./components/doctor/MyAppointments"; // Update the p
 import PatientDetails from "./components/doctor/PatientView"; // Update the path to match your file structure
 import PatientList from "./components/doctor/PatientsList";
 import Start from "./components/Start.js";
+import Landing from "./components/Landing";
+import PaymentReturn from "./components/patient/PaymentReturn";
 import { Snackbar, Alert } from "@mui/material";
 import RegisterAsDoctor from "./components/Authentication/RegisterAsDoctor";
 import ProfileDirect from "./ProfileDirect";
@@ -64,12 +66,9 @@ import ResetPassword from "./components/Authentication/ResetPassword";
 import VideoChat from "./components/VideoChat.js";
 import ChangePass from "./components/Authentication/ChangePass";
 import Contract from "./components/doctor/Contract.js";
-import Success from "./components/patient/Success.js";
 import HealthRecords from "./components/patient/HealthRecords.js";
 import AvailableApp from "./components/patient/AvailableApp";
-import MedHistList from "./components/patient/MedHistList";
 import Vid from "./components/Vid.js";
-import SuccessAppoint from "./components/patient/SuccessAppoint";
 import DocPrescriptions from "./components/doctor/Prescription";
 import NotificationsPage from "./components/NotificationsPage";
 import WalletPage from "./components/WalletPage";
@@ -83,29 +82,30 @@ const router = createBrowserRouter(
 
     <Route>
 
-      <Route path="/"element={<Start />} />
-      <Route path="/Login" element={<Login />} />
-      <Route path="/reset_password/:id/:token" element={<ChangePass />} />
-      <Route path="/ResetPassword" element={<ResetPassword />} />
-      <Route path="/RegisterAs" element={<RegisterAs />} />
+      {/* Public pages share the public header. */}
+      <Route element={<Start />}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/Login" element={<Login />} />
+        <Route path="/ResetPassword" element={<ResetPassword />} />
+        <Route path="/RegisterAs" element={<RegisterAs />} />
+        <Route path="/RegisterAsPatient" element={<RegisterAsPatient />} />
+        <Route path="/RegisterAsDoctor" element={<RegisterAsDoctor />} />
+        <Route path="/upload" element={<Upload />} />
+        <Route path="/reset_password/:id/:token" element={<ChangePass />} />
+      </Route>
       <Route path="/Home" element={<HomeDirect />} />
       <Route path="/Notifications" element={<NotificationsPage />} />
       <Route path="/Wallet" element={<WalletPage />} />
-      <Route path="/upload" element={<Upload />} />
-    <Route path="/RegisterAsPatient" element={<RegisterAsPatient />} />
-    <Route path="/RegisterAsDoctor" element={<RegisterAsDoctor />} />
       <Route path='/Prescription' element={<DocPrescriptions/>} />
       <Route path="/MedHist" element={<MedHist />} />
-      <Route path="/MedHistList" element={<MedHistList />} />
+      {/* The document list lives inside Health records; this standalone route had no header. */}
+      <Route path="/MedHistList" element={<Navigate to="/HealthRecords" replace />} />
       <Route path="/Appointments" element={<Appointments />} />
       <Route path="/appointmentPatientss/:doctorId" element={<AvailableApp />} />
       <Route path="viewfamilymembers" element={<ViewFamilyMember />} />
       <Route path="ViewHealthPackage" element={<ViewHealthPackage />} />
       <Route path="HealthRecords" element={<HealthRecords />} />
-      <Route
-        path="viewfamilymembers/newfamilymembers"
-        element={<NewFamilyMember />}
-      />
+      <Route path="viewfamilymembers/newfamilymembers" element={<Navigate to="/viewfamilymembers" replace />} />
       <Route path="ListOfPrescriptions" element={<ListOfPrescriptions />} />
       <Route
         path="viewSpecificPrescription/:id"
@@ -113,10 +113,8 @@ const router = createBrowserRouter(
       />
       <Route path="DoctorsList" element={<DoctorsList />} />
       <Route path="DoctorsList/Doctordetails" element={<Doctordetails />} />
-      
-      <Route path="/SubscriptionPayment/:h_id/:amount" element={<SubsciptionPayment/>} />  
-      <Route path="/Success/:id/:h_id" element={<Success/>}/>
-      <Route path="/FamilyMemberForm" element={<FamilyMemberForm/>}/>
+      <Route path="/payment/return" element={<PaymentReturn />} />
+      <Route path="/FamilyMemberForm" element={<Navigate to="/viewfamilymembers" replace />} />
 
 
       <Route path="/Profile" element={<ProfileDirect />} />
@@ -128,8 +126,6 @@ const router = createBrowserRouter(
 
       
       <Route path="AddHealthPackages" element={<AddPack />} />
-
-      <Route path="/SuccessAppoint/:appointmentID/:patientId" element={<SuccessAppoint/>}/>
 
       <Route path="/chats" element={<Chatpage/>} />
       <Route path="/FollowUpRequests" element={<FollowUpRequests/>}/>
@@ -145,6 +141,14 @@ const router = createBrowserRouter(
 export const SnackbarContext = createContext();
 
 const App = () => {
+  const role = useSelector((state) => state.user.role);
+  const theme = useMemo(() => makeTheme(role), [role]);
+
+  useEffect(() => {
+    // Accent tokens switch on this attribute: blue for patients, green for doctors.
+    document.documentElement.dataset.role = role === "doctor" ? "doctor" : "patient";
+  }, [role]);
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -156,20 +160,22 @@ const App = () => {
   }
 
   return (
-    <div>
+    <ThemeProvider theme={theme}>
       <SnackbarContext.Provider value={displaySnackbar}>
         <RouterProvider router={router} />
       </SnackbarContext.Provider>
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={10000}
+        autoHideDuration={6000}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        className="app-toast"
         onClose={() => {
           setSnackbarOpen(false);
         }}
       >
         <Alert className="clinic-snackbar-alert" severity={snackbarSeverity}>{snackbarMessage}</Alert>
       </Snackbar>
-    </div>
+    </ThemeProvider>
   );
 };
 

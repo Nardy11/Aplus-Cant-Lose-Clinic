@@ -1,121 +1,89 @@
-import React, { useState, useContext } from "react";
-import { useDispatch,useSelector } from "react-redux";
+import React, { useState, useContext, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
+import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
 import { loginGuest } from "../../features/userSlice";
-import "./login.css";
-import { useEffect } from "react";
 import { SnackbarContext } from "../../App";
-import { NavLink, useNavigate } from "react-router-dom";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-function App() {
+function Login() {
   const navigate = useNavigate();
   const snackbarMessage = useContext(SnackbarContext);
-
   const dispatch = useDispatch();
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const user = useSelector((state) => state.user);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const submitted = useRef(false);
 
   useEffect(() => {
     if (user.logged) {
-      snackbarMessage("You have successfully logged in", "success");
-      setIsSubmitted(true);
+      snackbarMessage("Signed in", "success");
       navigate("/Home");
-    } else if (user.error) {
-      snackbarMessage("Error: user not found", "error");
+    } else if (user.error && submitted.current) {
+      setError("That username and password don't match. Check both and try again.");
     }
-  }, [user]);
+  }, [user.logged, user.error]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const guest = {
-      username: event.target.elements.username.value,
-      password: event.target.elements.password.value,
-    };
-    const response = dispatch(loginGuest(guest));
-  };
-
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const linkStyle = {
-    textDecoration: "none",
-    color: "#0073e6",
-    borderBottom: "1px solid transparent",
-    transition: "border-bottom 0.3s",
-  };
-
-  const hoverStyle = {
-    borderBottom: "1px solid #0073e6",
+    submitted.current = true;
+    setError("");
+    dispatch(
+      loginGuest({
+        username: event.target.elements.username.value.trim(),
+        password: event.target.elements.password.value,
+      })
+    );
   };
 
   return (
-    <div className="app">
-      <div className="login-form">
-        <div className="title">Sign In</div>
-        {isSubmitted ? (
-          <div>User is successfully logged in</div>
-        ) : (
-          <div className="form">
-            <form onSubmit={handleSubmit}>
-              <div className="input-container">
-                <label htmlFor="username" style={{fontSize:"18px"}}>Username </label>
-                <input type="text" id="username" name="username" required />
-              </div>
-              <div className="input-container">
-                <label htmlFor="password" style={{fontSize:"18px"}}>Password </label>
-                <div className="password-input">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    required
-                  /><span>
-                  <InputAdornment position="end">
-                    <IconButton sx={{}}onClick={toggleShowPassword}>
-                      {showPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment></span>
-                </div>
-              </div>
+    <main className="ui-auth-shell">
+      <form className="ui-auth-card" onSubmit={handleSubmit} noValidate={false}>
+        <h1 className="ui-title">Sign in</h1>
+        <p className="ui-lead">Welcome back. Patients and doctors sign in here.</p>
 
-              <div className="options">
-                <div>
-                  <span>Don't have an account? </span>
-                  <NavLink
-                    to="/"
-                    style={linkStyle}
-                    activeStyle={hoverStyle}
-                  >
-                    Register
-                  </NavLink>
-                </div>
+        {error && <div className="ui-alert" role="alert">{error}</div>}
 
-                <div>
-                  <span>Forgot password? </span>
-                  <NavLink
-                    to="/ResetPassword"
-                    style={linkStyle}
-                    activeStyle={hoverStyle}
-                  >
-                    Reset password
-                  </NavLink>
-                </div>
-              </div>
+        <div className="ui-field">
+          <label htmlFor="username">Username</label>
+          <input className="ui-input" id="username" name="username" autoComplete="username" required />
+        </div>
 
-              <div className="button-container">
-                <input type="submit" />
-              </div>
-            </form>
+        <div className="ui-field">
+          <div className="ui-auth-label-row">
+            <label htmlFor="password">Password</label>
+            <Link to="/ResetPassword">Forgot password?</Link>
           </div>
-        )}
-      </div>
-    </div>
+          <div className="ui-auth-password">
+            <input
+              className="ui-input"
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              className="ui-icon-btn"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <VisibilityOffRoundedIcon /> : <VisibilityRoundedIcon />}
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" className="ui-btn ui-btn--primary ui-btn--lg ui-btn--block" disabled={user.loading}>
+          {user.loading ? "Signing in..." : "Sign in"}
+        </button>
+
+        <p className="ui-auth-foot">
+          New to El7a2ny? <Link to="/RegisterAs">Create an account</Link>
+        </p>
+      </form>
+    </main>
   );
 }
 
-export default App;
+export default Login;

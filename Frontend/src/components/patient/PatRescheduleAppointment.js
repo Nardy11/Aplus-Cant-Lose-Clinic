@@ -12,7 +12,7 @@ import { ClinicDateTimeField } from "../common/ClinicFields";
 import { SnackbarContext } from "../../App";
 import ConfirmDialog from "../common/ConfirmDialog";
 
-function RescheduleAppointment({ appointment }) {
+function RescheduleAppointment({ appointment, buttonClassName }) {
   const [open, setOpen] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -81,15 +81,28 @@ function RescheduleAppointment({ appointment }) {
 
   return (
     <>
-      <Button
-        className="appointment-action-button appointment-reschedule-button"
-        onClick={() => {
-          resetForm();
-          setOpen(true);
-        }}
-      >
-        Reschedule
-      </Button>
+      {buttonClassName ? (
+        <button
+          type="button"
+          className={buttonClassName}
+          onClick={() => {
+            resetForm();
+            setOpen(true);
+          }}
+        >
+          Reschedule
+        </button>
+      ) : (
+        <Button
+          className="appointment-action-button appointment-reschedule-button"
+          onClick={() => {
+            resetForm();
+            setOpen(true);
+          }}
+        >
+          Reschedule
+        </Button>
+      )}
 
       <Dialog
         open={open}

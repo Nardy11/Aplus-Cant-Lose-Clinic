@@ -10,6 +10,8 @@ import './styles.scss';
 
 import ChatProvider from "./Context/ChatProvider";
 import "./index.css";
+import "./design/tokens.css";
+import "./design/ui.css";
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(

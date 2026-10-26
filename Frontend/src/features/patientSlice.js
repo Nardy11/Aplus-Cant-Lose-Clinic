@@ -63,22 +63,22 @@ export const getAlldoctors = createAsyncThunk("patient/getAlldoctors", async () 
 
 export const addPatient = createAsyncThunk(
   "patient/addPatient",
-  async (data) => {
-    console.log(data);
-
-    const response = await axios.post(`${API_URL}/patient/addPatient/`, {
-      name: data.name,
-      email: data.email,
-      username: data.username,
-      dBirth: data.dBirth,
-      mobile: data.mobile,
-      gender: data.gender,
-      emergencyContact: data.emergencyContact,
-
-      password: data.password,
-    });
-
-    return response;
+  async (data, { rejectWithValue }) => {
+    try {
+      return await axios.post(`${API_URL}/patient/addPatient/`, {
+        name: data.name,
+        email: data.email,
+        username: data.username,
+        dBirth: data.dBirth,
+        mobile: data.mobile,
+        gender: data.gender,
+        emergencyContact: data.emergencyContact,
+        password: data.password,
+      });
+    } catch (error) {
+      // Pass the server's reason ("Email already exists") through to the form.
+      return rejectWithValue(error.response?.data?.error || error.response?.data?.message || null);
+    }
   }
 );
 export const addFamilyMember = createAsyncThunk(

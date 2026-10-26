@@ -10,6 +10,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LockResetRoundedIcon from "@mui/icons-material/LockResetRounded";
+import { isStrongPassword, PASSWORD_HINT } from "../../design/password";
 
 const ChangePass = () => {
   const { id, token } = useParams();
@@ -19,22 +20,30 @@ const ChangePass = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
 
-  const handleSubmit = (event) => {
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
     const password = event.target.elements.password.value;
     const password2 = event.target.elements.password2.value;
 
-    if (password !== password2) {
-      snackbarMessage("The passwords do not match.", "error");
-      return;
-    }
+    if (password !== password2) return setError("The two passwords don't match.");
+    if (!isStrongPassword(password)) return setError(`Choose a stronger password: ${PASSWORD_HINT}`);
 
-    const response = dispatch(changePassword({ password, id, token }));
-    if (response) {
-      snackbarMessage("Password has been changed successfully.", "success");
+    setSaving(true);
+    const result = await dispatch(changePassword({ password, id, token }));
+    setSaving(false);
+    // The server answers 200 with a Status text, including for failures such as an expired link.
+    const status = result.payload?.data?.Status;
+    if (result.meta.requestStatus === "fulfilled" && status === "Password changed successfully") {
+      snackbarMessage("Password changed. Sign in with the new one.", "success");
       navigate("/Login");
+    } else if (status === "Error with token") {
+      setError("This reset link has expired. Request a new one from the sign-in page.");
     } else {
-      snackbarMessage(`error: ${response.message} has occurred`, "error");
+      setError(typeof status === "string" ? status : "The password couldn't be changed. Try again.");
     }
   };
 
@@ -45,7 +54,7 @@ const ChangePass = () => {
         <span className="auth-eyebrow">SECURITY</span>
         <h1>Set a new password</h1>
         <p className="reset-copy">
-          Choose a strong password for your A+ Clinic account.
+          Choose a strong password for your El7a2ny Clinic account.
         </p>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -97,8 +106,11 @@ const ChangePass = () => {
             </div>
           </div>
 
-          <button type="submit" className="auth-submit">
-            Change password
+          <small className="auth-hint">{PASSWORD_HINT}</small>
+          {error && <div className="ui-alert" role="alert">{error}</div>}
+
+          <button type="submit" className="auth-submit" disabled={saving}>
+            {saving ? "Saving..." : "Change password"}
           </button>
         </form>
       </section>

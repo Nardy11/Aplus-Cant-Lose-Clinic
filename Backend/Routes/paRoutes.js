@@ -90,14 +90,13 @@ router.patch(
   "/SubscriptionPaymentF/:patientId/:healthPackageId/:id",
   payWithWalletF
 );
-router.patch(
-  "/CCSubscriptionPayment/:patientId/:healthPackageId",
-  ccSubscriptionPayment
-);
-router.patch(
-  "/successCreditCardPayment/:patientID/:appointmentID",
-  successCreditCardPayment
-);
+// Card payments live in controllers/paymentController.js. The old "payment finished" endpoints
+// (CCSubscriptionPayment, successCreditCardPayment) were removed: opening their URL activated a
+// plan or booked a visit without any payment.
+const payments = require("../controllers/paymentController");
+router.post("/checkout/visit", payments.createVisitCheckout);
+router.post("/checkout/plan", payments.createPlanCheckout);
+router.get("/checkout/confirm/:sessionId", payments.confirmCheckout);
 const calculateAge = (birthDate) => {
   const today = new Date();
   const dob = new Date(birthDate);
@@ -138,8 +137,11 @@ router.post("/addFamilyLink/:patientId", async (req, res) => {
       }
 
       // Check if the family member is already in the family array using email
+      if (String(familyMember._id) === String(patientId)) {
+        throw new Error("That is your own account. Link someone else.");
+      }
       const isAlreadyFamily = patientToUpdate.family.some(
-        (member) => member.email === email
+        (member) => String(member.pid) === String(familyMember._id)
       );
 
       if (isAlreadyFamily) {
@@ -176,8 +178,11 @@ router.post("/addFamilyLink/:patientId", async (req, res) => {
       }
 
       // Check if the family member is already in the family array using phone number
+      if (String(familyMember._id) === String(patientId)) {
+        throw new Error("That is your own account. Link someone else.");
+      }
       const isAlreadyFamily = patientToUpdate.family.some(
-        (member) => member.phoneNumber === req.body.phoneNumber
+        (member) => String(member.pid) === String(familyMember._id)
       );
 
       if (isAlreadyFamily) {
@@ -269,11 +274,6 @@ router.post("/payPrescriptionWithWallet/:prescriptionId/:patientId", payPrescrip
 router.get("/viewWallet/:patientId", viewWallet);
 router.get("/healthPackageInfo/:patientId/:healthPackageId", healthPackageInfo);
 
-router.get("/createCheckoutSession/:pid/:id", createCheckoutSession);
-router.post(
-  "/createAppointmentCheckoutSession/:amount/:appointmentId/:patientId",
-  createAppointmentCheckoutSession
-);
 router.get("/MyDoctors/:patientId", async (req, res) => {
   try {
     const patientId = req.params.patientId;
@@ -356,15 +356,8 @@ router.get("/calculateAmount/:drId/:patientId", async (req, res) => {
       return res.status(404).json({ message: "Doctor or Patient not found" });
     }
 
-    // Calculate amount based on doctor's rate and patient's health package
-    let amount = doctor.rate * 100;
-
-    if (patient.hPStatus === "Subscribed" && patient.hPackage) {
-      // Assuming hPackage has a rate field
-      amount -= patient.hPackage.rate;
-    }
-
-    res.json({ amount });
+    // One price rule, shared with card checkout (controllers/paymentController.js).
+    res.json(payments.visitPrice(doctor, patient));
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
