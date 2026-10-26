@@ -215,8 +215,9 @@ const DoctorProfilePage = () => {
   ];
 
   return (
+    <>
+    <AccountAvatar />
     <main className="doctor-profile-page">
-      <AccountAvatar />
       <div className="doctor-profile-shell">
         <button type="button" className="doctor-profile-back" onClick={() => navigate("/Home")}>
           <ArrowBackRoundedIcon /> Back to home
@@ -379,6 +380,7 @@ const DoctorProfilePage = () => {
         onCancel={() => setConfirmClose(false)}
       />
     </main>
+    </>
   );
 };
 

@@ -255,7 +255,7 @@ const payPrescriptionWithWallet = async (req, res) => {
       balanceAfter: patient.wallet,
       direction: "debit",
       type: "prescription_payment",
-      description: `Prescription payment ${prescription._id}`,
+      description: `Medicines: ${resolvedMedicines.map((m) => m.name).filter(Boolean).join(", ")}`,
     });
 
     await Promise.all(
