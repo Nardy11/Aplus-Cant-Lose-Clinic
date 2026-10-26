@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import "../../styles.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -9,36 +9,46 @@ import MedicalServicesRoundedIcon from "@mui/icons-material/MedicalServicesRound
 import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
+// Latest allowed birth date: doctors are at least 24 (the old form froze this at 2002-10-15).
+const latestBirth = () => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 24);
+  return d.toISOString().slice(0, 10);
+};
+
 function RegisterAsDoctor() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const snackbarMessage = useContext(SnackbarContext);
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    setError("");
+    const form = event.target;
 
     const sampleData = {
-      name: event.target.elements.name.value,
-      email: event.target.elements.email.value,
-      username: event.target.elements.username.value,
-      dBirth: event.target.elements.dBirth.value,
-      gender: event.target.elements.gender.value,
-      password: event.target.elements.password.value,
-      rate: event.target.elements.rate.value,
-      affilation: event.target.elements.affilation.value,
-      background: event.target.elements.background.value,
-      speciality: event.target.elements.speciality.value,
+      name: form.elements.name.value.trim(),
+      email: form.elements.email.value.trim(),
+      username: form.elements.username.value.trim(),
+      dBirth: form.elements.dBirth.value,
+      gender: form.elements.gender.value,
+      password: form.elements.password.value,
+      rate: form.elements.rate.value,
+      affilation: form.elements.affilation.value.trim(),
+      background: form.elements.background.value.trim(),
+      speciality: form.elements.speciality.value.trim(),
     };
 
-    const response = dispatch(registerDoctor(sampleData));
-    response.then((responseData) => {
-      if (responseData.payload === undefined) {
-        snackbarMessage("Registration could not be completed.", "error");
+    setSending(true);
+    dispatch(registerDoctor(sampleData)).then((responseData) => {
+      setSending(false);
+      if (responseData.meta.requestStatus !== "fulfilled") {
+        setError(responseData.payload || "We couldn't submit your application. Check your details and try again.");
+        form.scrollIntoView?.({ behavior: "smooth", block: "start" });
       } else {
-        snackbarMessage(
-          "Registration submitted. Upload your documents to continue.",
-          "success"
-        );
+        snackbarMessage("Details saved. Now upload your documents.", "success");
         navigate("/upload");
       }
     });
@@ -103,11 +113,13 @@ function RegisterAsDoctor() {
                   <input
                     type="password"
                     id="password"
-                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                    title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
+                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}"
+                    title="At least 8 characters, with a number, a symbol, an uppercase letter and a lowercase letter"
                     placeholder="At least 8 characters"
+                    autoComplete="new-password"
                     required
                   />
+                  <small className="auth-hint">8 or more characters, with an uppercase letter, a lowercase letter, a number and a symbol such as ! or @.</small>
                 </div>
                 <div className="auth-field">
                   <label htmlFor="gender">Gender</label>
@@ -119,7 +131,7 @@ function RegisterAsDoctor() {
                 </div>
                 <div className="auth-field">
                   <label htmlFor="dBirth">Date of birth</label>
-                  <input type="date" id="dBirth" max="2002-10-15" required />
+                  <input type="date" id="dBirth" max={latestBirth()} required />
                 </div>
               </div>
             </div>
@@ -155,13 +167,15 @@ function RegisterAsDoctor() {
               <div><strong>Verification required</strong><span>After registration, upload your professional documents for review.</span></div>
             </div>
 
+            {error && <div className="ui-alert" role="alert">{error}</div>}
+
             <div className="auth-form-footer">
-              <button type="submit" className="auth-submit">
-                Continue registration
+              <button type="submit" className="auth-submit" disabled={sending}>
+                {sending ? "Saving..." : "Continue to documents"}
                 <ArrowForwardRoundedIcon />
               </button>
               <span>
-                Already have an account? <NavLink to="/login">Sign in</NavLink>
+                Already have an account? <NavLink to="/Login">Sign in</NavLink>
               </span>
             </div>
           </form>

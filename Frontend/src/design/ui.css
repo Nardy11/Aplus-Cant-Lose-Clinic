@@ -900,3 +900,80 @@ select.ui-input { font-size: 14.5px !important; padding: 0 12px !important; heig
   .ui-toolbar .ui-field { flex: 1 1 100% !important; margin-left: 0 !important; }
   .ui-toolbar { padding: 14px; }
 }
+
+/* Notifications */
+.notif-row { width: 100%; border: 0; background: none; font: inherit; text-align: left; cursor: pointer; }
+.notif-row:hover { background: var(--surface-2); }
+.notif-row.is-unread { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); box-shadow: inset 3px 0 0 var(--accent); }
+.notif-row.is-unread .ui-row-body strong { font-weight: 750; }
+.notif-meta { color: var(--accent-strong) !important; font-weight: 600; }
+.notif-end { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; color: var(--muted); font-size: 13px; }
+.notif-end time { font-weight: 600; font-variant-numeric: tabular-nums; }
+.notif-end svg { color: var(--faint); }
+
+/* Health records */
+.hr-card { display: grid; gap: 14px; padding: 18px 20px; }
+.hr-card header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.hr-card h3 { margin: 0; font-family: var(--font-body); font-size: 16px; font-weight: 700; letter-spacing: 0; }
+.hr-card dl { display: grid; gap: 12px; margin: 0; }
+.hr-card dt { color: var(--muted); font-size: 12.5px; font-weight: 650; }
+.hr-card dd { margin: 2px 0 0; color: var(--ink); font-size: 14.5px; line-height: 1.5; }
+
+/* Documents */
+.doc-row { flex-wrap: wrap; }
+.doc-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+@media (max-width: 640px) { .doc-actions { width: 100%; justify-content: flex-end; } }
+
+/* Family */
+.fam-card { display: grid; gap: 14px; padding: 18px 20px; }
+.fam-card header { display: flex; align-items: center; gap: 12px; }
+.fam-card header > div { flex: 1; min-width: 0; }
+.fam-card h3 { margin: 0; font-family: var(--font-body); font-size: 16px; font-weight: 700; letter-spacing: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fam-card header p { margin: 2px 0 0; color: var(--muted); font-size: 13.5px; }
+.fam-card dl { display: flex; flex-wrap: wrap; gap: 6px 24px; margin: 0; }
+.fam-card dt { color: var(--muted); font-size: 12.5px; font-weight: 650; }
+.fam-card dd { margin: 2px 0 0; font-size: 14.5px; }
+.fam-card footer { display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+.ui-field-error { color: var(--danger); font-size: 13px; font-weight: 600; }
+
+/* Wallet */
+.wallet-summary { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; }
+.wallet-balance,
+.wallet-stat { display: grid; gap: 6px; padding: 18px 20px; }
+.wallet-balance span,
+.wallet-stat span { color: var(--muted); font-size: 13.5px; font-weight: 600; }
+.wallet-balance strong { font-family: var(--font-display); font-size: 36px; font-weight: 620; letter-spacing: -0.03em; line-height: 1.1; }
+.wallet-stat strong { font-family: var(--font-display); font-size: 24px; font-weight: 620; letter-spacing: -0.02em; }
+.is-in { color: var(--ok); }
+.is-out { color: var(--danger); }
+.wallet-dot.is-in { background: var(--ok-soft); color: var(--ok); }
+.wallet-dot.is-out { background: var(--danger-soft); color: var(--danger); }
+.wallet-amount { display: grid; justify-items: end; flex: 0 0 auto; text-align: right; }
+.wallet-amount strong { font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.wallet-amount small { margin-top: 2px; color: var(--muted); font-size: 12.5px; }
+@media (max-width: 640px) {
+  .wallet-summary { grid-template-columns: 1fr 1fr; }
+  .wallet-balance { grid-column: 1 / -1; }
+  .wallet-row { padding: 14px 16px; }
+}
+
+/* Chat on phones: the list OR the open conversation, never both stacked. */
+@media (max-width: 760px) {
+  .chat-columns .chatbox-panel:not(.has-chat) { display: none; }
+  .chat-columns:has(.chatbox-panel.has-chat) .my-chats-panel { display: none; }
+  .chat-columns .chatbox-panel.has-chat { min-height: calc(100dvh - var(--header-h) - 150px); }
+}
+
+/* Sign-up forms (legacy markup) */
+.auth-hint { display: block; margin-top: 6px; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.auth-form .ui-alert { margin-top: 4px; }
+.auth-submit:disabled { opacity: 0.6; cursor: wait; }
+
+/* Sign-up on phones: keep the intro short so the form starts above the fold. */
+@media (max-width: 760px) {
+  .auth-intro { min-height: 0 !important; padding: 22px 20px !important; }
+  .auth-intro .auth-trust { display: none; }
+  .auth-intro h1 { font-size: 26px; }
+  .auth-intro p { font-size: 14px; margin-bottom: 0; }
+}

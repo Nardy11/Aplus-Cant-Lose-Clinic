@@ -138,8 +138,11 @@ router.post("/addFamilyLink/:patientId", async (req, res) => {
       }
 
       // Check if the family member is already in the family array using email
+      if (String(familyMember._id) === String(patientId)) {
+        throw new Error("That is your own account. Link someone else.");
+      }
       const isAlreadyFamily = patientToUpdate.family.some(
-        (member) => member.email === email
+        (member) => String(member.pid) === String(familyMember._id)
       );
 
       if (isAlreadyFamily) {
@@ -176,8 +179,11 @@ router.post("/addFamilyLink/:patientId", async (req, res) => {
       }
 
       // Check if the family member is already in the family array using phone number
+      if (String(familyMember._id) === String(patientId)) {
+        throw new Error("That is your own account. Link someone else.");
+      }
       const isAlreadyFamily = patientToUpdate.family.some(
-        (member) => member.phoneNumber === req.body.phoneNumber
+        (member) => String(member.pid) === String(familyMember._id)
       );
 
       if (isAlreadyFamily) {

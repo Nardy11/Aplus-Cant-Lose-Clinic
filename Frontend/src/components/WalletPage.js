@@ -1,74 +1,94 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import AccountAvatar from "./Authentication/AccountAvatar";
 import { API_URL } from "../Consts";
-import { formatMoney } from "../design/format";
+import { Page, PageHead, EmptyState, Skeleton } from "../design/ui";
+import { formatMoney, formatDateTime } from "../design/format";
+
+// Older history rows ended in a 24-character database id ("Prescription payment 6ade22..."); hide it.
+const cleanText = (text) => String(text || "Wallet transaction").replace(/\s+[0-9a-f]{24}\b/gi, "");
+const typeLabel = (type) => String(type || "other").replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 
 export default function WalletPage() {
   const { id, role } = useSelector((state) => state.user);
-  const navigate = useNavigate();
   const [balance, setBalance] = useState(0);
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState(null);
 
   useEffect(() => {
     if (!id || !["patient", "doctor"].includes(role)) return;
     let active = true;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(role === "doctor" ? `${API_URL}/doctor/viewWallet/${id}` : `${API_URL}/patient/viewWallet/${id}`);
-        if (active) {
-          setBalance(Number(response.data.wallet || 0));
-          setTransactions([...(response.data.transactions || [])].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)));
-        }
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    load();
+    axios.get(role === "doctor" ? `${API_URL}/doctor/viewWallet/${id}` : `${API_URL}/patient/viewWallet/${id}`)
+      .then((r) => {
+        if (!active) return;
+        setBalance(Number(r.data.wallet || 0));
+        setTransactions([...(r.data.transactions || [])].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)));
+      })
+      .catch(() => active && setTransactions([]));
     return () => { active = false; };
   }, [id, role]);
 
-  const totalCredits = useMemo(() => transactions.filter((item) => item.direction === "credit").reduce((sum, item) => sum + Number(item.amount || 0), 0), [transactions]);
-  const totalDebits = useMemo(() => transactions.filter((item) => item.direction === "debit").reduce((sum, item) => sum + Math.abs(Number(item.amount || 0)), 0), [transactions]);
+  const totals = useMemo(() => {
+    const list = transactions || [];
+    const sum = (dir) => list.filter((t) => t.direction === dir).reduce((s, t) => s + Math.abs(Number(t.amount || 0)), 0);
+    return { in: sum("credit"), out: sum("debit") };
+  }, [transactions]);
 
   return (
-    <main className="clinic-list-page">
+    <>
       <AccountAvatar />
-      <div className="clinic-list-shell">
-        <button type="button" className="clinic-page-back" onClick={() => navigate("/Home")}><ArrowBackRoundedIcon />Back to home</button>
-        <section className="clinic-list-heading">
-          <div><span>ACCOUNT</span><h1>Wallet</h1><p>{role === "doctor" ? "Doctor wallet. Every recorded credit and payment is shown below." : "Patient wallet. Every recorded credit and payment is shown below."}</p></div>
-          <div className="clinic-list-heading-icon"><AccountBalanceWalletRoundedIcon /></div>
-        </section>
-        <section className="clinic-wallet-page-summary">
-          <div className="clinic-wallet-page-balance"><span>AVAILABLE BALANCE</span><strong>{formatMoney(balance)}</strong><small>Clinic account credit</small></div>
-          <div className="clinic-wallet-stat"><span>Money added</span><strong className="wallet-positive">+{formatMoney(totalCredits)}</strong></div>
-          <div className="clinic-wallet-stat"><span>{role === "doctor" ? "Money withdrawn" : "Money spent"}</span><strong className="wallet-negative">-{formatMoney(totalDebits)}</strong></div>
-        </section>
-        <section className="clinic-list-card">
-          <div className="clinic-list-card-heading"><div><span>ACTIVITY</span><h2>Wallet history</h2></div><small>{transactions.length} transaction{transactions.length === 1 ? "" : "s"}</small></div>
-          {loading ? <div className="clinic-list-empty"><strong>Loading wallet history...</strong></div> : transactions.length ? (
-            <div className="clinic-wallet-history">
-              {transactions.map((transaction, index) => {
-                const credit = transaction.direction === "credit";
-                return <article className="clinic-wallet-row" key={transaction._id || index}>
-                  <div className={`clinic-wallet-row-icon ${credit ? "credit" : "debit"}`}>{credit ? <AddRoundedIcon /> : <RemoveRoundedIcon />}</div>
-                  <div className="clinic-wallet-row-copy"><strong>{transaction.description || "Wallet transaction"}</strong><span>{transaction.type?.replace(/_/g, " ") || "Other"} · {transaction.timestamp ? new Date(transaction.timestamp).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "Recent"}</span></div>
-                  <div className={`clinic-wallet-row-amount ${credit ? "credit" : "debit"}`}>{credit ? "+" : "-"}{formatMoney(Math.abs(Number(transaction.amount || 0)))}<small>Balance {formatMoney(transaction.balanceAfter)}</small></div>
-                </article>;
+      <Page>
+        <PageHead back="/Home" title="Wallet" lead={role === "doctor" ? "Payments from patients and anything paid out." : "Money for visits, medicines and plans."} />
+
+        <div className="wallet-summary">
+          <div className="ui-card wallet-balance">
+            <span>Balance</span>
+            <strong>{formatMoney(balance)}</strong>
+          </div>
+          <div className="ui-card wallet-stat">
+            <span>Money in</span>
+            <strong className="is-in">+{formatMoney(totals.in)}</strong>
+          </div>
+          <div className="ui-card wallet-stat">
+            <span>{role === "doctor" ? "Money out" : "Money spent"}</span>
+            <strong className="is-out">-{formatMoney(totals.out)}</strong>
+          </div>
+        </div>
+
+        <section className="ui-card" style={{ marginTop: 20 }}>
+          <div className="ui-card-head">
+            <h2 className="ui-section-title">History</h2>
+            {transactions && <span className="ui-toolbar-count">{transactions.length} {transactions.length === 1 ? "transaction" : "transactions"}</span>}
+          </div>
+          {!transactions ? (
+            <div className="ui-card-pad"><Skeleton height={52} count={4} /></div>
+          ) : transactions.length === 0 ? (
+            <EmptyState icon={<AccountBalanceWalletRoundedIcon />} title="No transactions yet" text="Payments, refunds and top-ups show up here." />
+          ) : (
+            <ul className="ui-list">
+              {transactions.map((t, i) => {
+                const credit = t.direction === "credit";
+                return (
+                  <li key={t._id || i} className="ui-row wallet-row">
+                    <span className={`ui-row-icon wallet-dot ${credit ? "is-in" : "is-out"}`}>{credit ? <AddRoundedIcon /> : <RemoveRoundedIcon />}</span>
+                    <span className="ui-row-body">
+                      <strong>{cleanText(t.description)}</strong>
+                      <span>{typeLabel(t.type)}, {t.timestamp ? formatDateTime(t.timestamp) : "recently"}</span>
+                    </span>
+                    <span className="wallet-amount">
+                      <strong className={credit ? "is-in" : "is-out"}>{credit ? "+" : "-"}{formatMoney(Math.abs(Number(t.amount || 0)))}</strong>
+                      <small>Balance {formatMoney(t.balanceAfter)}</small>
+                    </span>
+                  </li>
+                );
               })}
-            </div>
-          ) : <div className="clinic-list-empty"><div className="clinic-list-empty-icon"><AccountBalanceWalletRoundedIcon /></div><strong>No wallet transactions yet</strong><span>Payments, refunds and future wallet activity will appear here.</span></div>}
+            </ul>
+          )}
         </section>
-      </div>
-    </main>
+      </Page>
+    </>
   );
 }

@@ -28,7 +28,6 @@ import RegisterAsPatient from "./components/Authentication/RegisterAsPatient";
 import Prescriptions from "./components/patient/Prescription";
 import ListOfPrescriptions from "./components/patient/ListOfPrescriptions";
 import ViewFamilyMember from "./components/patient/viewfamilymember";
-import NewFamilyMember from "./components/patient/newfamilymember";
 import Appointments from "./components/patient/appointments";
 import DoctorsList from "./components/patient/DoctorsList";
 import Doctordetails from "./components/patient/Doctordetails";
@@ -36,7 +35,6 @@ import Admin from "./components/Adminstrator/Admin";
 import PaHome from "./components/patient/Home";
 import ViewHealthPackage from "./components/patient/ViewHealthPackage";
 import SubsciptionPayment from "./components/patient/SubscriptionPayment";
-import FamilyMemberForm from "./components/patient/FamilyMemberForm.js";
 import Chatpage from "./Pages/Chatpage";
 import FollowUpRequests from "./components/doctor/FollowUpRequests.js";
 
@@ -109,10 +107,7 @@ const router = createBrowserRouter(
       <Route path="viewfamilymembers" element={<ViewFamilyMember />} />
       <Route path="ViewHealthPackage" element={<ViewHealthPackage />} />
       <Route path="HealthRecords" element={<HealthRecords />} />
-      <Route
-        path="viewfamilymembers/newfamilymembers"
-        element={<NewFamilyMember />}
-      />
+      <Route path="viewfamilymembers/newfamilymembers" element={<Navigate to="/viewfamilymembers" replace />} />
       <Route path="ListOfPrescriptions" element={<ListOfPrescriptions />} />
       <Route
         path="viewSpecificPrescription/:id"
@@ -123,7 +118,7 @@ const router = createBrowserRouter(
       
       <Route path="/SubscriptionPayment/:h_id/:amount" element={<SubsciptionPayment/>} />  
       <Route path="/Success/:id/:h_id" element={<Success/>}/>
-      <Route path="/FamilyMemberForm" element={<FamilyMemberForm/>}/>
+      <Route path="/FamilyMemberForm" element={<Navigate to="/viewfamilymembers" replace />} />
 
 
       <Route path="/Profile" element={<ProfileDirect />} />

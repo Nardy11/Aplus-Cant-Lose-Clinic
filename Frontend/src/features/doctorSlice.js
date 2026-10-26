@@ -33,9 +33,13 @@ const doctorState = {
 
 export const registerDoctor = createAsyncThunk(
   "doctor/registerDoctor",
-  async (data) => {
-    const response = await axios.post(`${API_URL}/doctor/addDoctor`,data);
-    return response;
+  async (data, { rejectWithValue }) => {
+    try {
+      return await axios.post(`${API_URL}/doctor/addDoctor`, data);
+    } catch (error) {
+      // Pass the server's reason ("Username already exists") through to the form.
+      return rejectWithValue(error.response?.data?.error || error.response?.data?.message || null);
+    }
   }
 );
 

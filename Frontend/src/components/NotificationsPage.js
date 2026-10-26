@@ -6,321 +6,166 @@ import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneR
 import EventRoundedIcon from "@mui/icons-material/EventRounded";
 import MedicationRoundedIcon from "@mui/icons-material/MedicationRounded";
 import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import HealthAndSafetyRoundedIcon from "@mui/icons-material/HealthAndSafetyRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import AccountAvatar from "./Authentication/AccountAvatar";
 import { API_URL } from "../Consts";
 import { getNotifications } from "../features/patientSlice";
 import { getNotificationsd } from "../features/doctorSlice";
-import { notificationTitle } from "../design/format";
+import { Page, PageHead, EmptyState, Skeleton } from "../design/ui";
+import { notificationTitle, formatTime, relativeDay, dayKey } from "../design/format";
 
-const iconFor = (type = "") => {
-  const normalized = type.toLowerCase();
-  if (normalized.includes("appointment")) return <EventRoundedIcon />;
-  if (normalized.includes("prescription")) return <MedicationRoundedIcon />;
-  if (normalized.includes("follow")) return <AssignmentTurnedInRoundedIcon />;
+const iconFor = (n) => {
+  const type = `${n.type || ""} ${n.entityType || ""}`.toLowerCase();
+  if (type.includes("appointment")) return <EventRoundedIcon />;
+  if (type.includes("prescription")) return <MedicationRoundedIcon />;
+  if (type.includes("follow")) return <AssignmentTurnedInRoundedIcon />;
+  if (type.includes("healthpackage")) return <HealthAndSafetyRoundedIcon />;
   return <NotificationsNoneRoundedIcon />;
 };
 
-const formatType = (type = "") =>
-  type
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (value) => value.toUpperCase());
+// Where a notification leads, per role. Doctors have no /Appointments page.
+const destinationFor = (n, role) => {
+  const { entityType, entityId } = n;
+  const enc = encodeURIComponent;
+  if (role === "doctor") {
+    if (entityType === "Appointment") return "/DocPatients";
+    if (entityType === "FollowUp") return "/FollowUpRequests";
+    if (entityType === "Patient") return "/PatientsList";
+    if (entityType === "Prescription") return "/Prescription";
+    return null;
+  }
+  if (entityType === "Appointment" && entityId) return `/Appointments?appointmentId=${enc(entityId)}`;
+  if (entityType === "Prescription" && entityId) return `/ListOfPrescriptions?prescriptionId=${enc(entityId)}`;
+  if (entityType === "FollowUp") return "/Appointments";
+  if (entityType === "HealthRecord") return "/HealthRecords";
+  if (entityType === "HealthPackage") return "/ViewHealthPackage";
+  if (entityType === "FamilyMember") return "/viewfamilymembers";
+  return null;
+};
 
 export default function NotificationsPage() {
   const { id, role } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState(null);
   const [doctors, setDoctors] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const base = role === "doctor" ? `${API_URL}/doctor/${id}/notifications` : `${API_URL}/patient/${id}/notifications`;
+  const refreshBadge = () => dispatch(role === "doctor" ? getNotificationsd(id) : getNotifications(id));
 
   useEffect(() => {
     if (!id || !["patient", "doctor"].includes(role)) return;
     let active = true;
+    axios.get(base)
+      .then((r) => active && setNotifications([...(r.data.notifications || [])].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))))
+      .catch(() => active && setNotifications([]));
+    if (role === "patient") {
+      axios.get(`${API_URL}/patient/getAlldoctors`)
+        .then((r) => active && setDoctors(Array.isArray(r.data) ? r.data : r.data?.doctors || []))
+        .catch(() => {});
+    }
+    return () => { active = false; };
+  }, [id, role]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const load = async () => {
-      setLoading(true);
-      try {
-        const endpoint =
-          role === "doctor"
-            ? `${API_URL}/doctor/${id}/notifications`
-            : `${API_URL}/patient/${id}/notifications`;
-
-        const response = await axios.get(endpoint);
-        const items = [...(response.data.notifications || [])].sort(
-          (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
-        );
-
-        if (active) setNotifications(items);
-
-        if (role === "patient") {
-          try {
-            const doctorResponse = await axios.get(`${API_URL}/patient/getAlldoctors`);
-            if (active) {
-              const doctorData = Array.isArray(doctorResponse.data)
-                ? doctorResponse.data
-                : doctorResponse.data?.doctors || [];
-              setDoctors(doctorData);
-            }
-          } catch (doctorError) {
-            console.error("Unable to load doctor details for notifications:", doctorError);
-          }
-        }
-      } catch (error) {
-        console.error("Unable to load notifications:", error);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    load();
-    return () => {
-      active = false;
-    };
-  }, [id, role]);
-
-  const subtitle = useMemo(
-    () =>
-      role === "doctor"
-        ? "Updates about your appointments and clinic activity."
-        : "Updates about your appointments and care.",
-    [role]
-  );
-
-  const getDoctorForNotification = (notification) => {
+  const doctorFor = (n) => {
     if (role !== "patient") return null;
-    const message = String(notification.message || "").toLowerCase();
-    return (
-      doctors.find((doctor) =>
-        message.includes(String(doctor.name || "").toLowerCase())
-      ) || null
-    );
+    const message = String(n.message || "").toLowerCase();
+    return doctors.find((d) => d.name && message.includes(d.name.toLowerCase())) || null;
   };
 
-  const getNotificationDestination = (notification) => {
-    const type = notification.entityType;
-    const id = notification.entityId;
-
-    if (type === "Appointment" && id) {
-      return `/Appointments?appointmentId=${encodeURIComponent(id)}`;
-    }
-    if (type === "Prescription" && id) {
-      return `/ListOfPrescriptions?prescriptionId=${encodeURIComponent(id)}`;
-    }
-    if (type === "FollowUp" && id) {
-      return `/Appointments?followUpId=${encodeURIComponent(id)}`;
-    }
-    if (type === "HealthRecord") {
-      return "/HealthRecords";
-    }
-    if (type === "HealthPackage") {
-      return "/ViewHealthPackage";
-    }
-    return null;
-  };
-
-  const markNotificationSeen = async (notification) => {
-    if (!notification?._id || notification.seen) return;
-
-    const endpoint =
-      role === "doctor"
-        ? `${API_URL}/doctor/${id}/notifications/${notification._id}/seen`
-        : `${API_URL}/patient/${id}/notifications/${notification._id}/seen`;
-
+  const markSeen = async (n) => {
+    if (!n?._id || n.seen) return;
+    setNotifications((list) => list.map((x) => (x._id === n._id ? { ...x, seen: true } : x)));
     try {
-      await axios.patch(endpoint);
-      setNotifications((current) =>
-        current.map((item) =>
-          item._id === notification._id ? { ...item, seen: true } : item
-        )
-      );
-    } catch (error) {
-      console.error("Unable to mark notification as seen:", error);
+      await axios.patch(`${base}/${n._id}/seen`);
+      refreshBadge();
+    } catch {
+      setNotifications((list) => list.map((x) => (x._id === n._id ? { ...x, seen: false } : x)));
     }
   };
 
-  const markAllNotificationsSeen = async () => {
-    const unread = notifications.filter((item) => !item.seen);
+  const markAll = async () => {
+    const unread = (notifications || []).filter((n) => !n.seen);
     if (!unread.length) return;
-
-    // Update immediately so the UI and badge respond without waiting for the API.
-    setNotifications((current) =>
-      current.map((item) => ({ ...item, seen: true }))
-    );
-
+    setNotifications((list) => list.map((n) => ({ ...n, seen: true })));
     try {
-      await axios.patch(
-        role === "doctor"
-          ? `${API_URL}/doctor/${id}/notifications/seen-all`
-          : `${API_URL}/patient/${id}/notifications/seen-all`
-      );
-
-      if (role === "doctor") {
-        dispatch(getNotificationsd(id));
-      } else {
-        dispatch(getNotifications(id));
-      }
-    } catch (error) {
-      // Restore the previous unread state if persistence fails.
-      setNotifications((current) =>
-        current.map((item) =>
-          unread.some((unreadItem) => unreadItem._id === item._id)
-            ? { ...item, seen: false }
-            : item
-        )
-      );
-      console.error("Unable to mark all notifications as seen:", error);
+      await axios.patch(`${base}/seen-all`);
+      refreshBadge();
+    } catch {
+      setNotifications((list) => list.map((n) => (unread.some((u) => u._id === n._id) ? { ...n, seen: false } : n)));
     }
   };
 
-  const openNotification = async (notification) => {
-    await markNotificationSeen(notification);
-    const destination = getNotificationDestination(notification);
-    if (destination) {
-      navigate(destination);
-      return;
-    }
-
-    if (notification.type?.toLowerCase().includes("appointment")) {
-      navigate("/Appointments");
-      return;
-    }
-    if (notification.message?.toLowerCase().includes("prescription")) {
-      navigate("/ListOfPrescriptions");
-      return;
-    }
-    if (notification.message?.toLowerCase().includes("follow")) {
-      navigate("/Appointments");
-    }
+  const open = async (n) => {
+    await markSeen(n);
+    const to = destinationFor(n, role);
+    if (to) navigate(to);
   };
+
+  const groups = useMemo(() => {
+    const byDay = new Map();
+    for (const n of notifications || []) {
+      const key = dayKey(n.timestamp);
+      if (!byDay.has(key)) byDay.set(key, []);
+      byDay.get(key).push(n);
+    }
+    return [...byDay.values()];
+  }, [notifications]);
+
+  const unreadCount = (notifications || []).filter((n) => !n.seen).length;
 
   return (
-    <main className="clinic-list-page">
+    <>
       <AccountAvatar />
-      <div className="clinic-list-shell">
-        <button
-          type="button"
-          className="clinic-page-back"
-          onClick={() => navigate("/Home")}
-        >
-          <ArrowBackRoundedIcon />
-          Back to home
-        </button>
+      <Page>
+        <PageHead
+          back="/Home"
+          title="Notifications"
+          lead={unreadCount ? `${unreadCount} unread` : "You're all caught up."}
+          actions={
+            <button type="button" className="ui-btn" onClick={markAll} disabled={!unreadCount}>Mark all as read</button>
+          }
+        />
 
-        <section className="clinic-list-heading clinic-notifications-heading">
-          <div>
-            <span>UPDATES</span>
-            <h1>Notifications</h1>
-            <p>{subtitle}</p>
+        {!notifications ? (
+          <Skeleton height={72} count={4} />
+        ) : groups.length === 0 ? (
+          <div className="ui-card">
+            <EmptyState icon={<NotificationsNoneRoundedIcon />} title="No notifications yet" text="Bookings, prescriptions and plan changes show up here." />
           </div>
-          <div className="clinic-notifications-heading-actions">
-            <button type="button" className="clinic-mark-all-read" onClick={markAllNotificationsSeen} disabled={!notifications.some((item) => !item.seen)}>
-              Mark all as read
-            </button>
-            <div className="clinic-list-heading-icon">
-              <NotificationsNoneRoundedIcon />
-            </div>
+        ) : (
+          <div style={{ display: "grid", gap: 22 }}>
+            {groups.map((group) => (
+              <section key={dayKey(group[0].timestamp)} className="ui-day">
+                <h2 className="ui-day-label">{relativeDay(group[0].timestamp)}</h2>
+                <ul className="ui-card ui-list">
+                  {group.map((n) => {
+                    const doctor = doctorFor(n);
+                    const to = destinationFor(n, role);
+                    return (
+                      <li key={n._id}>
+                        <button type="button" className={`ui-row notif-row ${n.seen ? "" : "is-unread"}`} onClick={() => open(n)}>
+                          <span className="ui-row-icon">{iconFor(n)}</span>
+                          <span className="ui-row-body">
+                            <strong>{notificationTitle(n.type, n.entityType)}</strong>
+                            <span>{n.message}</span>
+                            {doctor?.speciality && <span className="notif-meta">{doctor.speciality}</span>}
+                          </span>
+                          <span className="notif-end">
+                            <time>{formatTime(n.timestamp)}</time>
+                            {to && <ChevronRightRoundedIcon />}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))}
           </div>
-        </section>
-
-        <section className="clinic-list-card">
-          {loading ? (
-            <div className="clinic-list-empty">
-              <strong>Loading notifications...</strong>
-            </div>
-          ) : notifications.length ? (
-            <div className="clinic-notification-list">
-              {notifications.map((notification, index) => {
-                const doctor = getDoctorForNotification(notification);
-                const destination = getNotificationDestination(notification);
-
-                return (
-                  <button
-                    type="button"
-                    className={`clinic-notification-row ${notification.seen ? "is-seen" : "is-unseen"}`}
-                    key={notification._id || index}
-                    onClick={() => openNotification(notification)}
-                    aria-label={`Open ${notification.message || "clinic notification"}`}
-                  >
-                    <div className="clinic-notification-row-icon">
-                      {iconFor(notification.type)}
-                    </div>
-
-                    <div className="clinic-notification-row-copy">
-                      <div>
-                        <strong>
-                          {notificationTitle(notification.type, notification.entityType)}
-                        </strong>
-                        <time>
-                          {notification.timestamp
-                            ? new Date(notification.timestamp).toLocaleString([], {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              })
-                            : "Recent update"}
-                        </time>
-                      </div>
-
-                      <p>{notification.message}</p>
-
-                      {doctor ? (
-                        <div className="clinic-notification-doctor">
-                          <div className="clinic-notification-doctor-heading">
-                            <span>DOCTOR DETAILS</span>
-                            <strong>{doctor.name}</strong>
-                          </div>
-                          <div className="clinic-notification-doctor-grid">
-                            <span>
-                              <small>Speciality</small>
-                              <strong>{doctor.speciality || "Not provided"}</strong>
-                            </span>
-                            <span>
-                              <small>Age</small>
-                              <strong>
-                                {doctor.Dbirth
-                                  ? Math.max(
-                                      0,
-                                      Math.floor(
-                                        (Date.now() - new Date(doctor.Dbirth).getTime()) /
-                                          (365.2425 * 24 * 60 * 60 * 1000)
-                                      )
-                                    )
-                                  : "Not provided"}
-                              </strong>
-                            </span>
-                            <span>
-                              <small>Email</small>
-                              <strong>{doctor.email || "Not provided"}</strong>
-                            </span>
-                            <span>
-                              <small>Phone</small>
-                              <strong>{doctor.mobile || "Not provided"}</strong>
-                            </span>
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className="clinic-notification-row-action">
-                      <span>{destination ? "Open" : "View"}</span>
-                      <ArrowForwardRoundedIcon />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="clinic-list-empty">
-              <div className="clinic-list-empty-icon">
-                <NotificationsNoneRoundedIcon />
-              </div>
-              <strong>No notifications yet</strong>
-              <span>New clinic updates will appear here.</span>
-            </div>
-          )}
-        </section>
-      </div>
-    </main>
+        )}
+      </Page>
+    </>
   );
 }
