@@ -167,7 +167,8 @@ const App = () => {
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        className="app-toast"
         onClose={() => {
           setSnackbarOpen(false);
         }}

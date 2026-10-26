@@ -2,13 +2,14 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
-import { Button, IconButton, DialogTitle } from "@mui/material";
+import { Button, IconButton, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import MedicationRoundedIcon from "@mui/icons-material/MedicationRounded";
 import { API_URL } from "../../Consts";
 import DownloadPage from "./DownloadP";
+import PrescriptionSheet from "../common/PrescriptionSheet";
 import AccountAvatar from "../Authentication/AccountAvatar";
 import { SnackbarContext } from "../../App";
 import { viewPrescriptions } from "../../features/patientSlice";
@@ -31,11 +32,17 @@ export default function ListOfPrescriptions() {
   const [viewing, setViewing] = useState(null);
   const [paying, setPaying] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [patientName, setPatientName] = useState("");
 
   useEffect(() => {
     if (!patientId) return;
     dispatch(viewPrescriptions(patientId)).finally(() => setLoaded(true));
   }, [dispatch, patientId]);
+
+  useEffect(() => {
+    if (!patientId) return;
+    axios.get(`${API_URL}/patient/profile/${patientId}`).then((r) => setPatientName(r.data?.name || "")).catch(() => {});
+  }, [patientId]);
 
   const list = Array.isArray(rows) ? rows : [];
 
@@ -152,55 +159,22 @@ export default function ListOfPrescriptions() {
         )}
       </Page>
 
-      <Dialog open={Boolean(viewing)} onClose={() => setViewing(null)} className="clinic-modern-dialog prescription-view-dialog" maxWidth="md" fullWidth>
-        <DialogTitle className="clinic-dialog-title">
-          <div><span>PRESCRIPTION</span><h2>Dr. {viewing?.doctorID?.name || ""}</h2></div>
-          <IconButton className="clinic-dialog-close" onClick={() => setViewing(null)} aria-label="Close"><CloseRoundedIcon /></IconButton>
-        </DialogTitle>
+      <Dialog open={Boolean(viewing)} onClose={() => setViewing(null)} className="clinic-modern-dialog rx-sheet-dialog" maxWidth="md" fullWidth>
         {viewing && (
-          <div id="pagetodownload" className="prescription-receipt">
-            <div className="prescription-receipt-header">
-              <div className="prescription-brand">
-                <div className="prescription-brand-image"><img src="/virtualclinic.png" alt="El7a2ny Virtual Clinic" /></div>
-                <div><strong>EL7A2NY</strong><span>VIRTUAL CLINIC</span></div>
-              </div>
-              <div className="prescription-receipt-meta">
-                <span>Date prescribed</span>
-                <strong>{formatDate(viewing.datePrescribed)}</strong>
-              </div>
-              <div className="prescription-receipt-meta prescription-receipt-doctor">
-                <span>Doctor</span>
-                <strong>{viewing.doctorID?.name || "Not provided"}</strong>
-                <small>{viewing.doctorID?.speciality || "General care"}</small>
-              </div>
-            </div>
-            <div className="prescription-receipt-body">
-              {(viewing.meds || []).map((m, i) => (
-                <div className="prescription-medicine" key={m.medID?._id || i}>
-                  <div className="prescription-medicine-title">
-                    <strong>{m.medID?.name || "Medicine"}</strong>
-                    <span>{m.medID?.price ? formatMoney(m.medID.price) : "Price not set"}</span>
-                  </div>
-                  <div className="prescription-medicine-grid">
-                    <div><span>Active ingredient</span><strong>{m.medID?.activeElement || "Not provided"}</strong></div>
-                    <div><span>Used for</span><strong>{m.medID?.use || "Not provided"}</strong></div>
-                    <div><span>Dosage</span><strong>{m.dosage || "Not provided"}</strong></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="prescription-receipt-footer">
-              <DownloadPage rootElementId="pagetodownload" downloadFileName="prescription" />
-              {viewing.status === "filled" ? (
-                <div className="prescription-paid-stamp"><img src="/Pharmacy Stamp.png" alt="Pharmacy stamp" /><span>PAID</span></div>
+          <>
+            <DialogContent className="rx-sheet-content">
+              <IconButton className="clinic-dialog-close rx-sheet-close" onClick={() => setViewing(null)} aria-label="Close"><CloseRoundedIcon /></IconButton>
+              <PrescriptionSheet id="pagetodownload" prescription={viewing} patientName={patientName} />
+            </DialogContent>
+            <DialogActions className="clinic-dialog-actions rx-sheet-actions">
+              <DownloadPage rootElementId="pagetodownload" downloadFileName={`prescription-${String(viewing._id).slice(-6)}`} />
+              {viewing.status !== "filled" && totalOf(viewing) > 0 ? (
+                <Button className="clinic-dialog-primary" onClick={() => setPaying(viewing)}>Pay {formatMoney(totalOf(viewing))}</Button>
               ) : (
-                <div className="prescription-total"><span>Total</span><strong>{formatMoney(totalOf(viewing))}</strong></div>
+                <Button className="clinic-dialog-primary" onClick={() => setViewing(null)}>Done</Button>
               )}
-              {viewing.status !== "filled" && totalOf(viewing) > 0 && (
-                <Button className="prescription-action-button" variant="contained" onClick={() => setPaying(viewing)}>Pay {formatMoney(totalOf(viewing))}</Button>
-              )}
-            </div>
-          </div>
+            </DialogActions>
+          </>
         )}
       </Dialog>
 

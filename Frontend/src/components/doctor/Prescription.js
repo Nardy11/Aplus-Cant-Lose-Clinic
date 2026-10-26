@@ -13,6 +13,8 @@ import { API_URL } from "../../Consts";
 import { SnackbarContext } from "../../App";
 import AccountAvatar from "../Authentication/AccountAvatar";
 import ConfirmDialog from "../common/ConfirmDialog";
+import PrescriptionSheet from "../common/PrescriptionSheet";
+import DownloadPage from "../patient/DownloadP";
 import { ClinicDateTimeField } from "../common/ClinicFields";
 import { Page, PageHead, EmptyState, Skeleton, Avatar, StatusChip } from "../../design/ui";
 import { formatDate } from "../../design/format";
@@ -246,39 +248,29 @@ const Prescriptions = () => {
       </Dialog>
 
       {/* One prescription */}
-      <Dialog open={Boolean(current)} onClose={() => setDetails(null)} className="clinic-modern-dialog" maxWidth="sm" fullWidth>
+      <Dialog open={Boolean(current)} onClose={() => setDetails(null)} className="clinic-modern-dialog rx-sheet-dialog" maxWidth="md" fullWidth>
         {current && (
           <>
-            <DialogTitle className="clinic-dialog-title">
-              <div><span>PRESCRIPTION, {formatDate(current.datePrescribed).toUpperCase()}</span><h2>{open?.name}</h2></div>
-              <IconButton className="clinic-dialog-close" onClick={() => setDetails(null)} aria-label="Close"><CloseRoundedIcon /></IconButton>
-            </DialogTitle>
-            <DialogContent style={{ display: "grid", gap: 14, paddingTop: 4 }}>
+            <DialogContent className="rx-sheet-content">
+              <IconButton className="clinic-dialog-close rx-sheet-close" onClick={() => setDetails(null)} aria-label="Close"><CloseRoundedIcon /></IconButton>
               {(locked || !mine) && (
-                <div className="rxp-note">
+                <div className="rxp-note" style={{ marginBottom: 12 }}>
                   {locked ? "The patient has paid for this prescription, so it can't be changed." : `Written by Dr. ${current.doctorID?.name || "another doctor"}. You can read it but not change it.`}
                 </div>
               )}
-              <ul className="rxp-meds">
-                {(current.meds || []).map((m) => (
-                  <li key={m._id || m.medID?._id}>
-                    <div>
-                      <strong>{m.medID?.name || "Medicine"}</strong>
-                      <span>{[m.medID?.activeElement, m.medID?.use].filter(Boolean).join(", ")}</span>
-                      <em>{m.dosage}</em>
-                    </div>
-                    {mine && !locked && (
-                      <div className="rxp-med-actions">
-                        <button type="button" className="ui-icon-btn" aria-label={`Change dosage of ${m.medID?.name}`} onClick={() => { setMedError(""); setMedForm({ mode: "edit", medId: m.medID._id, dosage: m.dosage || "" }); }}><EditRoundedIcon /></button>
-                        <button type="button" className="ui-icon-btn" aria-label={`Remove ${m.medID?.name}`} onClick={() => setRemoving(m)}><DeleteOutlineRoundedIcon /></button>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-
+              <PrescriptionSheet
+                id="doctor-rx-sheet"
+                prescription={current}
+                patientName={open?.name}
+                medActions={mine && !locked ? (m) => (
+                  <>
+                    <button type="button" className="ui-icon-btn" aria-label={`Change dosage of ${m.medID?.name}`} onClick={() => { setMedError(""); setMedForm({ mode: "edit", medId: m.medID._id, dosage: m.dosage || "" }); }}><EditRoundedIcon /></button>
+                    <button type="button" className="ui-icon-btn" aria-label={`Remove ${m.medID?.name}`} onClick={() => setRemoving(m)}><DeleteOutlineRoundedIcon /></button>
+                  </>
+                ) : undefined}
+              />
               {medForm && (
-                <form className="rxp-medform" onSubmit={saveMed} noValidate>
+                <form className="rxp-medform" onSubmit={saveMed} noValidate style={{ marginTop: 14 }}>
                   {medForm.mode === "add" && (
                     <div className="ui-field">
                       <label htmlFor="rx-add-med">Medicine</label>
@@ -286,7 +278,7 @@ const Prescriptions = () => {
                     </div>
                   )}
                   <div className="ui-field">
-                    <label htmlFor="rx-med-dosage">{medForm.mode === "add" ? "Dosage" : "New dosage"}</label>
+                    <label htmlFor="rx-med-dosage">{medForm.mode === "add" ? "How to take it" : "New dosage"}</label>
                     <input id="rx-med-dosage" className="ui-input" value={medForm.dosage} onChange={(e) => setMedForm({ ...medForm, dosage: e.target.value })} autoFocus />
                   </div>
                   {medError && <div className="ui-alert" role="alert">{medError}</div>}
@@ -297,10 +289,11 @@ const Prescriptions = () => {
                 </form>
               )}
             </DialogContent>
-            <DialogActions className="clinic-dialog-actions">
+            <DialogActions className="clinic-dialog-actions rx-sheet-actions">
               {mine && !locked && !medForm && (
                 <Button className="clinic-dialog-cancel" onClick={() => { setMedError(""); setMedForm({ mode: "add", medicine: "", dosage: "" }); }}>Add a medicine</Button>
               )}
+              <DownloadPage rootElementId="doctor-rx-sheet" downloadFileName={`prescription-${String(current._id).slice(-6)}`} />
               <Button className="clinic-dialog-primary" onClick={() => setDetails(null)}>Done</Button>
             </DialogActions>
           </>
