@@ -9,6 +9,10 @@ const nodemailer = require("nodemailer");
 const { default: mongoose } = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const validator = require("validator");
+
+// Same rule the sign-up forms enforce (validator's default strong-password rule).
+const WEAK_PASSWORD = "Use at least 8 characters, with an uppercase letter, a lowercase letter, a number and a symbol.";
 
 function generateToken(data) {
   return jwt.sign(data, process.env.TOKEN_SECRET, { expiresIn: "1800s" });
@@ -248,9 +252,6 @@ const deleteUser = async (req, res) => {
 const changePass = async (req, res) => {
   const { username } = req.params;
   const { oldPassword, newPassword } = req.body;
-  console.log(username)
-  console.log(oldPassword)
-  console.log(newPassword)
 
   try {
     // Find the user by username
@@ -261,10 +262,12 @@ const changePass = async (req, res) => {
     }
 
     // Check if the old password matches the user's current password
-    console.log(user.password);
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Current password is incorrect" });
+    }
+    if (!validator.isStrongPassword(String(newPassword || ""))) {
+      return res.status(400).json({ error: WEAK_PASSWORD });
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
@@ -274,7 +277,6 @@ const changePass = async (req, res) => {
 
     return res.status(200).json({
       message: "Password updated successfully",
-      password: newPassword,
     });
   } catch (err) {
     console.error(err);
@@ -309,6 +311,10 @@ const logout = (req, res) => {
 const changePassword = async (req, res) => {
   const { id, token } = req.params;
   const { password } = req.body;
+
+  if (!validator.isStrongPassword(String(password || ""))) {
+    return res.json({ Status: WEAK_PASSWORD });
+  }
 
   try {
     // First, validate the token

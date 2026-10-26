@@ -34,7 +34,6 @@ import Doctordetails from "./components/patient/Doctordetails";
 import Admin from "./components/Adminstrator/Admin";
 import PaHome from "./components/patient/Home";
 import ViewHealthPackage from "./components/patient/ViewHealthPackage";
-import SubsciptionPayment from "./components/patient/SubscriptionPayment";
 import Chatpage from "./Pages/Chatpage";
 import FollowUpRequests from "./components/doctor/FollowUpRequests.js";
 
@@ -54,6 +53,7 @@ import PatientDetails from "./components/doctor/PatientView"; // Update the path
 import PatientList from "./components/doctor/PatientsList";
 import Start from "./components/Start.js";
 import Landing from "./components/Landing";
+import PaymentReturn from "./components/patient/PaymentReturn";
 import { Snackbar, Alert } from "@mui/material";
 import RegisterAsDoctor from "./components/Authentication/RegisterAsDoctor";
 import ProfileDirect from "./ProfileDirect";
@@ -66,11 +66,9 @@ import ResetPassword from "./components/Authentication/ResetPassword";
 import VideoChat from "./components/VideoChat.js";
 import ChangePass from "./components/Authentication/ChangePass";
 import Contract from "./components/doctor/Contract.js";
-import Success from "./components/patient/Success.js";
 import HealthRecords from "./components/patient/HealthRecords.js";
 import AvailableApp from "./components/patient/AvailableApp";
 import Vid from "./components/Vid.js";
-import SuccessAppoint from "./components/patient/SuccessAppoint";
 import DocPrescriptions from "./components/doctor/Prescription";
 import NotificationsPage from "./components/NotificationsPage";
 import WalletPage from "./components/WalletPage";
@@ -93,8 +91,8 @@ const router = createBrowserRouter(
         <Route path="/RegisterAsPatient" element={<RegisterAsPatient />} />
         <Route path="/RegisterAsDoctor" element={<RegisterAsDoctor />} />
         <Route path="/upload" element={<Upload />} />
+        <Route path="/reset_password/:id/:token" element={<ChangePass />} />
       </Route>
-      <Route path="/reset_password/:id/:token" element={<ChangePass />} />
       <Route path="/Home" element={<HomeDirect />} />
       <Route path="/Notifications" element={<NotificationsPage />} />
       <Route path="/Wallet" element={<WalletPage />} />
@@ -115,9 +113,7 @@ const router = createBrowserRouter(
       />
       <Route path="DoctorsList" element={<DoctorsList />} />
       <Route path="DoctorsList/Doctordetails" element={<Doctordetails />} />
-      
-      <Route path="/SubscriptionPayment/:h_id/:amount" element={<SubsciptionPayment/>} />  
-      <Route path="/Success/:id/:h_id" element={<Success/>}/>
+      <Route path="/payment/return" element={<PaymentReturn />} />
       <Route path="/FamilyMemberForm" element={<Navigate to="/viewfamilymembers" replace />} />
 
 
@@ -130,8 +126,6 @@ const router = createBrowserRouter(
 
       
       <Route path="AddHealthPackages" element={<AddPack />} />
-
-      <Route path="/SuccessAppoint/:appointmentID/:patientId" element={<SuccessAppoint/>}/>
 
       <Route path="/chats" element={<Chatpage/>} />
       <Route path="/FollowUpRequests" element={<FollowUpRequests/>}/>

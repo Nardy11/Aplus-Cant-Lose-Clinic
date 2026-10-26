@@ -112,8 +112,13 @@ export default function AvailableApp() {
     setBusy(true);
     setError("");
     try {
-      await assignVisit();
-      const r = await axios.post(`${API_URL}/patient/createAppointmentCheckoutSession/${amount}/${selected._id}/${patientId}`);
+      // The slot is only reserved once Stripe confirms payment; the server sets the price.
+      const r = await axios.post(`${API_URL}/patient/checkout/visit`, {
+        appointmentId: selected._id,
+        payerId: patientId,
+        forUsername: visitFor,
+        description: reason.trim() || "Video visit",
+      });
       window.location = r.data.url;
     } catch (e) {
       setError(e.response?.data?.error || "Card payment couldn't start. Try again or pay from your wallet.");

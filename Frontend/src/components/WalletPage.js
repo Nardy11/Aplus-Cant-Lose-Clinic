@@ -34,28 +34,44 @@ export default function WalletPage() {
   const totals = useMemo(() => {
     const list = transactions || [];
     const sum = (dir) => list.filter((t) => t.direction === dir).reduce((s, t) => s + Math.abs(Number(t.amount || 0)), 0);
-    return { in: sum("credit"), out: sum("debit") };
+    return { in: sum("credit"), out: sum("debit"), paidVisits: list.filter((t) => t.direction === "credit").length };
   }, [transactions]);
 
   return (
     <>
       <AccountAvatar />
       <Page>
-        <PageHead back="/Home" title="Wallet" lead={role === "doctor" ? "Payments from patients and anything paid out." : "Money for visits, medicines and plans."} />
+        <PageHead back="/Home" title="Wallet" lead={role === "doctor" ? "What patients have paid you for visits." : "Money for visits, medicines and plans."} />
 
         <div className="wallet-summary">
           <div className="ui-card wallet-balance">
             <span>Balance</span>
             <strong>{formatMoney(balance)}</strong>
           </div>
-          <div className="ui-card wallet-stat">
-            <span>Money in</span>
-            <strong className="is-in">+{formatMoney(totals.in)}</strong>
-          </div>
-          <div className="ui-card wallet-stat">
-            <span>{role === "doctor" ? "Money out" : "Money spent"}</span>
-            <strong className="is-out">-{formatMoney(totals.out)}</strong>
-          </div>
+          {role === "doctor" ? (
+            // Doctor wallets only ever receive session payments, so "money out" would always be zero.
+            <>
+              <div className="ui-card wallet-stat">
+                <span>Total received</span>
+                <strong className="is-in">{formatMoney(totals.in)}</strong>
+              </div>
+              <div className="ui-card wallet-stat">
+                <span>Paid visits</span>
+                <strong>{totals.paidVisits}</strong>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="ui-card wallet-stat">
+                <span>Money in</span>
+                <strong className="is-in">+{formatMoney(totals.in)}</strong>
+              </div>
+              <div className="ui-card wallet-stat">
+                <span>Money spent</span>
+                <strong className="is-out">-{formatMoney(totals.out)}</strong>
+              </div>
+            </>
+          )}
         </div>
 
         <section className="ui-card" style={{ marginTop: 20 }}>

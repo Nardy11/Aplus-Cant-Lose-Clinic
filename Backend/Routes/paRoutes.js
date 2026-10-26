@@ -90,14 +90,13 @@ router.patch(
   "/SubscriptionPaymentF/:patientId/:healthPackageId/:id",
   payWithWalletF
 );
-router.patch(
-  "/CCSubscriptionPayment/:patientId/:healthPackageId",
-  ccSubscriptionPayment
-);
-router.patch(
-  "/successCreditCardPayment/:patientID/:appointmentID",
-  successCreditCardPayment
-);
+// Card payments live in controllers/paymentController.js. The old "payment finished" endpoints
+// (CCSubscriptionPayment, successCreditCardPayment) were removed: opening their URL activated a
+// plan or booked a visit without any payment.
+const payments = require("../controllers/paymentController");
+router.post("/checkout/visit", payments.createVisitCheckout);
+router.post("/checkout/plan", payments.createPlanCheckout);
+router.get("/checkout/confirm/:sessionId", payments.confirmCheckout);
 const calculateAge = (birthDate) => {
   const today = new Date();
   const dob = new Date(birthDate);
@@ -275,11 +274,6 @@ router.post("/payPrescriptionWithWallet/:prescriptionId/:patientId", payPrescrip
 router.get("/viewWallet/:patientId", viewWallet);
 router.get("/healthPackageInfo/:patientId/:healthPackageId", healthPackageInfo);
 
-router.get("/createCheckoutSession/:pid/:id", createCheckoutSession);
-router.post(
-  "/createAppointmentCheckoutSession/:amount/:appointmentId/:patientId",
-  createAppointmentCheckoutSession
-);
 router.get("/MyDoctors/:patientId", async (req, res) => {
   try {
     const patientId = req.params.patientId;
@@ -362,16 +356,8 @@ router.get("/calculateAmount/:drId/:patientId", async (req, res) => {
       return res.status(404).json({ message: "Doctor or Patient not found" });
     }
 
-    // Session price = doctor's hourly rate + 10% clinic markup,
-    // minus the subscribed package's doctor-session discount (a percentage).
-    const base = Number(doctor.rate || 0) * 1.1;
-    const discount =
-      patient.hPStatus === "Subscribed" && patient.hPackage
-        ? Number(patient.hPackage.doctorDisc || 0)
-        : 0;
-    const amount = Math.round(base * (1 - discount / 100));
-
-    res.json({ amount, base: Math.round(base), discount });
+    // One price rule, shared with card checkout (controllers/paymentController.js).
+    res.json(payments.visitPrice(doctor, patient));
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });

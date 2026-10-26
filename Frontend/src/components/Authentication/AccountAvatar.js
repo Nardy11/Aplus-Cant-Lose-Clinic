@@ -32,6 +32,7 @@ import axios from "axios";
 import NavbarGen, { MobileTabBar } from "../NavbarGen";
 import { API_URL } from "../../Consts";
 import ConfirmDialog from "../common/ConfirmDialog";
+import { isStrongPassword, PASSWORD_HINT } from "../../design/password";
 
 const AccountAvatar = () => {
   const snackbarMessage = useContext(SnackbarContext);
@@ -124,9 +125,9 @@ const AccountAvatar = () => {
       return;
     }
 
-    if (!/^(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$/.test(newPassword)) {
+    if (!isStrongPassword(newPassword)) {
       setEmptyFieldError(false);
-      setPasswordError("Use at least 8 characters, one uppercase letter and one special character.");
+      setPasswordError(`Choose a stronger password: ${PASSWORD_HINT}`);
       return;
     }
 

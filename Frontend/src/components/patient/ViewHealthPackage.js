@@ -80,7 +80,7 @@ export default function Hpackages() {
   const payByCard = async () => {
     setWorking(true);
     try {
-      const r = await axios.get(`${API_URL}/patient/createCheckoutSession/${recipient.id}/${chosen._id}`);
+      const r = await axios.post(`${API_URL}/patient/checkout/plan`, { packageId: chosen._id, recipientId: recipient.id, payerId: id });
       if (!r.data?.url) throw new Error("Card checkout did not start.");
       window.location.assign(r.data.url);
     } catch (e) {
