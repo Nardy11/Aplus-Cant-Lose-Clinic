@@ -5,7 +5,7 @@ import axios from "axios";
 import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
 import EventRepeatRoundedIcon from "@mui/icons-material/EventRepeatRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { API_URL } from "../../Consts";
+import { API_URL, asset } from "../../Consts";
 import { Page, VisitCard, EmptyState, Skeleton, Avatar } from "../../design/ui";
 import { formatMoney, formatDate, formatTime, relativeDay, isUpcoming, byStart, dayKey, ageFrom } from "../../design/format";
 
@@ -77,7 +77,7 @@ function HomePage() {
           </div>
         </div>
         <div className="home-hero-visual">
-          <img src="/doctors.jpg" alt="A doctor smiling, with her colleagues behind her" />
+          <img src={asset("/doctors.jpg")} alt="A doctor smiling, with her colleagues behind her" />
           <div className="home-hero-card">
             {!data ? (
               <Skeleton height={96} count={1} />

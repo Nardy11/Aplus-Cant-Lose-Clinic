@@ -121,7 +121,7 @@ const navigate = useNavigate();
             aria-label="home"
             sx={{ mr: 2 }}
             onClick={() => {
-              window.location.href = '/Home';
+              navigate('/Home');
             }}
           >
             <HomeIcon />

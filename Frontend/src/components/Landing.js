@@ -7,7 +7,7 @@ import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded
 import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import MedicationRoundedIcon from "@mui/icons-material/MedicationRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import { API_URL } from "../Consts";
+import { API_URL, asset } from "../Consts";
 import { VisitCard } from "../design/ui";
 import { formatMoney } from "../design/format";
 
@@ -59,7 +59,7 @@ export default function Landing() {
           </div>
         </div>
         <div className="land-hero-visual">
-          <img src="/doctors.jpg" alt="A doctor smiling, with her colleagues behind her" />
+          <img src={asset("/doctors.jpg")} alt="A doctor smiling, with her colleagues behind her" />
           <div className="land-hero-card">
             <VisitCard
               feature
@@ -122,7 +122,7 @@ export default function Landing() {
 
       <footer className="land-footer">
         <span className="app-brand">
-          <img src="/brand-mark.png" alt="" />
+          <img src={asset("/brand-mark.png")} alt="" />
           <span><strong>El7a2ny</strong><small>Virtual clinic</small></span>
         </span>
         <nav aria-label="Footer">

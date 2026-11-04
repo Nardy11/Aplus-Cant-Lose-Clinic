@@ -1405,8 +1405,8 @@ const viewPatientHealthRecords = async (req, res) => {
               quantity: 1,
             },
           ],
-          success_url: `http://localhost:3000/Success/${pid}/${trimmedId}`,
-          cancel_url: "http://localhost:3000/ViewHealthPackage",
+          success_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/Success/${pid}/${trimmedId}`,
+          cancel_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/ViewHealthPackage`,
         });
 
         res.json({ url: session.url });
@@ -1468,8 +1468,8 @@ const createAppointmentCheckoutSession = async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `http://localhost:3000/SuccessAppoint/${appointmentId}/${patientId}`,
-      cancel_url: `http://localhost:3000/ViewAppointments`,
+      success_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/SuccessAppoint/${appointmentId}/${patientId}`,
+      cancel_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/ViewAppointments`,
     });
 
     res.json({ url: session.url });

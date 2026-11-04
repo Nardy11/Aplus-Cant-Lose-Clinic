@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { ChatState } from "../Context/ChatProvider";
 import { getSender } from "../config/ChatLogics";
 import ChatLoading from "./ChatLoading";
-import { API_URL } from "../Consts";
+import { API_URL, asset } from "../Consts";
 
 const MyChats = ({ fetchAgain }) => {
   const logId = useSelector((state) => state.user.logId);
@@ -73,7 +73,7 @@ const MyChats = ({ fetchAgain }) => {
           </Stack>
         ) : (
           <div className="chat-empty-list">
-            <img className="chat-empty-list-image" src="/virtualclinic.png" alt="El7a2ny Clinic messaging" style={{ width: 104, height: 104, objectFit: "contain", marginBottom: 14 }} />
+            <img className="chat-empty-list-image" src={asset("/virtualclinic.png")} alt="El7a2ny Clinic messaging" style={{ width: 104, height: 104, objectFit: "contain", marginBottom: 14 }} />
             <strong>Start a care conversation</strong>
             <span>Search for a doctor or patient above to start a private chat.</span>
             <small>Your recent conversations will appear here once you send or receive a message.</small>

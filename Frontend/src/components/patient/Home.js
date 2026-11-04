@@ -12,7 +12,7 @@ import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import FolderSharedRoundedIcon from "@mui/icons-material/FolderSharedRounded";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
-import { API_URL } from "../../Consts";
+import { API_URL, asset } from "../../Consts";
 import { getNotifications } from "../../features/patientSlice.js";
 import { Page, VisitCard, EmptyState, Skeleton } from "../../design/ui";
 import { formatMoney, formatDateTime, isUpcoming, byStart, notificationTitle } from "../../design/format";
@@ -106,7 +106,7 @@ function Home() {
           </div>
         </div>
         <div className="home-hero-visual">
-          <img src="/doctors.jpg" alt="A doctor smiling, with her colleagues behind her" />
+          <img src={asset("/doctors.jpg")} alt="A doctor smiling, with her colleagues behind her" />
           <div className="home-hero-card">
             {!data ? (
               <Skeleton height={96} count={1} />

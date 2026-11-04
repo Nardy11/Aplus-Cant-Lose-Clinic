@@ -74,7 +74,7 @@ app.use("/api/message", messageRoutes);
 const io = require("socket.io")({
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.FRONTEND_URL ? new URL(process.env.FRONTEND_URL).origin : "http://localhost:3000",
     // credentials: true,
   },
 });

@@ -5,7 +5,7 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { Input } from "@heroui/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import { API_URL } from "../Consts";
+import { API_URL, asset } from "../Consts";
 import Lottie from "react-lottie";
 import animationData from "../animations/typing.json";
 import { useSelector } from "react-redux";
@@ -328,7 +328,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         </div>
       ) : (
         <Box className="chat-welcome-empty">
-          <img src="/virtualclinic.png" alt="El7a2ny Clinic messaging" className="chat-welcome-image" />
+          <img src={asset("/virtualclinic.png")} alt="El7a2ny Clinic messaging" className="chat-welcome-image" />
           <Typography className="chat-welcome-title">Your care conversations, in one place</Typography>
           <Typography className="chat-welcome-copy">
             Select a doctor or patient from your chats, or search above to start a private conversation.

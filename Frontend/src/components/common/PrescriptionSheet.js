@@ -1,3 +1,4 @@
+import { asset } from "../../Consts";
 import React from "react";
 import { formatDate, formatMoney } from "../../design/format";
 
@@ -17,7 +18,7 @@ export default function PrescriptionSheet({ id, prescription, patientName, medAc
     <article id={id} className={`rxs ${filled ? "rxs--filled" : ""}`} aria-label="Prescription">
       <header className="rxs-head">
         <div className="rxs-brand">
-          <img src="/brand-mark.png" alt="" />
+          <img src={asset("/brand-mark.png")} alt="" />
           <div>
             <strong>El7a2ny</strong>
             <span>Virtual Clinic</span>
@@ -69,8 +70,8 @@ export default function PrescriptionSheet({ id, prescription, patientName, medAc
           <small>Signed electronically</small>
         </div>
         <div className="rxs-stamps">
-          <img className="rxs-stamp rxs-stamp--clinic" src="/Clinic%20Stamp.png" alt="El7a2ny Virtual Clinic seal" />
-          {filled && <img className="rxs-stamp rxs-stamp--pharmacy" src="/Pharmacy%20Stamp.png" alt="El7a2ny Pharmacy seal" />}
+          <img className="rxs-stamp rxs-stamp--clinic" src={asset("/Clinic%20Stamp.png")} alt="El7a2ny Virtual Clinic seal" />
+          {filled && <img className="rxs-stamp rxs-stamp--pharmacy" src={asset("/Pharmacy%20Stamp.png")} alt="El7a2ny Pharmacy seal" />}
         </div>
         <div className="rxs-total">
           <span>{filled ? "Paid" : "Total to pay"}</span>
