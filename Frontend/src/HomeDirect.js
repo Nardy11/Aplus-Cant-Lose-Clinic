@@ -10,6 +10,7 @@ import Navbar from "./components/Navbar";
 import io from 'socket.io-client';
 import {socketset} from "./features/userSlice";
 import AccountAvatar from "./components/Authentication/AccountAvatar"; // Import the AccountAvatar component
+import { SOCKET_URL } from "./Consts";
 const containerStyles = {
   height: "fit-content",
   maragin: "0 auto",
@@ -19,7 +20,7 @@ const containerStyles = {
   paddingBottom: "2px",
   paddingTop: "2px", // Center items vertically
 };
-const ENDPOINT = 'http://localhost:10000'; // "https://talk-a-tive.herokuapp.com"; -> After deployment
+const ENDPOINT = SOCKET_URL;
 const socket = io(ENDPOINT);
 
 

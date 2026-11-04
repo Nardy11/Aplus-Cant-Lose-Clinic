@@ -1,3 +1,4 @@
+import { SOCKET_URL } from "../Consts";
 import Button from "@mui/material/Button"
 import IconButton from "@mui/material/IconButton"
 import TextField from "@mui/material/TextField"
@@ -12,7 +13,7 @@ import "../App.css"
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import { useNavigate } from "react-router-dom"
 import AccountAvatar from "./Authentication/AccountAvatar"
-const socket = io.connect('http://localhost:5000')
+const socket = io.connect(SOCKET_URL)
 function VideoChat() {
 	const [ me, setMe ] = useState("")
 	const [ stream, setStream ] = useState()

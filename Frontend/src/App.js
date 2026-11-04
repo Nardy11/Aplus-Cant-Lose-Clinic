@@ -130,8 +130,9 @@ const router = createBrowserRouter(
       <Route path="/chats" element={<Chatpage/>} />
       <Route path="/FollowUpRequests" element={<FollowUpRequests/>}/>
     </Route>
-  )
-  );
+  ),
+  { basename: process.env.PUBLIC_URL || "/" }
+);
   
   // Severitys:
 // success

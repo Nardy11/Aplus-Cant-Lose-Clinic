@@ -30,7 +30,7 @@ import { getNotificationsd } from "../../features/doctorSlice.js";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import NavbarGen, { MobileTabBar } from "../NavbarGen";
-import { API_URL } from "../../Consts";
+import { API_URL, asset } from "../../Consts";
 import ConfirmDialog from "../common/ConfirmDialog";
 import { isStrongPassword, PASSWORD_HINT } from "../../design/password";
 
@@ -154,7 +154,7 @@ const AccountAvatar = () => {
     <header className="app-header">
       <div className="app-header-inner">
         <Link to="/Home" className="app-brand" aria-label="El7a2ny Clinic home">
-          <img src="/brand-mark.png" alt="" />
+          <img src={asset("/brand-mark.png")} alt="" />
           <span>
             <strong>El7a2ny</strong>
             <small>{role === "doctor" ? "Doctor" : role === "patient" ? "Patient" : "Clinic"}</small>

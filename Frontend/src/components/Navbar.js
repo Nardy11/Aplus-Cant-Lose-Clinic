@@ -1,3 +1,4 @@
+import { asset } from "../Consts";
 import * as React from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -11,7 +12,7 @@ export default function Navbar() {
     <header className="pub-header">
       <div className="pub-header-inner">
         <Link to="/" className="app-brand" aria-label="El7a2ny Clinic home">
-          <img src="/brand-mark.png" alt="" />
+          <img src={asset("/brand-mark.png")} alt="" />
           <span>
             <strong>El7a2ny</strong>
             <small>Virtual clinic</small>
