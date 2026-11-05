@@ -34,6 +34,8 @@ jobs:
           CI: false # don't fail the build on lint warnings
           # Set this repo variable to your hosted backend, e.g. https://my-api.onrender.com/api
           REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
+          # No backend hosted yet -> demo mode (simulated data in the browser). Set the variable above to switch it off.
+          REACT_APP_DEMO: ${{ vars.REACT_APP_API_URL == '' && 'true' || 'false' }}
         run: npm run build
       # GitHub Pages has no SPA fallback; serving index.html as 404.html makes deep links work.
       - run: cp build/index.html build/404.html

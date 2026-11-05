@@ -10,7 +10,7 @@ import Navbar from "./components/Navbar";
 import io from 'socket.io-client';
 import {socketset} from "./features/userSlice";
 import AccountAvatar from "./components/Authentication/AccountAvatar"; // Import the AccountAvatar component
-import { SOCKET_URL } from "./Consts";
+import { SOCKET_URL, DEMO } from "./Consts";
 const containerStyles = {
   height: "fit-content",
   maragin: "0 auto",
@@ -21,7 +21,7 @@ const containerStyles = {
   paddingTop: "2px", // Center items vertically
 };
 const ENDPOINT = SOCKET_URL;
-const socket = io(ENDPOINT);
+const socket = io(ENDPOINT, { autoConnect: !DEMO });
 
 
 const HomeDirect = () => {

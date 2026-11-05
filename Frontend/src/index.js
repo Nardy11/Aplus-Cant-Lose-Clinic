@@ -1,3 +1,4 @@
+import "./demo/install";
 
 
 import React from "react";
