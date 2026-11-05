@@ -80,5 +80,13 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "https://nardy11.github.io/Aplus-Cant-Lose-Clinic"
+  "homepage": "https://nardy11.github.io/Aplus-Cant-Lose-Clinic",
+  "devDependencies": {
+    "@testing-library/dom": "^9.3.4"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    }
+  }
 }
