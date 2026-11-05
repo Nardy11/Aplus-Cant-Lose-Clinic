@@ -142,15 +142,16 @@ export const rejectDr = createAsyncThunk("admin/rejectDr", async (id) => {
 
 export const createAdmin = createAsyncThunk(
   "admin/createAdmin",
-  async (data) => {
-    const response = await axios.post(
-      `${API_URL}/admin/createAdmin`,
-      {
+  async (data, { rejectWithValue }) => {
+    try {
+      return await axios.post(`${API_URL}/admin/createAdmin`, {
         username: data.username,
         password: data.password,
-      }
-    );
-    return response;
+      });
+    } catch (e) {
+      // Surface the server's reason (taken username, weak password) instead of a generic network error.
+      return rejectWithValue(e.response?.data?.error || e.message);
+    }
   }
 );
 
@@ -232,12 +233,12 @@ state.hpackages[i]={...action.payload.newData};
       })
       .addCase(createAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.admins.push(action.payload.data.user.username);
+        if (action.payload?.data?.user) state.admins.push(action.payload.data.user);
         state.response = "add admin";
       })
       .addCase(createAdmin.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
       });
 
     ///////////////////

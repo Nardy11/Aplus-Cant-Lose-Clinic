@@ -58,7 +58,6 @@ import { Snackbar, Alert } from "@mui/material";
 import RegisterAsDoctor from "./components/Authentication/RegisterAsDoctor";
 import ProfileDirect from "./ProfileDirect";
 import DocPatients from "./components/doctor/DocPatients";
-import AddPack from "./components/Adminstrator/AddPack"
 import PatientView from "./components/doctor/PatientView";
 import Upload from "./components/doctor/Upload";
 import MedHist from "./components/patient/MedHist";
@@ -125,7 +124,7 @@ const router = createBrowserRouter(
       <Route path="/vidcall" element={<Vid />} />
 
       
-      <Route path="AddHealthPackages" element={<AddPack />} />
+      <Route path="AddHealthPackages" element={<Navigate to="/Home?section=packages" replace />} />
 
       <Route path="/chats" element={<Chatpage/>} />
       <Route path="/FollowUpRequests" element={<FollowUpRequests/>}/>

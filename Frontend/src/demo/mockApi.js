@@ -8,9 +8,10 @@
  */
 import { AxiosError } from "axios";
 import raw from "./fixtures.json";
+import { applyAdminExtras } from "./adminExtras";
 
 const DAY = 86400000;
-const STORE_KEY = "clinic-demo-state-v1";
+const STORE_KEY = "clinic-demo-state-v2"; // bump when the fixtures or extras change shape
 const ISO = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z$/;
 const KEEP_DATES = new Set(["dBirth", "Dbirth", "birth", "dob"]); // birthdays don't move with the clock
 const DEMO_PASSWORD = "Demo@1234"; // public: shown on the sign-in page
@@ -37,7 +38,7 @@ function load() {
     const saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || "null");
     if (saved && saved.recordedAt === raw.recordedAt && saved.day === startOfDay(Date.now())) return saved.get;
   } catch (e) { /* storage unavailable: start fresh */ }
-  return shifted(raw.get);
+  return applyAdminExtras(shifted(raw.get));
 }
 const get = load();
 const logins = shifted(raw.logins);
@@ -101,7 +102,7 @@ function bookSlot({ slotId, patientId, amount }) {
 
 // ---------- request handling ----------
 const NOTE = "Demo mode: this change only lasts for this browser tab.";
-const ok = (data = { message: NOTE }, status = 200) => ({ status, data });
+const ok = (data = { message: NOTE }, status = 200, headers = {}) => ({ status, data, headers });
 const fail = (status, data) => ({ status, data });
 
 function parseBody(data) {
@@ -125,7 +126,10 @@ function handle(method, path, body, config) {
   if (method === "GET") {
     if (path in get) return ok(clone(get[path]));
     if (/\/(download|downloadf)\//.test(path) || config.responseType === "blob") {
-      return ok(new Blob(["This is a sample file from the demo."], { type: "text/plain" }));
+      return ok(new Blob(["This is a sample file from the demo."], { type: "text/plain" }), 200, {
+        "content-disposition": 'attachment; filename="sample-document.txt"',
+        "content-type": "text/plain",
+      });
     }
     if (path.startsWith("/patient/delete/")) { removeById(ids[0]); return ok(); }
     if (path.startsWith("/patient/checkout/confirm/")) return ok({ paid: true, status: "paid", message: "Payment confirmed (demo)" });
@@ -171,7 +175,28 @@ function handle(method, path, body, config) {
   }
   if (/updatePack/.test(path)) { setWhere(last, body); persist(); return ok({ message: "Package updated" }); }
   if (/familyMember/.test(path) && method === "PATCH") { setWhere(ids[1] || last, body); persist(); return ok(); }
-  if (/sendResetEmail|sendAcceptEmail|sendRejectEmail/.test(path)) return ok({ message: "Email sent (demo)" });
+  if (/createAdmin$/.test(path)) {
+    const list = get["/admin/viewAdmin"] && get["/admin/viewAdmin"].AdminView;
+    if (!body.username || !body.password) return fail(400, { error: "Username and password are required" });
+    if (list && list.some((a) => a.username === body.username)) return fail(400, { error: "That username is already taken." });
+    if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/.test(body.password)) return fail(400, { error: "That password is too weak. Use 8 or more characters with upper and lower case, a number and a symbol." });
+    const user = { _id: newId(), name: body.username, username: body.username, role: "admin", email: "", createdAt: new Date().toISOString() };
+    if (list) list.push(user);
+    persist();
+    return ok({ message: "Admin user created successfully", user }, 201);
+  }
+  if (/sendAcceptEmail$/.test(path)) {
+    const pend = get["/admin/viewPendDr"].pendDoctors;
+    const i = pend.findIndex((d) => d._id === body.id);
+    if (i >= 0) {
+      const [doc] = pend.splice(i, 1);
+      get["/admin/viewJoinedDr"].joinDoctors.push({ ...doc, status: "accepted", contract: { accepted: true } });
+    }
+    persist();
+    return ok({ message: "Email sent (demo)" });
+  }
+  if (/sendRejectEmail$/.test(path)) { removeById(body.id); persist(); return ok({ message: "Email sent (demo)" }); }
+  if (/sendResetEmail/.test(path)) return ok({ message: "Email sent (demo)" });
   if (/\/message$/.test(path) && method === "POST") return ok({ _id: newId(), content: body.content, createdAt: new Date().toISOString() });
   return ok({ message: NOTE }, method === "POST" ? 201 : 200);
 }
@@ -181,7 +206,7 @@ export default function demoAdapter(config) {
     const url = new URL(config.url, window.location.origin);
     const path = url.pathname.replace(/^.*?\/api(?=\/|$)/, "") || "/";
     const result = handle((config.method || "get").toUpperCase(), path, parseBody(config.data), config);
-    const response = { data: result.data, status: result.status, statusText: String(result.status), headers: {}, config, request: {} };
+    const response = { data: result.data, status: result.status, statusText: String(result.status), headers: result.headers || {}, config, request: {} };
     setTimeout(() => {
       if (result.status >= 200 && result.status < 300) resolve(response);
       else reject(new AxiosError(`Request failed with status code ${result.status}`, result.status >= 500 ? AxiosError.ERR_BAD_RESPONSE : AxiosError.ERR_BAD_REQUEST, config, {}, response));
