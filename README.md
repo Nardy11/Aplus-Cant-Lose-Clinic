@@ -83,6 +83,14 @@ flowchart LR
 | Realtime | Socket.IO chat |
 | Data | MongoDB |
 
+## Live demo (no backend)
+
+The GitHub Pages site runs in **demo mode**: there is no server or database, and every API call is answered in the browser from recorded sample data (`Frontend/src/demo`). Sign in with the one-click buttons on the login page (patient, doctor or admin; password `Demo@1234`). Booking, cancelling and similar actions work for the current tab and reset when it closes.
+
+- Demo mode is on whenever the `REACT_APP_DEMO=true` build variable is set. The Pages workflow sets it automatically until the repository variable `REACT_APP_API_URL` points at a hosted backend.
+- To refresh the sample data: seed a local MongoDB (`npm run seed` in `Backend`, plus an admin and a pending doctor if you want those screens), start the backend, then run `node scripts/record-demo-fixtures.js`.
+- Not simulated: Stripe checkout, video calls and live chat.
+
 ## Getting started
 
 You need **Node 18+** and a **MongoDB** you can reach (local `mongod` or Atlas).

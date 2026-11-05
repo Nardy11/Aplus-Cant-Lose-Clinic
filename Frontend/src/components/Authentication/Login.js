@@ -5,6 +5,13 @@ import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
 import { loginGuest } from "../../features/userSlice";
 import { SnackbarContext } from "../../App";
+import { DEMO } from "../../Consts";
+
+const DEMO_ACCOUNTS = [
+  { label: "Patient", detail: "Nour Ibrahim", username: "nour.patient" },
+  { label: "Doctor", detail: "Dr. Hany El-Sayed", username: "dr.hany" },
+  { label: "Admin", detail: "Clinic admin", username: "admin.demo" },
+];
 
 function Login() {
   const navigate = useNavigate();
@@ -24,6 +31,12 @@ function Login() {
     }
   }, [user.logged, user.error]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const signInAs = (username) => {
+    submitted.current = true;
+    setError("");
+    dispatch(loginGuest({ username, password: "Demo@1234" }));
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     submitted.current = true;
@@ -41,6 +54,20 @@ function Login() {
       <form className="ui-auth-card" onSubmit={handleSubmit} noValidate={false}>
         <h1 className="ui-title">Sign in</h1>
         <p className="ui-lead">Welcome back. Patients and doctors sign in here.</p>
+
+        {DEMO && (
+          <div className="ui-card ui-card-pad" style={{ marginBottom: 16 }}>
+            <strong>Portfolio demo</strong>
+            <p className="ui-lead" style={{ margin: "4px 0 10px" }}>No server is running, so all data is sample data. Pick a role to explore:</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {DEMO_ACCOUNTS.map((a) => (
+                <button key={a.username} type="button" className="ui-btn" onClick={() => signInAs(a.username)} disabled={user.loading} title={a.detail}>
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {error && <div className="ui-alert" role="alert">{error}</div>}
 

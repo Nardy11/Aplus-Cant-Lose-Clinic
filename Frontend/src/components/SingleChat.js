@@ -5,7 +5,7 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { Input } from "@heroui/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import { API_URL, asset } from "../Consts";
+import { API_URL, asset, DEMO } from "../Consts";
 import Lottie from "react-lottie";
 import animationData from "../animations/typing.json";
 import { useSelector } from "react-redux";
@@ -83,6 +83,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   useEffect(() => {
     socket = io(SOCKET_ENDPOINT, {
       transports: ["websocket", "polling"],
+      autoConnect: !DEMO,
     });
 
     socket.on("connect", () => {
